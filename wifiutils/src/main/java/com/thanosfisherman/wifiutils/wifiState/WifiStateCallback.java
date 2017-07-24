@@ -1,9 +1,6 @@
 package com.thanosfisherman.wifiutils.wifiState;
 
-import com.thanosfisherman.wifiutils.ReceiverCallbacks;
-
-public interface WifiStateCallback extends ReceiverCallbacks
+public interface WifiStateCallback
 {
     void onWifiEnabled();
-    void onWifiDisabled();
 }

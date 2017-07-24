@@ -1,8 +1,6 @@
 package com.thanosfisherman.wifiutils.wifiConnect;
 
-import com.thanosfisherman.wifiutils.ReceiverCallbacks;
-
-public interface WifiConnectionCallback extends ReceiverCallbacks
+public interface WifiConnectionCallback
 {
     void successfulConnect();
     void errorConnect();

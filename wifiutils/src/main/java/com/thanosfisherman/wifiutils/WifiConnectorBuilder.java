@@ -1,29 +1,26 @@
 package com.thanosfisherman.wifiutils;
 
-import com.thanosfisherman.wifiutils.wifiConnect.ConnectionFailListener;
-import com.thanosfisherman.wifiutils.wifiConnect.ConnectionSuccessListener;
+import com.thanosfisherman.wifiutils.wifiConnect.ConnectionStateListener;
 import com.thanosfisherman.wifiutils.wifiScan.ScanResultsListener;
+import com.thanosfisherman.wifiutils.wifiState.WifiStateListener;
 
 public interface WifiConnectorBuilder
 {
-    WifiConnectorBuilder onErrorListener(ConnectionFailListener connectionFailListener);
-    WifiConnectorBuilder onSuccess(ConnectionSuccessListener connectionSuccessListener);
+    void start();
 
     interface WifiState
     {
-        ScanBuilder enableWifi();
+        void enableWifi(WifiStateListener wifiStateListener);
         void disableWifi();
-    }
 
-    interface ScanBuilder
-    {
-        WifiConnectionBuilder startScan(ScanResultsListener scanResultsListener);
-        WifiConnectorBuilder connectWith(String ssid);
-        WifiConnectorBuilder connectWith(String ssid, String bssid);
+        WifiConnectionBuilder wifiScan(ScanResultsListener scanResultsListener);
+        WifiConnectorBuilder connectWith(String ssid, ConnectionStateListener connectionStateListener);
+        WifiConnectorBuilder connectWith(String ssid, String bssid, ConnectionStateListener connectionStateListener);
     }
 
     interface WifiConnectionBuilder
     {
-        WifiConnectorBuilder connectWithScanResult(String password);
+        WifiConnectorBuilder connectWithScanResult(String password, ConnectionStateListener connectionStateListener);
+        void start();
     }
 }

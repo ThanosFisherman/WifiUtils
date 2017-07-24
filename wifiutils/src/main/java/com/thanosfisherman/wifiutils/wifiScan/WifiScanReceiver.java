@@ -4,21 +4,19 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import com.thanosfisherman.wifiutils.ReceiverCallbacks;
-
 
 public class WifiScanReceiver extends BroadcastReceiver
 {
     private WifiScanCallback callback;
 
-    public WifiScanReceiver(ReceiverCallbacks callback)
+    public WifiScanReceiver(WifiScanCallback callback)
     {
-        this.callback = (WifiScanCallback) callback;
+        this.callback = callback;
     }
 
     @Override
     public void onReceive(Context context, Intent intent)
     {
-
+        callback.onScanResultsReady();
     }
 }

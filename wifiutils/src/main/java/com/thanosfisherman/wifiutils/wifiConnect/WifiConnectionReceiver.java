@@ -6,8 +6,6 @@ import android.content.Intent;
 import android.net.wifi.SupplicantState;
 import android.net.wifi.WifiManager;
 
-import com.thanosfisherman.wifiutils.ReceiverCallbacks;
-
 import static com.thanosfisherman.wifiutils.ConnectorUtils.wifiLog;
 
 
@@ -15,9 +13,9 @@ public final class WifiConnectionReceiver extends BroadcastReceiver
 {
     private WifiConnectionCallback callback;
 
-    public WifiConnectionReceiver(ReceiverCallbacks callback)
+    public WifiConnectionReceiver(WifiConnectionCallback callback)
     {
-        this.callback = (WifiConnectionCallback) callback;
+        this.callback = callback;
     }
 
     @Override

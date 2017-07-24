@@ -6,18 +6,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.wifi.WifiManager;
 
-import com.thanosfisherman.wifiutils.ReceiverCallbacks;
-
-import static com.thanosfisherman.wifiutils.ConnectorUtils.wifiLog;
-
 public final class WifiStateReceiver extends BroadcastReceiver
 {
 
     private WifiStateCallback wifiStateCallback;
 
-    public WifiStateReceiver(ReceiverCallbacks callbacks)
+    public WifiStateReceiver(WifiStateCallback callbacks)
     {
-        wifiStateCallback = (WifiStateCallback) callbacks;
+        wifiStateCallback = callbacks;
     }
 
     @Override
@@ -35,7 +31,6 @@ public final class WifiStateReceiver extends BroadcastReceiver
             case WifiManager.WIFI_STATE_DISABLING:
                 break;
             case WifiManager.WIFI_STATE_DISABLED:
-                wifiStateCallback.onWifiDisabled();
                 break;
         }
     }

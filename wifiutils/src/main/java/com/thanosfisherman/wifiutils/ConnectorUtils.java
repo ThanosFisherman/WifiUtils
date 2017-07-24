@@ -14,8 +14,6 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.thanosfisherman.wifiutils.wifiState.WifiStateReceiver;
-
 import java.util.Comparator;
 import java.util.List;
 
@@ -196,20 +194,17 @@ public final class ConnectorUtils
         }
     }
 
-    static void registerReceiver(@NonNull Context context, @Nullable BroadcastReceiver receiver, @NonNull ReceiverCallbacks callbacks,
-                                 @NonNull IntentFilter filter)
+    static void registerReceiver(@NonNull Context context, @Nullable BroadcastReceiver receiver, @NonNull IntentFilter filter)
     {
-        if (receiver == null)
+        if (receiver != null)
         {
-            receiver = new WifiStateReceiver(callbacks);
             try
             {
                 context.registerReceiver(receiver, filter);
             }
             catch (Exception e)
             {
-                wifiLog("Exception on registering broadcast for listening Wifi State:");
-                receiver = null;
+                wifiLog("Exception on registering broadcast " + e);
             }
         }
     }
@@ -221,11 +216,10 @@ public final class ConnectorUtils
             try
             {
                 context.unregisterReceiver(receiver);
-                receiver = null;
             }
-            catch (Exception e)
+            catch (IllegalArgumentException e)
             {
-                wifiLog("Exception on unregistering broadcast for listening Wifi State:");
+                wifiLog("Exception on unregistering broadcast " + e);
             }
         }
     }
