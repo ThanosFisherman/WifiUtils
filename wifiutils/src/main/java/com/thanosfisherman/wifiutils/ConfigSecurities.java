@@ -102,12 +102,10 @@ final class ConfigSecurities
 
         for (final WifiConfiguration config : configurations)
         {
-            wifiLog("BSSID " + config.BSSID + " SSID " + config.SSID);
             if (bssid.equals(config.BSSID) || ssid.equals(config.SSID))
             {
                 final int configSecurity = getSecurity(config);
 
-                wifiLog("security param " + security + " configSecurity str " + configSecurity);
                 if (security == configSecurity)
                     return config;
             }
@@ -139,12 +137,9 @@ final class ConfigSecurities
 
         for (final WifiConfiguration config : configurations)
         {
-            wifiLog("BSSID " + config.BSSID + " SSID " + config.SSID);
             if (bssid.equals(config.BSSID) || ssid.equals(config.SSID))
             {
                 final int configSecurity = getSecurity(config);
-
-                wifiLog("security param " + security + " configSecurity str " + configSecurity);
                 if (security == configSecurity)
                     return config;
             }

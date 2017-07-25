@@ -19,7 +19,10 @@ import com.thanosfisherman.wifiutils.wifiState.WifiStateReceiver;
 
 import java.util.ArrayList;
 
+import static com.thanosfisherman.wifiutils.ConnectorUtils.cleanPreviousConfiguration;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.connectToWifi;
+import static com.thanosfisherman.wifiutils.ConnectorUtils.isConnectedToBSSID;
+import static com.thanosfisherman.wifiutils.ConnectorUtils.reenableAllHotspots;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.registerReceiver;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.unregisterReceiver;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.wifiLog;
@@ -61,6 +64,10 @@ public final class WifiConnector implements WifiConnectorBuilder, WifiConnectorB
                     wifiLog("COULDN'T SCAN ERROR");
                 }
             }
+            else if (mConnectionStateListener != null && mSsid != null && mPassword != null)
+            {
+                wifiLog("Connecting with ssid");
+            }
         }
     };
 
@@ -72,6 +79,22 @@ public final class WifiConnector implements WifiConnectorBuilder, WifiConnectorB
             if (mScanResultsListener != null)
                 mScanResult = mScanResultsListener.onScanResults(mWifiManager.getScanResults());
             unregisterReceiver(mContext, mWifiScanReceiver);
+
+            if (mConnectionStateListener != null)
+            {
+                if (mScanResult != null && mPassword != null)
+                {
+                    if (isConnectedToBSSID(mWifiManager, mScanResult.BSSID))
+                    {
+                        wifiLog("Already connected to this network");
+                        mWifiConnectionCallback.successfulConnect();
+                        return;
+                    }
+                    registerReceiver(mContext, mWifiConnectionReceiver, new IntentFilter(WifiManager.SUPPLICANT_STATE_CHANGED_ACTION));
+                    if (!connectToWifi(mContext, mWifiManager, mScanResult, mPassword))
+                        mWifiConnectionCallback.errorConnect();
+                }
+            }
         }
     };
 
@@ -80,14 +103,23 @@ public final class WifiConnector implements WifiConnectorBuilder, WifiConnectorB
         @Override
         public void successfulConnect()
         {
+            wifiLog("CONNECTED SUCCESSFULLY");
+            unregisterReceiver(mContext, mWifiConnectionReceiver);
             if (mConnectionStateListener != null)
-                unregisterReceiver(mContext, mWifiConnectionReceiver);
+                mConnectionStateListener.isConnectionSuccessful(true);
+
         }
 
         @Override
         public void errorConnect()
         {
+            wifiLog("COULDN'T CONNECT :(");
             unregisterReceiver(mContext, mWifiConnectionReceiver);
+            if (mScanResult != null)
+                cleanPreviousConfiguration(mWifiManager, mScanResult);
+            reenableAllHotspots(mWifiManager);
+            if (mConnectionStateListener != null)
+                mConnectionStateListener.isConnectionSuccessful(false);
         }
     };
 
@@ -136,6 +168,7 @@ public final class WifiConnector implements WifiConnectorBuilder, WifiConnectorB
     public WifiConnectorBuilder connectWith(String ssid, ConnectionStateListener connectionStateListener)
     {
         mConnectionStateListener = connectionStateListener;
+        mSsid = ssid;
         return this;
     }
 
@@ -143,6 +176,8 @@ public final class WifiConnector implements WifiConnectorBuilder, WifiConnectorB
     public WifiConnectorBuilder connectWith(String ssid, String bssid, ConnectionStateListener connectionStateListener)
     {
         mConnectionStateListener = connectionStateListener;
+        mSsid = ssid;
+        mBssid = bssid;
         return this;
     }
 
@@ -150,12 +185,8 @@ public final class WifiConnector implements WifiConnectorBuilder, WifiConnectorB
     @Override
     public WifiConnectorBuilder connectWithScanResult(String password, ConnectionStateListener connectionStateListener)
     {
-        if (mScanResult != null)
-        {
-            unregisterReceiver(mContext, mWifiScanReceiver);
-            registerReceiver(mContext, mWifiConnectionReceiver, new IntentFilter(WifiManager.SUPPLICANT_STATE_CHANGED_ACTION));
-            connectToWifi(mContext, mWifiManager, mScanResult, password);
-        }
+        mConnectionStateListener = connectionStateListener;
+        mPassword = password;
         return this;
     }
 
@@ -165,8 +196,7 @@ public final class WifiConnector implements WifiConnectorBuilder, WifiConnectorB
         unregisterReceiver(mContext, mWifiStateReceiver);
         unregisterReceiver(mContext, mWifiScanReceiver);
         unregisterReceiver(mContext, mWifiConnectionReceiver);
-        if (mScanResultsListener != null)
-            enableWifi(null);
+        enableWifi(null);
     }
 
     @Override

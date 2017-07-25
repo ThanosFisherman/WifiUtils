@@ -25,7 +25,13 @@ public class MainActivity extends AppCompatActivity
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 555);
         final Button button = (Button) findViewById(R.id.button);
         ConnectorUtils.enableLog(true);
-        button.setOnClickListener(v -> WifiConnector.withContext(getApplicationContext()).wifiScan(this::findScanResult).start());
+        button.setOnClickListener(v -> WifiConnector.withContext(getApplicationContext())
+                                                    .wifiScan(this::findScanResult)
+                                                    .connectWithScanResult("dgfdfgdf", isSucess ->
+                                                    {
+                                                        if (isSucess)
+                                                            Log.i("Main", "CONNECTED LELELEL");
+                                                    }).start());
 
     }
 

@@ -21,11 +21,11 @@ public final class ConnectorUtils
 {
 
     @NonNull private static final String TAG = ConnectorUtils.class.getSimpleName();
-    static final int MAX_PRIORITY = 99999;
+    private static final int MAX_PRIORITY = 99999;
     private static boolean mEnableLog;
 
 
-    public static boolean isConnectedToBSSID(WifiManager wifiManager, String BSSID)
+    static boolean isConnectedToBSSID(WifiManager wifiManager, String BSSID)
     {
         if (wifiManager.getConnectionInfo().getBSSID() != null && wifiManager.getConnectionInfo().getBSSID().equals(BSSID))
         {
@@ -48,7 +48,7 @@ public final class ConnectorUtils
     }
 
 
-    static boolean checkForExcessOpenNetworkAndSave(final ContentResolver resolver, final WifiManager wifiMgr)
+    private static boolean checkForExcessOpenNetworkAndSave(final ContentResolver resolver, final WifiManager wifiMgr)
     {
         final List<WifiConfiguration> configurations = wifiMgr.getConfiguredNetworks();
         sortByPriority(configurations);
@@ -75,7 +75,7 @@ public final class ConnectorUtils
 
     }
 
-    static int getMaxPriority(final WifiManager wifiManager)
+    private static int getMaxPriority(final WifiManager wifiManager)
     {
         final List<WifiConfiguration> configurations = wifiManager.getConfiguredNetworks();
         int pri = 0;
@@ -89,7 +89,7 @@ public final class ConnectorUtils
         return pri;
     }
 
-    static int shiftPriorityAndSave(final WifiManager wifiMgr)
+    private static int shiftPriorityAndSave(final WifiManager wifiMgr)
     {
         final List<WifiConfiguration> configurations = wifiMgr.getConfiguredNetworks();
         sortByPriority(configurations);
@@ -126,7 +126,7 @@ public final class ConnectorUtils
         return i;
     }
 
-    public static String convertToQuotedString(String string)
+    static String convertToQuotedString(String string)
     {
         if (TextUtils.isEmpty(string))
             return "";
@@ -138,7 +138,7 @@ public final class ConnectorUtils
         return "\"" + string + "\"";
     }
 
-    public static boolean isHexWepKey(@Nullable String wepKey)
+    static boolean isHexWepKey(@Nullable String wepKey)
     {
         final int passwordLen = wepKey == null ? 0 : wepKey.length();
         return passwordLen != 0 && (passwordLen == 10 || passwordLen == 26 || passwordLen == 58) && wepKey.matches("[0-9A-Fa-f]*");
@@ -182,18 +182,6 @@ public final class ConnectorUtils
         return false;
     }
 
-    public static void reenableAllHotspots(WifiManager wifi)
-    {
-        final List<WifiConfiguration> configurations = wifi.getConfiguredNetworks();
-        if (configurations != null && !configurations.isEmpty())
-        {
-            for (final WifiConfiguration config : configurations)
-            {
-                wifi.enableNetwork(config.networkId, false);
-            }
-        }
-    }
-
     static void registerReceiver(@NonNull Context context, @Nullable BroadcastReceiver receiver, @NonNull IntentFilter filter)
     {
         if (receiver != null)
@@ -204,7 +192,6 @@ public final class ConnectorUtils
             }
             catch (Exception e)
             {
-                wifiLog("Exception on registering broadcast " + e);
             }
         }
     }
@@ -219,19 +206,12 @@ public final class ConnectorUtils
             }
             catch (IllegalArgumentException e)
             {
-                wifiLog("Exception on unregistering broadcast " + e);
             }
         }
     }
 
-    public static void connectToWifi(@NonNull Context context, @NonNull WifiManager wifiManager, @NonNull ScanResult scanResult, @Nullable String password)
+    static boolean connectToWifi(@NonNull Context context, @NonNull WifiManager wifiManager, @NonNull ScanResult scanResult, @Nullable String password)
     {
-        if (ConnectorUtils.isConnectedToBSSID(wifiManager, "wifiConfiguration.bssid"))
-        {
-            //connectionResultListener.errorConnect(SAME_NETWORK);
-            wifiLog("Already connected to this network");
-            return;
-        }
         cleanPreviousConfiguration(wifiManager, scanResult);
 
         final int security = ConfigSecurities.getSecurity(scanResult);
@@ -248,31 +228,25 @@ public final class ConnectorUtils
         wifiLog("Network ID: " + id);
         if (id == -1)
         {
-            //TODO: Error Listener here
-            return;
+            return false;
         }
 
         if (!wifiManager.saveConfiguration())
         {
             wifiLog("Couldn't save wifi config");
-            //TODO: Error Listener here
-            return;
+            return false;
         }
         // We have to retrieve the WifiConfiguration after save
         config = ConfigSecurities.getWifiConfiguration(wifiManager, config);
         if (config == null)
         {
             wifiLog("Error getting wifi config after save. (config == null)");
-            //TODO: Error Listener here
-            return;
+            return false;
         }
-        if (!connectToConfiguredNetwork(wifiManager, config, true))
-        {
-            //TODO: LISTENER FAILED
-        }
+        return connectToConfiguredNetwork(wifiManager, config, true);
     }
 
-    public static boolean connectToConfiguredNetwork(@NonNull WifiManager wifiManager, @NonNull WifiConfiguration config, boolean reassociate)
+    private static boolean connectToConfiguredNetwork(@NonNull WifiManager wifiManager, @NonNull WifiConfiguration config, boolean reassociate)
     {
         if (Build.VERSION.SDK_INT >= 23)
             return wifiManager.enableNetwork(config.networkId, true) && (reassociate ? wifiManager.reassociate() : wifiManager.reconnect());
@@ -320,15 +294,11 @@ public final class ConnectorUtils
 
         // Disable others, but do not save.
         // Just to force the WifiManager to connect to it.
-        if (!wifiManager.enableNetwork(config.networkId, true))
-        {
-            return false;
-        }
+        return wifiManager.enableNetwork(config.networkId, true) && (reassociate ? wifiManager.reassociate() : wifiManager.reconnect());
 
-        return reassociate ? wifiManager.reassociate() : wifiManager.reconnect();
     }
 
-    public static void cleanPreviousConfiguration(@NonNull final WifiManager wifiManager, @NonNull final ScanResult scanResult)
+    static void cleanPreviousConfiguration(@NonNull final WifiManager wifiManager, @NonNull final ScanResult scanResult)
     {
 
         final WifiConfiguration config = ConfigSecurities.getWifiConfiguration(wifiManager, scanResult);
@@ -337,6 +307,18 @@ public final class ConnectorUtils
             wifiLog("Found previous network confing. Cleaning nao");
             wifiManager.removeNetwork(config.networkId);
             wifiManager.saveConfiguration();
+        }
+    }
+
+    static void reenableAllHotspots(WifiManager wifi)
+    {
+        final List<WifiConfiguration> configurations = wifi.getConfiguredNetworks();
+        if (configurations != null && !configurations.isEmpty())
+        {
+            for (final WifiConfiguration config : configurations)
+            {
+                wifi.enableNetwork(config.networkId, false);
+            }
         }
     }
 }
