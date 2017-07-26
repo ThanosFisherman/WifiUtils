@@ -79,6 +79,7 @@ final class ConfigSecurities
         }
     }
 
+    @Nullable
     static WifiConfiguration getWifiConfiguration(@NonNull final WifiManager wifiMgr, @NonNull final WifiConfiguration configToFind)
     {
         final String ssid = configToFind.SSID;

@@ -90,8 +90,9 @@ public final class WifiConnector implements WifiConnectorBuilder, WifiConnectorB
                         mWifiConnectionCallback.successfulConnect();
                         return;
                     }
-                    registerReceiver(mContext, mWifiConnectionReceiver, new IntentFilter(WifiManager.SUPPLICANT_STATE_CHANGED_ACTION));
-                    if (!connectToWifi(mContext, mWifiManager, mScanResult, mPassword))
+                    if (connectToWifi(mContext, mWifiManager, mScanResult, mPassword))
+                        registerReceiver(mContext, mWifiConnectionReceiver, new IntentFilter(WifiManager.SUPPLICANT_STATE_CHANGED_ACTION));
+                    else
                         mWifiConnectionCallback.errorConnect();
                 }
             }
@@ -115,8 +116,6 @@ public final class WifiConnector implements WifiConnectorBuilder, WifiConnectorB
         {
             wifiLog("COULDN'T CONNECT :(");
             unregisterReceiver(mContext, mWifiConnectionReceiver);
-            if (mScanResult != null)
-                cleanPreviousConfiguration(mWifiManager, mScanResult);
             reenableAllHotspots(mWifiManager);
             if (mConnectionStateListener != null)
                 mConnectionStateListener.isConnectionSuccessful(false);
