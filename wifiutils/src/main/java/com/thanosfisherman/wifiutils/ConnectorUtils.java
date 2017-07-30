@@ -212,6 +212,13 @@ public final class ConnectorUtils
 
     static boolean connectToWifi(@NonNull Context context, @NonNull WifiManager wifiManager, @NonNull ScanResult scanResult, @Nullable String password)
     {
+        if (Build.VERSION.SDK_INT >= 23)
+        {
+            final WifiConfiguration config = ConfigSecurities.getWifiConfiguration(wifiManager, scanResult);
+            if (config != null)
+                return connectToConfiguredNetwork(wifiManager, config, true);
+        }
+
         cleanPreviousConfiguration(wifiManager, scanResult);
 
         final int security = ConfigSecurities.getSecurity(scanResult);
@@ -298,15 +305,18 @@ public final class ConnectorUtils
 
     }
 
-    static void cleanPreviousConfiguration(@NonNull final WifiManager wifiManager, @NonNull final ScanResult scanResult)
+    private static void cleanPreviousConfiguration(@NonNull final WifiManager wifiManager, @NonNull final ScanResult scanResult)
     {
-
-        final WifiConfiguration config = ConfigSecurities.getWifiConfiguration(wifiManager, scanResult);
-        if (config != null)
+        if (Build.VERSION.SDK_INT < 23)
         {
-            wifiLog("Found previous network confing. Cleaning nao");
-            wifiManager.removeNetwork(config.networkId);
-            wifiManager.saveConfiguration();
+            final WifiConfiguration config = ConfigSecurities.getWifiConfiguration(wifiManager, scanResult);
+
+            if (config != null)
+            {
+                wifiLog("Found previous network confing. Cleaning nao");
+                wifiManager.removeNetwork(config.networkId);
+                wifiManager.saveConfiguration();
+            }
         }
     }
 

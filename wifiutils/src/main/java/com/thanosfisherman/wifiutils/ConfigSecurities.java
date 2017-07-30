@@ -115,6 +115,7 @@ final class ConfigSecurities
         return null;
     }
 
+    @Nullable
     static WifiConfiguration getWifiConfiguration(@NonNull final WifiManager wifiMgr, @NonNull final ScanResult scanResult)
     {
         final String ssid = convertToQuotedString(scanResult.SSID);

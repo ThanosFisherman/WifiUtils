@@ -1,6 +1,10 @@
 package com.thanosfisherman.wifiutils;
 
-import com.thanosfisherman.wifiutils.wifiConnect.ConnectionStateListener;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
+import com.thanosfisherman.wifiutils.wifiConnect.ConnectionScanResultsListener;
+import com.thanosfisherman.wifiutils.wifiConnect.ConnectionSuccessListener;
 import com.thanosfisherman.wifiutils.wifiScan.ScanResultsListener;
 import com.thanosfisherman.wifiutils.wifiState.WifiStateListener;
 
@@ -8,19 +12,19 @@ public interface WifiConnectorBuilder
 {
     void start();
 
-    interface WifiState
+    interface WifiUtilsListener
     {
         void enableWifi(WifiStateListener wifiStateListener);
         void disableWifi();
 
-        WifiConnectionBuilder wifiScan(ScanResultsListener scanResultsListener);
-        WifiConnectorBuilder connectWith(String ssid, ConnectionStateListener connectionStateListener);
-        WifiConnectorBuilder connectWith(String ssid, String bssid, ConnectionStateListener connectionStateListener);
+        WifiConnectorBuilder scanWifi(@Nullable ScanResultsListener scanResultsListener);
+        WifiSuccessListener connectWith(@NonNull String ssid, @NonNull String password);
+        WifiSuccessListener connectWith(@NonNull String ssid, @NonNull String bssid, @NonNull String password);
+        WifiSuccessListener connectWithScanResult(@NonNull String password, @Nullable ConnectionScanResultsListener connectionScanResultsListener);
     }
 
-    interface WifiConnectionBuilder
+    interface WifiSuccessListener
     {
-        WifiConnectorBuilder connectWithScanResult(String password, ConnectionStateListener connectionStateListener);
-        void start();
+        WifiConnectorBuilder onConnectionResult(ConnectionSuccessListener successListener);
     }
 }
