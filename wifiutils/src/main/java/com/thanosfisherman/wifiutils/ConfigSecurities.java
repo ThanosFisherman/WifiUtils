@@ -126,16 +126,11 @@ final class ConfigSecurities
         if (bssid == null)
             return null;
 
-
         final int security = getSecurity(scanResult);
-
 
         final List<WifiConfiguration> configurations = wifiMgr.getConfiguredNetworks();
         if (configurations == null)
-        {
-            wifiLog("NULL configs");
             return null;
-        }
 
         for (final WifiConfiguration config : configurations)
         {
@@ -146,7 +141,6 @@ final class ConfigSecurities
                     return config;
             }
         }
-        wifiLog("Couldn't find " + ssid);
         return null;
     }
 
