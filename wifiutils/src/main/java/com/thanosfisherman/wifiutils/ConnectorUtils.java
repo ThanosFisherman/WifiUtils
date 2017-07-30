@@ -306,7 +306,7 @@ public final class ConnectorUtils
 
         if (config != null)
         {
-            wifiLog("Found previous network confing. attempting to clean now");
+            wifiLog("Found previous network config. attempting to remove it...");
             wifiManager.removeNetwork(config.networkId);
             wifiManager.saveConfiguration();
         }
@@ -322,5 +322,21 @@ public final class ConnectorUtils
                 wifi.enableNetwork(config.networkId, false);
             }
         }
+    }
+
+    static ScanResult matchScanResult(@NonNull String ssid, @NonNull List<ScanResult> results)
+    {
+        for (ScanResult result : results)
+            if (result.SSID.equals(ssid))
+                return result;
+        return null;
+    }
+
+    static ScanResult matchScanResult(@NonNull String ssid, @NonNull String bssid, @NonNull List<ScanResult> results)
+    {
+        for (ScanResult result : results)
+            if (result.SSID.equals(ssid) && result.BSSID.equals(bssid))
+                return result;
+        return null;
     }
 }

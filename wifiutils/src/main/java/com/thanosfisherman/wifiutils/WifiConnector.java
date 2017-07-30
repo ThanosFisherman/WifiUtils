@@ -23,6 +23,7 @@ import java.util.List;
 
 import static com.thanosfisherman.wifiutils.ConnectorUtils.connectToWifi;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.isConnectedToBSSID;
+import static com.thanosfisherman.wifiutils.ConnectorUtils.matchScanResult;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.reenableAllHotspots;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.registerReceiver;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.unregisterReceiver;
@@ -43,7 +44,6 @@ public final class WifiConnector implements WifiConnectorBuilder, WifiConnectorB
     @Nullable private ConnectionScanResultsListener mConnectionScanResultsListener;
     @Nullable private ConnectionSuccessListener mConnectionSuccessListener;
     @Nullable private WifiStateListener mWifiStateListener;
-    @Nullable private List<ScanResult> mScanResults;
 
     @NonNull private final WifiStateCallback mWifiStateCallback = new WifiStateCallback()
     {
@@ -79,9 +79,9 @@ public final class WifiConnector implements WifiConnectorBuilder, WifiConnectorB
         {
             unregisterReceiver(mContext, mWifiScanReceiver);
 
-            mScanResults = mWifiManager.getScanResults();
+            final List<ScanResult> scanResultList = mWifiManager.getScanResults();
             if (mScanResultsListener != null)
-                mScanResultsListener.onScanResults(mScanResults);
+                mScanResultsListener.onScanResults(scanResultList);
 
             if (mPassword == null)
             {
@@ -90,7 +90,15 @@ public final class WifiConnector implements WifiConnectorBuilder, WifiConnectorB
             }
 
             if (mConnectionScanResultsListener != null)
-                mSingleScanResult = mConnectionScanResultsListener.onConnectWithScanResult(mScanResults);
+                mSingleScanResult = mConnectionScanResultsListener.onConnectWithScanResult(scanResultList);
+
+            if (mSsid != null)
+            {
+                if (mBssid != null)
+                    mSingleScanResult = matchScanResult(mSsid, mBssid, scanResultList);
+                else
+                    mSingleScanResult = matchScanResult(mSsid, scanResultList);
+            }
 
             if (mSingleScanResult != null)
             {

@@ -7,6 +7,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.thanosfisherman.wifiutils.ConnectorUtils;
 import com.thanosfisherman.wifiutils.WifiConnector;
@@ -24,15 +25,18 @@ public class MainActivity extends AppCompatActivity
         ConnectorUtils.enableLog(true);
         button.setOnClickListener(v ->
                                   {
-                                      WifiConnector.withContext(getApplicationContext()).connectWithScanResult("asdsafa", scanResults ->
-                                      {
-                                          for (ScanResult result : scanResults)
-                                          {
-                                              if ("lelelelelel".equals(result.SSID))
-                                                  return result;
-                                          }
-                                          return null;
-                                      }).onConnectionResult(isSuccess -> Log.i("MAIN", "SUCCESS " + isSuccess)).start();
+                                      WifiConnector.withContext(getApplicationContext())
+                                                   .connectWith("lelelelelel", "asfsafasd")
+                                                   .onConnectionResult(this::checkResult)
+                                                   .start();
                                   });
+    }
+
+    private void checkResult(boolean isSuccess)
+    {
+        if (isSuccess)
+            Toast.makeText(MainActivity.this, "CONNECTED YAY", Toast.LENGTH_SHORT).show();
+        else
+            Toast.makeText(MainActivity.this, "COULDN'T CONNECT", Toast.LENGTH_SHORT).show();
     }
 }
