@@ -212,21 +212,18 @@ public final class ConnectorUtils
 
     static boolean connectToWifi(@NonNull Context context, @NonNull WifiManager wifiManager, @NonNull ScanResult scanResult, @Nullable String password)
     {
-        if (Build.VERSION.SDK_INT >= 23)
-        {
-            final WifiConfiguration config = ConfigSecurities.getWifiConfiguration(wifiManager, scanResult);
-            if (config != null)
-                return connectToConfiguredNetwork(wifiManager, config, true);
-        }
-
         cleanPreviousConfiguration(wifiManager, scanResult);
+
+        WifiConfiguration config = ConfigSecurities.getWifiConfiguration(wifiManager, scanResult);
+        if (config != null)
+            return connectToConfiguredNetwork(wifiManager, config, true);
 
         final int security = ConfigSecurities.getSecurity(scanResult);
 
         if (ConfigSecurities.SECURITY_NONE == security)
             checkForExcessOpenNetworkAndSave(context.getContentResolver(), wifiManager);
 
-        WifiConfiguration config = new WifiConfiguration();
+        config = new WifiConfiguration();
         config.SSID = convertToQuotedString(scanResult.SSID);
         config.BSSID = scanResult.BSSID;
         ConfigSecurities.setupSecurity(config, security, password);
@@ -266,9 +263,7 @@ public final class ConnectorUtils
             newPri = shiftPriorityAndSave(wifiManager);
             config = ConfigSecurities.getWifiConfiguration(wifiManager, config);
             if (config == null)
-            {
                 return false;
-            }
         }
 
         // Set highest priority to this configured network
@@ -307,16 +302,13 @@ public final class ConnectorUtils
 
     private static void cleanPreviousConfiguration(@NonNull final WifiManager wifiManager, @NonNull final ScanResult scanResult)
     {
-        if (Build.VERSION.SDK_INT < 23)
-        {
-            final WifiConfiguration config = ConfigSecurities.getWifiConfiguration(wifiManager, scanResult);
+        final WifiConfiguration config = ConfigSecurities.getWifiConfiguration(wifiManager, scanResult);
 
-            if (config != null)
-            {
-                wifiLog("Found previous network confing. Cleaning nao");
-                wifiManager.removeNetwork(config.networkId);
-                wifiManager.saveConfiguration();
-            }
+        if (config != null)
+        {
+            wifiLog("Found previous network confing. attempting to clean now");
+            wifiManager.removeNetwork(config.networkId);
+            wifiManager.saveConfiguration();
         }
     }
 

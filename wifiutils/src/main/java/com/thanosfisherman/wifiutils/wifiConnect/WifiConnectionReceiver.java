@@ -12,6 +12,7 @@ import static com.thanosfisherman.wifiutils.ConnectorUtils.wifiLog;
 public final class WifiConnectionReceiver extends BroadcastReceiver
 {
     private WifiConnectionCallback callback;
+    private int attempts;
 
     public WifiConnectionReceiver(WifiConnectionCallback callback)
     {
@@ -39,13 +40,21 @@ public final class WifiConnectionReceiver extends BroadcastReceiver
                     callback.successfulConnect();
                     break;
                 case DISCONNECTED:
-                    int supl_error = intent.getIntExtra(WifiManager.EXTRA_SUPPLICANT_ERROR, -1);
-                    wifiLog("Disconnected... Supplicant error: " + supl_error);
+                    final int supl_error = intent.getIntExtra(WifiManager.EXTRA_SUPPLICANT_ERROR, -1);
                     if (supl_error == WifiManager.ERROR_AUTHENTICATING)
                     {
                         wifiLog("Authentication error...");
+                        callback.errorConnect();
+                        return;
                     }
-                    callback.errorConnect();
+                    wifiLog("Disconnected. reattempting " + attempts);
+                    if (attempts >= 1)
+                    {
+                        callback.errorConnect();
+                        attempts = 0;
+                    }
+                    attempts++;
+
                     break;
                 case AUTHENTICATING:
                     wifiLog("Authenticating...");
