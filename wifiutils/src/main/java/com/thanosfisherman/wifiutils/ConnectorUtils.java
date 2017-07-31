@@ -167,21 +167,6 @@ public final class ConnectorUtils
             return -1;
     }
 
-    public static boolean enableWifiAndScan(WifiManager wifi)
-    {
-        if (wifi.isWifiEnabled())
-        {
-            if (wifi.startScan())
-                return true;
-        }
-        else if (wifi.setWifiEnabled(true))
-        {
-            if (wifi.startScan())
-                return true;
-        }
-        return false;
-    }
-
     static void registerReceiver(@NonNull Context context, @Nullable BroadcastReceiver receiver, @NonNull IntentFilter filter)
     {
         if (receiver != null)

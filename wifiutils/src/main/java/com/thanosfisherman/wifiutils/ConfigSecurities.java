@@ -85,7 +85,6 @@ final class ConfigSecurities
         final String ssid = configToFind.SSID;
         if (ssid.isEmpty())
         {
-            //TODO: what if ssid is hidden? Maybe I don't need dis
             return null;
         }
 
