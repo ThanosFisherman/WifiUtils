@@ -201,7 +201,10 @@ public final class ConnectorUtils
 
         WifiConfiguration config = ConfigSecurities.getWifiConfiguration(wifiManager, scanResult);
         if (config != null)
-            return connectToConfiguredNetwork(wifiManager, config, true);
+        {
+            wifiLog("COULDN'T REMOVE PREVIOUS CONFIG, CONNECTING TO EXISTING ONE");
+            return connectToConfiguredNetwork(wifiManager, config, false);
+        }
 
         final int security = ConfigSecurities.getSecurity(scanResult);
 
@@ -232,7 +235,7 @@ public final class ConnectorUtils
             wifiLog("Error getting wifi config after save. (config == null)");
             return false;
         }
-        return connectToConfiguredNetwork(wifiManager, config, true);
+        return connectToConfiguredNetwork(wifiManager, config, false);
     }
 
     private static boolean connectToConfiguredNetwork(@NonNull WifiManager wifiManager, @NonNull WifiConfiguration config, boolean reassociate)
@@ -285,15 +288,15 @@ public final class ConnectorUtils
 
     }
 
-    private static void cleanPreviousConfiguration(@NonNull final WifiManager wifiManager, @NonNull final ScanResult scanResult)
+    static void cleanPreviousConfiguration(@NonNull final WifiManager wifiManager, @NonNull final ScanResult scanResult)
     {
         final WifiConfiguration config = ConfigSecurities.getWifiConfiguration(wifiManager, scanResult);
 
         if (config != null)
         {
-            wifiLog("Found previous network config. attempting to remove it...");
-            wifiManager.removeNetwork(config.networkId);
-            wifiManager.saveConfiguration();
+            wifiLog("Attempting to remove previous network config...");
+            if (wifiManager.removeNetwork(config.networkId))
+                wifiManager.saveConfiguration();
         }
     }
 

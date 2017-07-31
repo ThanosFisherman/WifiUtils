@@ -33,7 +33,7 @@ public final class WifiConnectionReceiver extends BroadcastReceiver
                 callback.errorConnect();
                 return;
             }
-            wifiLog("Broadcast action: " + state);
+            wifiLog("Connection Broadcast action: " + state);
             switch (state)
             {
                 case COMPLETED:
@@ -57,7 +57,6 @@ public final class WifiConnectionReceiver extends BroadcastReceiver
 
                     break;
                 case AUTHENTICATING:
-                    wifiLog("Authenticating...");
                     break;
             }
 

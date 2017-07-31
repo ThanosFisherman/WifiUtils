@@ -1,5 +1,6 @@
 package com.thanosfisherman.wifiutils;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.net.wifi.ScanResult;
@@ -21,6 +22,7 @@ import com.thanosfisherman.wifiutils.wifiState.WifiStateReceiver;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.thanosfisherman.wifiutils.ConnectorUtils.cleanPreviousConfiguration;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.connectToWifi;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.isConnectedToBSSID;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.matchScanResult;
@@ -31,8 +33,11 @@ import static com.thanosfisherman.wifiutils.ConnectorUtils.wifiLog;
 
 public final class WifiConnector implements WifiConnectorBuilder, WifiConnectorBuilder.WifiUtilsListener, WifiConnectorBuilder.WifiSuccessListener
 {
-    @NonNull private WifiManager mWifiManager;
-    @NonNull private Context mContext;
+    private WifiManager mWifiManager;
+    private Context mContext;
+    @SuppressLint("StaticFieldLeak")
+    @NonNull
+    private static final WifiConnector INSTANCE = new WifiConnector();
     @Nullable private String mSsid;
     @Nullable private String mBssid;
     @Nullable private String mPassword;
@@ -77,9 +82,9 @@ public final class WifiConnector implements WifiConnectorBuilder, WifiConnectorB
         @Override
         public void onScanResultsReady()
         {
-            unregisterReceiver(mContext, mWifiScanReceiver);
-
+            wifiLog("GOT SCAN RESULTS");
             final List<ScanResult> scanResultList = mWifiManager.getScanResults();
+            unregisterReceiver(mContext, mWifiScanReceiver);
             if (mScanResultsListener != null)
                 mScanResultsListener.onScanResults(scanResultList);
 
@@ -102,6 +107,7 @@ public final class WifiConnector implements WifiConnectorBuilder, WifiConnectorB
 
             if (mSingleScanResult != null)
             {
+                //TODO: Do I really need dis? Not sure yet
                 if (isConnectedToBSSID(mWifiManager, mSingleScanResult.BSSID))
                 {
                     mWifiConnectionCallback.successfulConnect();
@@ -132,8 +138,10 @@ public final class WifiConnector implements WifiConnectorBuilder, WifiConnectorB
         @Override
         public void errorConnect()
         {
-            wifiLog("COULDN'T CONNECT :(");
+            wifiLog("DIDN'T CONNECT TO WIFI");
             unregisterReceiver(mContext, mWifiConnectionReceiver);
+            if (mSingleScanResult != null)
+                cleanPreviousConfiguration(mWifiManager, mSingleScanResult);
             reenableAllHotspots(mWifiManager);
             if (mConnectionSuccessListener != null)
                 mConnectionSuccessListener.isSuccessful(false);
@@ -141,10 +149,8 @@ public final class WifiConnector implements WifiConnectorBuilder, WifiConnectorB
     };
 
 
-    private WifiConnector(@NonNull Context context)
+    private WifiConnector()
     {
-        mWifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        mContext = context;
         mWifiStateReceiver = new WifiStateReceiver(mWifiStateCallback);
         mWifiScanReceiver = new WifiScanReceiver(mWifiScanResultsCallback);
         mWifiConnectionReceiver = new WifiConnectionReceiver(mWifiConnectionCallback);
@@ -152,7 +158,14 @@ public final class WifiConnector implements WifiConnectorBuilder, WifiConnectorB
 
     public static WifiUtilsListener withContext(@NonNull Context context)
     {
-        return new WifiConnector(context);
+        INSTANCE.setContext(context);
+        return INSTANCE;
+    }
+
+    private void setContext(@NonNull final Context context)
+    {
+        mContext = context;
+        mWifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
     }
 
     @Override
