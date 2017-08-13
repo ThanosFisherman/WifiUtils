@@ -6,7 +6,7 @@ import android.content.Intent;
 import android.net.wifi.SupplicantState;
 import android.net.wifi.WifiManager;
 
-import static com.thanosfisherman.wifiutils.ConnectorUtils.wifiLog;
+import static com.thanosfisherman.wifiutils.WifiUtils.wifiLog;
 
 
 public final class WifiConnectionReceiver extends BroadcastReceiver

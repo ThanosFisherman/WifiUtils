@@ -1,16 +1,13 @@
 package com.thanosfisherman.wifiutils.sample;
 
 import android.Manifest;
-import android.net.wifi.ScanResult;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.thanosfisherman.wifiutils.ConnectorUtils;
-import com.thanosfisherman.wifiutils.WifiConnector;
+import com.thanosfisherman.wifiutils.WifiUtils;
 
 public class MainActivity extends AppCompatActivity
 {
@@ -22,13 +19,13 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 555);
         final Button button = (Button) findViewById(R.id.button);
-        ConnectorUtils.enableLog(true);
+        WifiUtils.enableLog(true);
         button.setOnClickListener(v ->
                                   {
-                                      WifiConnector.withContext(getApplicationContext())
-                                                   .connectWith("lelelelelel", "asfsafasd")
-                                                   .onConnectionResult(this::checkResult)
-                                                   .start();
+                                      WifiUtils.withContext(getApplicationContext())
+                                               .connectWith("lelelelelel", "asfsafasd")
+                                               .onConnectionResult(this::checkResult)
+                                               .start();
                                   });
     }
 

@@ -9,7 +9,7 @@ import android.support.annotation.Nullable;
 import java.util.List;
 
 import static com.thanosfisherman.wifiutils.ConnectorUtils.convertToQuotedString;
-import static com.thanosfisherman.wifiutils.ConnectorUtils.wifiLog;
+import static com.thanosfisherman.wifiutils.WifiUtils.wifiLog;
 
 final class ConfigSecurities
 {

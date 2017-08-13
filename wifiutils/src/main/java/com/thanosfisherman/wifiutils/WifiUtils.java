@@ -7,6 +7,7 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionScanResultsListener;
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionSuccessListener;
@@ -29,15 +30,16 @@ import static com.thanosfisherman.wifiutils.ConnectorUtils.matchScanResult;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.reenableAllHotspots;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.registerReceiver;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.unregisterReceiver;
-import static com.thanosfisherman.wifiutils.ConnectorUtils.wifiLog;
 
-public final class WifiConnector implements WifiConnectorBuilder, WifiConnectorBuilder.WifiUtilsListener, WifiConnectorBuilder.WifiSuccessListener
+public final class WifiUtils implements WifiConnectorBuilder, WifiConnectorBuilder.WifiUtilsListener, WifiConnectorBuilder.WifiSuccessListener
 {
     private WifiManager mWifiManager;
     private Context mContext;
+    private static boolean mEnableLog;
+    @NonNull private static final String TAG = WifiUtils.class.getSimpleName();
     @SuppressLint("StaticFieldLeak")
     @NonNull
-    private static final WifiConnector INSTANCE = new WifiConnector();
+    private static final WifiUtils INSTANCE = new WifiUtils();
     @Nullable private String mSsid;
     @Nullable private String mBssid;
     @Nullable private String mPassword;
@@ -107,7 +109,7 @@ public final class WifiConnector implements WifiConnectorBuilder, WifiConnectorB
 
             if (mSingleScanResult != null)
             {
-                //TODO: Do I really need dis? Not sure yet
+                //Do I really need dis? Not sure yet
                 if (isConnectedToBSSID(mWifiManager, mSingleScanResult.BSSID))
                 {
                     mWifiConnectionCallback.successfulConnect();
@@ -149,7 +151,7 @@ public final class WifiConnector implements WifiConnectorBuilder, WifiConnectorB
     };
 
 
-    private WifiConnector()
+    private WifiUtils()
     {
         mWifiStateReceiver = new WifiStateReceiver(mWifiStateCallback);
         mWifiScanReceiver = new WifiScanReceiver(mWifiScanResultsCallback);
@@ -160,6 +162,17 @@ public final class WifiConnector implements WifiConnectorBuilder, WifiConnectorB
     {
         INSTANCE.setContext(context);
         return INSTANCE;
+    }
+
+    public static void wifiLog(String text)
+    {
+        if (mEnableLog)
+            Log.d(TAG, "WifiUtils: " + text);
+    }
+
+    public static void enableLog(boolean enabled)
+    {
+        mEnableLog = enabled;
     }
 
     private void setContext(@NonNull final Context context)

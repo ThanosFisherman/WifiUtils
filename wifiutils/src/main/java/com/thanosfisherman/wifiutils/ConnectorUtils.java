@@ -12,17 +12,15 @@ import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
-import android.util.Log;
 
 import java.util.Comparator;
 import java.util.List;
 
-public final class ConnectorUtils
-{
+import static com.thanosfisherman.wifiutils.WifiUtils.wifiLog;
 
-    @NonNull private static final String TAG = ConnectorUtils.class.getSimpleName();
+final class ConnectorUtils
+{
     private static final int MAX_PRIORITY = 99999;
-    private static boolean mEnableLog;
 
 
     static boolean isConnectedToBSSID(WifiManager wifiManager, String BSSID)
@@ -34,17 +32,6 @@ public final class ConnectorUtils
             return true;
         }
         return false;
-    }
-
-    public static void enableLog(boolean enabled)
-    {
-        mEnableLog = enabled;
-    }
-
-    public static void wifiLog(String text)
-    {
-        if (mEnableLog)
-            Log.d(TAG, "WifiConnector: " + text);
     }
 
 
