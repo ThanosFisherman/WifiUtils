@@ -30,6 +30,6 @@ ext {
     sourceCompatibilityVersion = JavaVersion.VERSION_1_7
     targetCompatibilityVersion = JavaVersion.VERSION_1_7
     supportLibrariesVersion = '25.3.1'
-    publishVersionName = '1.1'
-    publishVersionCode = 2
+    publishVersionName = '1.2'
+    publishVersionCode = 3
 }
