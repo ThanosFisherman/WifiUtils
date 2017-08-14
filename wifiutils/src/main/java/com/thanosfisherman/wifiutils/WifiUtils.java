@@ -37,9 +37,7 @@ public final class WifiUtils implements WifiConnectorBuilder, WifiConnectorBuild
     private Context mContext;
     private static boolean mEnableLog;
     @NonNull private static final String TAG = WifiUtils.class.getSimpleName();
-    @SuppressLint("StaticFieldLeak")
-    @NonNull
-    private static final WifiUtils INSTANCE = new WifiUtils();
+    @SuppressLint("StaticFieldLeak") @NonNull private static final WifiUtils INSTANCE = new WifiUtils();
     @Nullable private String mSsid;
     @Nullable private String mBssid;
     @Nullable private String mPassword;
@@ -71,8 +69,7 @@ public final class WifiUtils implements WifiConnectorBuilder, WifiConnectorBuild
                 {
                     if (mScanResultsListener != null)
                         mScanResultsListener.onScanResults(new ArrayList<ScanResult>());
-                    if (mConnectionSuccessListener != null)
-                        mConnectionSuccessListener.isSuccessful(false);
+                    mWifiConnectionCallback.errorConnect();
                     wifiLog("COULDN'T SCAN ERROR");
                 }
             }
@@ -85,16 +82,12 @@ public final class WifiUtils implements WifiConnectorBuilder, WifiConnectorBuild
         public void onScanResultsReady()
         {
             wifiLog("GOT SCAN RESULTS");
-            final List<ScanResult> scanResultList = mWifiManager.getScanResults();
             unregisterReceiver(mContext, mWifiScanReceiver);
+
+            final List<ScanResult> scanResultList = mWifiManager.getScanResults();
+
             if (mScanResultsListener != null)
                 mScanResultsListener.onScanResults(scanResultList);
-
-            if (mPassword == null)
-            {
-                mWifiConnectionCallback.errorConnect();
-                return;
-            }
 
             if (mConnectionScanResultsListener != null)
                 mSingleScanResult = mConnectionScanResultsListener.onConnectWithScanResult(scanResultList);
@@ -107,7 +100,7 @@ public final class WifiUtils implements WifiConnectorBuilder, WifiConnectorBuild
                     mSingleScanResult = matchScanResult(mSsid, scanResultList);
             }
 
-            if (mSingleScanResult != null)
+            if (mSingleScanResult != null && mPassword != null)
             {
                 //Do I really need dis? Not sure yet
                 if (isConnectedToBSSID(mWifiManager, mSingleScanResult.BSSID))
@@ -140,13 +133,15 @@ public final class WifiUtils implements WifiConnectorBuilder, WifiConnectorBuild
         @Override
         public void errorConnect()
         {
-            wifiLog("DIDN'T CONNECT TO WIFI");
             unregisterReceiver(mContext, mWifiConnectionReceiver);
             if (mSingleScanResult != null)
                 cleanPreviousConfiguration(mWifiManager, mSingleScanResult);
             reenableAllHotspots(mWifiManager);
             if (mConnectionSuccessListener != null)
+            {
+                wifiLog("DIDN'T CONNECT TO WIFI");
                 mConnectionSuccessListener.isSuccessful(false);
+            }
         }
     };
 
@@ -195,8 +190,9 @@ public final class WifiUtils implements WifiConnectorBuilder, WifiConnectorBuild
             {
                 if (wifiStateListener != null)
                     wifiStateListener.isSuccess(false);
-                if (mConnectionSuccessListener != null)
-                    mConnectionSuccessListener.isSuccessful(false);
+                if (mScanResultsListener != null)
+                    mScanResultsListener.onScanResults(new ArrayList<ScanResult>());
+                mWifiConnectionCallback.errorConnect();
                 wifiLog("COULDN'T ENABLE WIFI");
             }
         }
@@ -254,7 +250,7 @@ public final class WifiUtils implements WifiConnectorBuilder, WifiConnectorBuild
             unregisterReceiver(mContext, mWifiScanReceiver);
             unregisterReceiver(mContext, mWifiConnectionReceiver);
         }
-        wifiLog("Disabling WiFi...");
+        wifiLog("WiFi Disabled");
     }
 
     @Override
