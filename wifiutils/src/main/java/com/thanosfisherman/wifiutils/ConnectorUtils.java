@@ -185,13 +185,13 @@ final class ConnectorUtils
 
     static boolean connectToWifi(@NonNull Context context, @NonNull WifiManager wifiManager, @NonNull ScanResult scanResult, @Nullable String password)
     {
-        cleanPreviousConfiguration(wifiManager, scanResult);
+        //cleanPreviousConfiguration(wifiManager, scanResult);
 
         WifiConfiguration config = ConfigSecurities.getWifiConfiguration(wifiManager, scanResult);
         if (config != null)
         {
             wifiLog("COULDN'T REMOVE PREVIOUS CONFIG, CONNECTING TO EXISTING ONE");
-            return connectToConfiguredNetwork(wifiManager, config, false);
+            return connectToConfiguredNetwork(wifiManager, config, true);
         }
 
         final int security = ConfigSecurities.getSecurity(scanResult);
@@ -221,7 +221,7 @@ final class ConnectorUtils
             wifiLog("Error getting wifi config after save. (config == null)");
             return false;
         }
-        return connectToConfiguredNetwork(wifiManager, config, false);
+        return connectToConfiguredNetwork(wifiManager, config, true);
     }
 
     private static boolean connectToConfiguredNetwork(@NonNull WifiManager wifiManager, @NonNull WifiConfiguration config, boolean reassociate)
