@@ -42,8 +42,9 @@ final class ConnectorUtils
 
         boolean modified = false;
         int tempCount = 0;
-        final int numOpenNetworksKept = Build.VERSION.SDK_INT >= 17 ? Settings.Secure.getInt(resolver, Settings.Global.WIFI_NUM_OPEN_NETWORKS_KEPT, 10)
-                : Settings.Secure.getInt(resolver, Settings.Secure.WIFI_NUM_OPEN_NETWORKS_KEPT, 10);
+        final int numOpenNetworksKept = Build.VERSION.SDK_INT >= 17
+                                        ? Settings.Secure.getInt(resolver, Settings.Global.WIFI_NUM_OPEN_NETWORKS_KEPT, 10)
+                                        : Settings.Secure.getInt(resolver, Settings.Secure.WIFI_NUM_OPEN_NETWORKS_KEPT, 10);
 
         for (int i = configurations.size() - 1; i >= 0; i--)
         {
@@ -206,9 +207,7 @@ final class ConnectorUtils
         int id = wifiManager.addNetwork(config);
         wifiLog("Network ID: " + id);
         if (id == -1)
-        {
             return false;
-        }
 
         if (!wifiManager.saveConfiguration())
         {
@@ -245,9 +244,7 @@ final class ConnectorUtils
         config.priority = newPri;
         int networkId = wifiManager.updateNetwork(config);
         if (networkId == -1)
-        {
             return false;
-        }
 
         // Do not disable others
         if (!wifiManager.enableNetwork(networkId, false))
@@ -265,14 +262,11 @@ final class ConnectorUtils
         // We have to retrieve the WifiConfiguration after save.
         config = ConfigSecurities.getWifiConfiguration(wifiManager, config);
         if (config == null)
-        {
             return false;
-        }
 
         // Disable others, but do not save.
         // Just to force the WifiManager to connect to it.
         return wifiManager.enableNetwork(config.networkId, true) && (reassociate ? wifiManager.reassociate() : wifiManager.reconnect());
-
     }
 
     static void cleanPreviousConfiguration(@NonNull final WifiManager wifiManager, @NonNull final ScanResult scanResult)
@@ -291,12 +285,8 @@ final class ConnectorUtils
     {
         final List<WifiConfiguration> configurations = wifi.getConfiguredNetworks();
         if (configurations != null && !configurations.isEmpty())
-        {
             for (final WifiConfiguration config : configurations)
-            {
                 wifi.enableNetwork(config.networkId, false);
-            }
-        }
     }
 
     static ScanResult matchScanResult(@NonNull String ssid, @NonNull List<ScanResult> results)

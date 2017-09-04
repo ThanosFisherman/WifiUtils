@@ -25,6 +25,7 @@ public interface WifiConnectorBuilder
 
     interface WifiSuccessListener
     {
+        WifiSuccessListener setTimeout(long delayMillis);
         WifiConnectorBuilder onConnectionResult(ConnectionSuccessListener successListener);
     }
 }

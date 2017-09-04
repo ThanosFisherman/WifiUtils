@@ -38,13 +38,13 @@ public final class WifiUtils implements WifiConnectorBuilder, WifiConnectorBuild
     private static boolean mEnableLog;
     @NonNull private static final String TAG = WifiUtils.class.getSimpleName();
     @SuppressLint("StaticFieldLeak") @NonNull private static final WifiUtils INSTANCE = new WifiUtils();
+    @NonNull private WifiStateReceiver mWifiStateReceiver;
+    @NonNull private WifiConnectionReceiver mWifiConnectionReceiver;
+    @NonNull private WifiScanReceiver mWifiScanReceiver;
     @Nullable private String mSsid;
     @Nullable private String mBssid;
     @Nullable private String mPassword;
     @Nullable private ScanResult mSingleScanResult;
-    @Nullable private WifiStateReceiver mWifiStateReceiver;
-    @Nullable private WifiConnectionReceiver mWifiConnectionReceiver;
-    @Nullable private WifiScanReceiver mWifiScanReceiver;
     @Nullable private ScanResultsListener mScanResultsListener;
     @Nullable private ConnectionScanResultsListener mConnectionScanResultsListener;
     @Nullable private ConnectionSuccessListener mConnectionSuccessListener;
@@ -109,7 +109,7 @@ public final class WifiUtils implements WifiConnectorBuilder, WifiConnectorBuild
                     return;
                 }
                 if (connectToWifi(mContext, mWifiManager, mSingleScanResult, mPassword))
-                    registerReceiver(mContext, mWifiConnectionReceiver, new IntentFilter(WifiManager.SUPPLICANT_STATE_CHANGED_ACTION));
+                    registerReceiver(mContext, mWifiConnectionReceiver.activateTimeoutHandler(), new IntentFilter(WifiManager.SUPPLICANT_STATE_CHANGED_ACTION));
                 else
                     mWifiConnectionCallback.errorConnect();
             }
@@ -145,12 +145,11 @@ public final class WifiUtils implements WifiConnectorBuilder, WifiConnectorBuild
         }
     };
 
-
     private WifiUtils()
     {
         mWifiStateReceiver = new WifiStateReceiver(mWifiStateCallback);
         mWifiScanReceiver = new WifiScanReceiver(mWifiScanResultsCallback);
-        mWifiConnectionReceiver = new WifiConnectionReceiver(mWifiConnectionCallback);
+        mWifiConnectionReceiver = new WifiConnectionReceiver(mWifiConnectionCallback, 20000);
     }
 
     public static WifiUtilsListener withContext(@NonNull Context context)
@@ -251,6 +250,13 @@ public final class WifiUtils implements WifiConnectorBuilder, WifiConnectorBuild
             unregisterReceiver(mContext, mWifiConnectionReceiver);
         }
         wifiLog("WiFi Disabled");
+    }
+
+    @Override
+    public WifiSuccessListener setTimeout(long delayMillis)
+    {
+        mWifiConnectionReceiver.setTimeout(delayMillis);
+        return this;
     }
 
     @Override
