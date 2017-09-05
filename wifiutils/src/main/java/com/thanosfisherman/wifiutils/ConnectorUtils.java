@@ -7,11 +7,15 @@ import android.content.IntentFilter;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
+import android.net.wifi.WpsInfo;
 import android.os.Build;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.text.TextUtils;
+
+import com.thanosfisherman.wifiutils.wifiWps.ConnectionWpsListener;
 
 import java.util.Comparator;
 import java.util.List;
@@ -21,7 +25,6 @@ import static com.thanosfisherman.wifiutils.WifiUtils.wifiLog;
 final class ConnectorUtils
 {
     private static final int MAX_PRIORITY = 99999;
-
 
     static boolean isConnectedToBSSID(WifiManager wifiManager, String BSSID)
     {
@@ -269,6 +272,81 @@ final class ConnectorUtils
         return wifiManager.enableNetwork(config.networkId, true) && (reassociate ? wifiManager.reassociate() : wifiManager.reconnect());
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    static void connectWps(@NonNull final WifiManager wifiManager, @NonNull final ScanResult scanResult, @NonNull String pin, long timeOutMillis,
+                           @NonNull final ConnectionWpsListener connectionWpsListener)
+    {
+        cleanPreviousConfiguration(wifiManager, scanResult);
+        final WeakHandler handler = new WeakHandler();
+        final WpsInfo wpsInfo = new WpsInfo();
+        final Runnable handlerTimeoutRunnable = new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                wifiManager.cancelWps(null);
+                wifiLog("Connection with WPS has timed out");
+                cleanPreviousConfiguration(wifiManager, scanResult);
+                connectionWpsListener.isSuccessful(false);
+                handler.removeCallbacks(this);
+            }
+        };
+
+        final WifiManager.WpsCallback wpsCallback = new WifiManager.WpsCallback()
+        {
+            @Override
+            public void onStarted(String pin)
+            {
+            }
+
+            @Override
+            public void onSucceeded()
+            {
+                handler.removeCallbacks(handlerTimeoutRunnable);
+                wifiLog("CONNECTED With WPS successfully");
+                connectionWpsListener.isSuccessful(true);
+            }
+
+            @Override
+            public void onFailed(int reason)
+            {
+                handler.removeCallbacks(handlerTimeoutRunnable);
+                final String reasonStr;
+                switch (reason)
+                {
+                    case 3:
+                        reasonStr = "WPS_OVERLAP_ERROR";
+                        break;
+                    case 4:
+                        reasonStr = "WPS_WEP_PROHIBITED";
+                        break;
+                    case 5:
+                        reasonStr = "WPS_TKIP_ONLY_PROHIBITED";
+                        break;
+                    case 6:
+                        reasonStr = "WPS_AUTH_FAILURE";
+                        break;
+                    case 7:
+                        reasonStr = "WPS_TIMED_OUT";
+                        break;
+                    default:
+                        reasonStr = String.valueOf(reason);
+                }
+                wifiLog("FAILED to connect with WPS. Reason: " + reasonStr);
+                cleanPreviousConfiguration(wifiManager, scanResult);
+                connectionWpsListener.isSuccessful(false);
+            }
+        };
+
+        wpsInfo.setup = WpsInfo.KEYPAD;
+        wpsInfo.BSSID = scanResult.BSSID;
+        wpsInfo.pin = pin;
+        wifiManager.cancelWps(null);
+        wifiLog("Connecting with WPS...");
+        handler.postDelayed(handlerTimeoutRunnable, timeOutMillis);
+        wifiManager.startWps(wpsInfo, wpsCallback);
+    }
+
     static void cleanPreviousConfiguration(@NonNull final WifiManager wifiManager, @NonNull final ScanResult scanResult)
     {
         final WifiConfiguration config = ConfigSecurities.getWifiConfiguration(wifiManager, scanResult);
@@ -289,7 +367,7 @@ final class ConnectorUtils
                 wifi.enableNetwork(config.networkId, false);
     }
 
-    static ScanResult matchScanResult(@NonNull String ssid, @NonNull List<ScanResult> results)
+    static ScanResult matchScanResultSsid(@NonNull String ssid, @NonNull List<ScanResult> results)
     {
         for (ScanResult result : results)
             if (result.SSID.equals(ssid))
@@ -301,6 +379,14 @@ final class ConnectorUtils
     {
         for (ScanResult result : results)
             if (result.SSID.equals(ssid) && result.BSSID.equals(bssid))
+                return result;
+        return null;
+    }
+
+    static ScanResult matchScanResultBssid(@NonNull String bssid, @NonNull List<ScanResult> results)
+    {
+        for (ScanResult result : results)
+            if (result.BSSID.equals(bssid))
                 return result;
         return null;
     }

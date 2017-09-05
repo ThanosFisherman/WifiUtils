@@ -7,7 +7,7 @@ import android.net.wifi.SupplicantState;
 import android.net.wifi.WifiManager;
 import android.support.annotation.NonNull;
 
-import com.badoo.mobile.util.WeakHandler;
+import com.thanosfisherman.wifiutils.WeakHandler;
 
 import static com.thanosfisherman.wifiutils.WifiUtils.wifiLog;
 
