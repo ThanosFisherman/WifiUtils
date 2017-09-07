@@ -27,7 +27,7 @@ public final class WifiConnectionReceiver extends BroadcastReceiver
         @Override
         public void run()
         {
-            wifiLog("Connection Timed out disconnecting...");
+            wifiLog("Connection Timed out...");
             if (attemptsConnect > attemptsDisconnect)
                 mWifiConnectionCallback.successfulConnect();
             else
