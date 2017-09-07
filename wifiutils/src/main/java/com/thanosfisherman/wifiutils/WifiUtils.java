@@ -28,7 +28,7 @@ import java.util.List;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.cleanPreviousConfiguration;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.connectToWifi;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.connectWps;
-import static com.thanosfisherman.wifiutils.ConnectorUtils.isConnectedToBSSID;
+import static com.thanosfisherman.wifiutils.ConnectorUtils.isAlreadyConnected;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.matchScanResult;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.matchScanResultBssid;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.matchScanResultSsid;
@@ -44,7 +44,8 @@ public final class WifiUtils implements WifiConnectorBuilder,
     private WifiManager mWifiManager;
     private Context mContext;
     private static boolean mEnableLog;
-    private long mTimeoutMillis;
+    private long mWpsTimeoutMillis = 30000;
+    private long mTimeoutMillis = 30000;
     @NonNull private static final String TAG = WifiUtils.class.getSimpleName();
     //@NonNull private static final WifiUtils INSTANCE = new WifiUtils();
     @NonNull private final WifiStateReceiver mWifiStateReceiver;
@@ -108,7 +109,7 @@ public final class WifiUtils implements WifiConnectorBuilder,
             {
                 mSingleScanResult = matchScanResultBssid(mBssid, scanResultList);
                 if (mSingleScanResult != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                    connectWps(mWifiManager, mSingleScanResult, mPassword, mTimeoutMillis, mConnectionWpsListener);
+                    connectWps(mWifiManager, mSingleScanResult, mPassword, mWpsTimeoutMillis, mConnectionWpsListener);
                 else
                 {
                     if (mSingleScanResult == null)
@@ -128,13 +129,15 @@ public final class WifiUtils implements WifiConnectorBuilder,
             if (mSingleScanResult != null && mPassword != null)
             {
                 //Do I really need dis? Not sure yet
-                if (isConnectedToBSSID(mWifiManager, mSingleScanResult.BSSID))
+                if (isAlreadyConnected(mWifiManager, mSingleScanResult.BSSID))
                 {
                     mWifiConnectionCallback.successfulConnect();
                     return;
                 }
                 if (connectToWifi(mContext, mWifiManager, mSingleScanResult, mPassword))
-                    registerReceiver(mContext, mWifiConnectionReceiver.activateTimeoutHandler(), new IntentFilter(WifiManager.SUPPLICANT_STATE_CHANGED_ACTION));
+                    registerReceiver(mContext,
+                                     mWifiConnectionReceiver.activateTimeoutHandler(mWifiManager, mSingleScanResult.BSSID),
+                                     new IntentFilter(WifiManager.SUPPLICANT_STATE_CHANGED_ACTION));
                 else
                     mWifiConnectionCallback.errorConnect();
             }
@@ -171,10 +174,9 @@ public final class WifiUtils implements WifiConnectorBuilder,
 
     private WifiUtils()
     {
-        mTimeoutMillis = 30000;
         mWifiStateReceiver = new WifiStateReceiver(mWifiStateCallback);
         mWifiScanReceiver = new WifiScanReceiver(mWifiScanResultsCallback);
-        mWifiConnectionReceiver = new WifiConnectionReceiver(mWifiConnectionCallback, 30000);
+        mWifiConnectionReceiver = new WifiConnectionReceiver(mWifiConnectionCallback, mTimeoutMillis);
     }
 
     public static WifiUtilsListener withContext(@NonNull final Context context)
@@ -271,6 +273,7 @@ public final class WifiUtils implements WifiConnectorBuilder,
     @Override
     public WifiSuccessListener setTimeout(final long timeOutMillis)
     {
+        mTimeoutMillis = timeOutMillis;
         mWifiConnectionReceiver.setTimeout(timeOutMillis);
         return this;
     }
@@ -278,7 +281,7 @@ public final class WifiUtils implements WifiConnectorBuilder,
     @Override
     public WifiWpsSuccessListener setWpsTimeout(final long timeOutMillis)
     {
-        mTimeoutMillis = timeOutMillis;
+        mWpsTimeoutMillis = timeOutMillis;
         return this;
     }
 

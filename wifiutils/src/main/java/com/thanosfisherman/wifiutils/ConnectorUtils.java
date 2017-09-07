@@ -22,16 +22,15 @@ import java.util.List;
 
 import static com.thanosfisherman.wifiutils.WifiUtils.wifiLog;
 
-final class ConnectorUtils
+public final class ConnectorUtils
 {
     private static final int MAX_PRIORITY = 99999;
 
-    static boolean isConnectedToBSSID(WifiManager wifiManager, String BSSID)
+    public static boolean isAlreadyConnected(@NonNull WifiManager wifiManager, @NonNull String bssid)
     {
-        if (wifiManager.getConnectionInfo().getBSSID() != null && wifiManager.getConnectionInfo().getBSSID().equals(BSSID))
+        if (wifiManager.getConnectionInfo().getBSSID() != null && wifiManager.getConnectionInfo().getBSSID().equals(bssid))
         {
-            wifiLog("Already connected to: " + wifiManager.getConnectionInfo().getSSID() + "  BSSID: " + wifiManager.getConnectionInfo().getBSSID() + "  " +
-                    BSSID);
+            wifiLog("Already connected to: " + wifiManager.getConnectionInfo().getSSID() + "  BSSID: " + wifiManager.getConnectionInfo().getBSSID());
             return true;
         }
         return false;
@@ -188,7 +187,7 @@ final class ConnectorUtils
 
     static boolean connectToWifi(@NonNull Context context, @NonNull WifiManager wifiManager, @NonNull ScanResult scanResult, @Nullable String password)
     {
-        //cleanPreviousConfiguration(wifiManager, scanResult);
+        cleanPreviousConfiguration(wifiManager, scanResult);
 
         WifiConfiguration config = ConfigSecurities.getWifiConfiguration(wifiManager, scanResult);
         if (config != null)
@@ -367,7 +366,7 @@ final class ConnectorUtils
                 wifi.enableNetwork(config.networkId, false);
     }
 
-    static ScanResult matchScanResultSsid(@NonNull String ssid, @NonNull List<ScanResult> results)
+    static ScanResult matchScanResultSsid(@NonNull String ssid, @NonNull Iterable<ScanResult> results)
     {
         for (ScanResult result : results)
             if (result.SSID.equals(ssid))
@@ -375,7 +374,7 @@ final class ConnectorUtils
         return null;
     }
 
-    static ScanResult matchScanResult(@NonNull String ssid, @NonNull String bssid, @NonNull List<ScanResult> results)
+    static ScanResult matchScanResult(@NonNull String ssid, @NonNull String bssid, @NonNull Iterable<ScanResult> results)
     {
         for (ScanResult result : results)
             if (result.SSID.equals(ssid) && result.BSSID.equals(bssid))
@@ -383,7 +382,7 @@ final class ConnectorUtils
         return null;
     }
 
-    static ScanResult matchScanResultBssid(@NonNull String bssid, @NonNull List<ScanResult> results)
+    static ScanResult matchScanResultBssid(@NonNull String bssid, @NonNull Iterable<ScanResult> results)
     {
         for (ScanResult result : results)
             if (result.BSSID.equals(bssid))

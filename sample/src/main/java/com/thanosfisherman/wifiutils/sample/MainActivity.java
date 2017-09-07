@@ -25,15 +25,15 @@ public class MainActivity extends AppCompatActivity
         WifiUtils.enableLog(true);
         button.setOnClickListener(v ->
                                   {
-                                      // WifiUtils.withContext(getApplicationContext())
-                                      //    .connectWith("lelelelelel", "asfsafasd")
-                                      //    .onConnectionResult(this::checkResult)
-                                      //   .start();
-
                                       WifiUtils.withContext(getApplicationContext())
-                                               .connectWithWps("d8:74:95:e6:f5:f8", "51362485")
-                                               .onConnectionWpsResult(this::checkResult)
+                                               .connectWith("kommotirio", "kommotirio@maria")
+                                               .onConnectionResult(this::checkResult)
                                                .start();
+
+                                      // WifiUtils.withContext(getApplicationContext())
+                                      //    .connectWithWps("d8:74:95:e6:f5:f8", "51362485")
+                                      //   .onConnectionWpsResult(this::checkResult)
+                                      //  .start();
                                   });
     }
 
