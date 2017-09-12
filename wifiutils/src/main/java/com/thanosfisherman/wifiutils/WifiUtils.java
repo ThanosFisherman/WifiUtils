@@ -36,8 +36,7 @@ import static com.thanosfisherman.wifiutils.ConnectorUtils.reenableAllHotspots;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.registerReceiver;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.unregisterReceiver;
 
-public final class WifiUtils implements WifiConnectorBuilder,
-                                        WifiConnectorBuilder.WifiUtilsListener,
+public final class WifiUtils implements WifiConnectorBuilder, WifiConnectorBuilder.WifiUtilsBuilder,
                                         WifiConnectorBuilder.WifiSuccessListener,
                                         WifiConnectorBuilder.WifiWpsSuccessListener
 {
@@ -179,7 +178,7 @@ public final class WifiUtils implements WifiConnectorBuilder,
         mWifiConnectionReceiver = new WifiConnectionReceiver(mWifiConnectionCallback, mTimeoutMillis);
     }
 
-    public static WifiUtilsListener withContext(@NonNull final Context context)
+    public static WifiUtilsBuilder withContext(@NonNull final Context context)
     {
         //INSTANCE.setContext(context);
         final WifiUtils wifiUtils = new WifiUtils();
@@ -268,6 +267,17 @@ public final class WifiUtils implements WifiConnectorBuilder,
         mBssid = bssid;
         mPassword = password;
         return this;
+    }
+
+    @Override
+    public void cancelAutoConnect()
+    {
+        unregisterReceiver(mContext, mWifiStateReceiver);
+        unregisterReceiver(mContext, mWifiScanReceiver);
+        unregisterReceiver(mContext, mWifiConnectionReceiver);
+        if (mSingleScanResult != null)
+            cleanPreviousConfiguration(mWifiManager, mSingleScanResult);
+        reenableAllHotspots(mWifiManager);
     }
 
     @Override

@@ -28,8 +28,11 @@ public final class WifiConnectionReceiver extends BroadcastReceiver
         public void run()
         {
             wifiLog("Connection Timed out...");
-            if (attemptsConnect > attemptsDisconnect)
-                mWifiConnectionCallback.successfulConnect();
+            if (attemptsConnect >= attemptsDisconnect)
+                if (isAlreadyConnected(mWifiManager, mBssid))
+                    mWifiConnectionCallback.successfulConnect();
+                else
+                    mWifiConnectionCallback.errorConnect();
             else
                 mWifiConnectionCallback.errorConnect();
             attemptsConnect = attemptsDisconnect = 0;
@@ -63,14 +66,13 @@ public final class WifiConnectionReceiver extends BroadcastReceiver
             switch (state)
             {
                 case COMPLETED:
-                    if (mWifiManager != null && mBssid != null)
-                        if (isAlreadyConnected(mWifiManager, mBssid))
-                        {
-                            handler.removeCallbacks(handlerCallback);
-                            mWifiConnectionCallback.successfulConnect();
-                            attemptsConnect = attemptsDisconnect = 0;
-                            return;
-                        }
+                    if (isAlreadyConnected(mWifiManager, mBssid))
+                    {
+                        handler.removeCallbacks(handlerCallback);
+                        mWifiConnectionCallback.successfulConnect();
+                        attemptsConnect = attemptsDisconnect = 0;
+                        return;
+                    }
                     attemptsConnect++;
                     break;
                 case DISCONNECTED:

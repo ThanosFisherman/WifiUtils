@@ -15,7 +15,7 @@ public interface WifiConnectorBuilder
 {
     void start();
 
-    interface WifiUtilsListener
+    interface WifiUtilsBuilder
     {
         void enableWifi(WifiStateListener wifiStateListener);
         void disableWifi();
@@ -26,6 +26,7 @@ public interface WifiConnectorBuilder
         WifiSuccessListener connectWithScanResult(@NonNull String password, @Nullable ConnectionScanResultsListener connectionScanResultsListener);
         @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
         WifiWpsSuccessListener connectWithWps(@NonNull String bssid, @NonNull String password);
+        void cancelAutoConnect();
     }
 
     interface WifiSuccessListener

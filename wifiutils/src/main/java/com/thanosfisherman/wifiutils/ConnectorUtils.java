@@ -26,12 +26,15 @@ public final class ConnectorUtils
 {
     private static final int MAX_PRIORITY = 99999;
 
-    public static boolean isAlreadyConnected(@NonNull WifiManager wifiManager, @NonNull String bssid)
+    public static boolean isAlreadyConnected(@Nullable WifiManager wifiManager, @Nullable String bssid)
     {
-        if (wifiManager.getConnectionInfo().getBSSID() != null && wifiManager.getConnectionInfo().getBSSID().equals(bssid))
+        if (bssid != null && wifiManager != null)
         {
-            wifiLog("Already connected to: " + wifiManager.getConnectionInfo().getSSID() + "  BSSID: " + wifiManager.getConnectionInfo().getBSSID());
-            return true;
+            if (wifiManager.getConnectionInfo().getBSSID() != null && wifiManager.getConnectionInfo().getBSSID().equals(bssid))
+            {
+                wifiLog("Already connected to: " + wifiManager.getConnectionInfo().getSSID() + "  BSSID: " + wifiManager.getConnectionInfo().getBSSID());
+                return true;
+            }
         }
         return false;
     }
