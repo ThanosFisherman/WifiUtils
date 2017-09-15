@@ -19,7 +19,6 @@ public final class WifiConnectionReceiver extends BroadcastReceiver
     @NonNull private WifiConnectionCallback mWifiConnectionCallback;
     @Nullable private String mBssid;
     @Nullable private WifiManager mWifiManager;
-    private int attemptsDisconnect, attemptsConnect;
     private long mDelay;
     @NonNull private WeakHandler handler;
     @NonNull private final Runnable handlerCallback = new Runnable()
@@ -28,14 +27,10 @@ public final class WifiConnectionReceiver extends BroadcastReceiver
         public void run()
         {
             wifiLog("Connection Timed out...");
-            if (attemptsConnect >= attemptsDisconnect)
-                if (isAlreadyConnected(mWifiManager, mBssid))
-                    mWifiConnectionCallback.successfulConnect();
-                else
-                    mWifiConnectionCallback.errorConnect();
+            if (isAlreadyConnected(mWifiManager, mBssid))
+                mWifiConnectionCallback.successfulConnect();
             else
                 mWifiConnectionCallback.errorConnect();
-            attemptsConnect = attemptsDisconnect = 0;
             handler.removeCallbacks(this);
         }
     };
@@ -45,7 +40,6 @@ public final class WifiConnectionReceiver extends BroadcastReceiver
         this.mWifiConnectionCallback = callback;
         this.mDelay = delayMillis;
         this.handler = new WeakHandler();
-        this.attemptsConnect = this.attemptsDisconnect = 0;
     }
 
     @Override
@@ -70,10 +64,8 @@ public final class WifiConnectionReceiver extends BroadcastReceiver
                     {
                         handler.removeCallbacks(handlerCallback);
                         mWifiConnectionCallback.successfulConnect();
-                        attemptsConnect = attemptsDisconnect = 0;
                         return;
                     }
-                    attemptsConnect++;
                     break;
                 case DISCONNECTED:
                     final int supl_error = intent.getIntExtra(WifiManager.EXTRA_SUPPLICANT_ERROR, -1);
@@ -82,11 +74,9 @@ public final class WifiConnectionReceiver extends BroadcastReceiver
                         wifiLog("Authentication error...");
                         handler.removeCallbacks(handlerCallback);
                         mWifiConnectionCallback.errorConnect();
-                        attemptsConnect = attemptsDisconnect = 0;
                         return;
                     }
                     wifiLog("Disconnected. Re-attempting to connect...");
-                    attemptsDisconnect++;
                     break;
             }
         }
