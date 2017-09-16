@@ -140,7 +140,7 @@ Add the following to your **app module** `build.gradle` file
     
 ```groovy
     dependencies {
-       compile 'com.thanosfisherman.wifiutils:wifiutils:1.3.3'
+       compile 'com.thanosfisherman.wifiutils:wifiutils:<latest version here>'
     }
 ```
     
