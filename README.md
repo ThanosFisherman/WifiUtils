@@ -134,7 +134,8 @@ Damn You are required to set a few permissions in order for this lib to work cor
 ```
 ### Add it to your project
 
-[![Download](https://api.bintray.com/packages/thanosfisherman/maven/mayi/images/download.svg)](https://bintray.com/thanosfisherman/maven/wifiutils/_latestVersion)
+[![Download](https://api.bintray.com/packages/thanosfisherman/maven/wifiutils/images/download.svg)]
+(https://bintray.com/thanosfisherman/maven/wifiutils/_latestVersion)
 
 Add the following to your **app module** `build.gradle` file
     
