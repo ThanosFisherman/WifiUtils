@@ -150,7 +150,7 @@ My app of course [GWPA Finder](https://play.google.com/store/apps/details?id=com
 ---
 
 ### Contributing?
-There are a few more things to cover in this tutorial. Hopefully I will improve upon this in the future.
+There are a few more things left to be covered in this tutorial. Hopefully I will improve upon this in the future.
 
 Feel free to add/correct/fix something to this library, I will be glad to improve it with your help.
 
