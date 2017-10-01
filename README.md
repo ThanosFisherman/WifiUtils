@@ -40,6 +40,24 @@ Similarly you can turn off the wifi using this:
 WifiUtils.withContext(getApplicationContext()).disableWifi();
 ```
 
+### Scanning for WiFi Networks
+You can easily performe a WiFi Network scan like so:
+
+```java
+WifiUtils.withContext(getApplicationContext()).scanWifi(this::getScanResults).start();
+
+private void getScanResults(@NonNull final List<ScanResult> results)
+ {
+
+    if (results.isEmpty())
+    {
+        Log.i(TAG, "SCAN RESULTS IT'S EMPTY");
+        return;
+    }
+    Log.i(TAG, "GOT SCAN RESULTS " + results);
+ }
+```
+
 ### Connecting to WiFi Networks
 Now lets get to the interesting stuff. You can connect to any WiFi network programmatically knowing only SSID and WPA/WPA2 key: 
 
