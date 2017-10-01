@@ -6,8 +6,7 @@ WiFi Connection to Hotspots. If you have ever worked with `WifiManager` you shou
 to connect to a hotspot programmatically. So that's what my new library is all about. To make it easier for me and hopefully for other developers as well
 to do those kind of tasks from Java code. So lets jump right in some code examples.
 
-**NOTE:** All of the examples presented here, use [Retrolambda](https://github.com/evant/gradle-retrolambda) plugin to make the whole code more compact.
-You are not required to use it if you don't want to.
+**NOTE:** All of the examples presented here, make use of [Retrolambda](https://github.com/evant/gradle-retrolambda) plugin for a more compact code. You are not required to use it if you don't want to.
 
 ### Enabling/Disabling WiFi
 turn on device's wifi using the following:
@@ -169,7 +168,7 @@ My app of course [GWPA Finder](https://play.google.com/store/apps/details?id=com
 ---
 
 ### Contributing?
-There are a few more things to cover in this tutorial. Hopefully I will improve upon this in the future.
+There are a few more things left to be covered in this tutorial. Hopefully I will improve upon this in the future.
 
 Feel free to add/correct/fix something to this library, I will be glad to improve it with your help.
 
