@@ -40,14 +40,13 @@ WifiUtils.withContext(getApplicationContext()).disableWifi();
 ```
 
 ### Scanning for WiFi Networks
-You can easily performe a WiFi Network scan like so:
+You can easily perform a WiFi Network scan like so:
 
 ```java
 WifiUtils.withContext(getApplicationContext()).scanWifi(this::getScanResults).start();
 
 private void getScanResults(@NonNull final List<ScanResult> results)
  {
-
     if (results.isEmpty())
     {
         Log.i(TAG, "SCAN RESULTS IT'S EMPTY");
