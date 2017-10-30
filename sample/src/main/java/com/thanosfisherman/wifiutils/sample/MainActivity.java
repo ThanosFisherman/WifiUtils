@@ -21,7 +21,7 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 555);
-        final Button button = (Button) findViewById(R.id.button);
+        final Button button = findViewById(R.id.button);
         WifiUtils.enableLog(true);
         button.setOnClickListener(v ->
                                   {

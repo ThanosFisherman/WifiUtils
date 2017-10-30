@@ -78,7 +78,7 @@ public final class WifiUtils implements WifiConnectorBuilder, WifiConnectorBuild
                 else
                 {
                     if (mScanResultsListener != null)
-                        mScanResultsListener.onScanResults(new ArrayList<ScanResult>());
+                        mScanResultsListener.onScanResults(new ArrayList<>());
                     if (mConnectionWpsListener != null)
                         mConnectionWpsListener.isSuccessful(false);
                     mWifiConnectionCallback.errorConnect();
@@ -218,7 +218,7 @@ public final class WifiUtils implements WifiConnectorBuilder, WifiConnectorBuild
                 if (wifiStateListener != null)
                     wifiStateListener.isSuccess(false);
                 if (mScanResultsListener != null)
-                    mScanResultsListener.onScanResults(new ArrayList<ScanResult>());
+                    mScanResultsListener.onScanResults(new ArrayList<>());
                 if (mConnectionWpsListener != null)
                     mConnectionWpsListener.isSuccessful(false);
                 mWifiConnectionCallback.errorConnect();

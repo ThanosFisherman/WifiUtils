@@ -17,7 +17,7 @@ import android.text.TextUtils;
 
 import com.thanosfisherman.wifiutils.wifiWps.ConnectionWpsListener;
 
-import java.util.Comparator;
+import java.util.Collections;
 import java.util.List;
 
 import static com.thanosfisherman.wifiutils.WifiUtils.wifiLog;
@@ -140,14 +140,7 @@ public final class ConnectorUtils
 
     private static void sortByPriority(final List<WifiConfiguration> configurations)
     {
-        java.util.Collections.sort(configurations, new Comparator<WifiConfiguration>()
-        {
-            @Override
-            public int compare(WifiConfiguration o1, WifiConfiguration o2)
-            {
-                return o1.priority - o2.priority;
-            }
-        });
+        Collections.sort(configurations, (o1, o2) -> o1.priority - o2.priority);
     }
 
     public static int frequencyToChannel(int freq)
