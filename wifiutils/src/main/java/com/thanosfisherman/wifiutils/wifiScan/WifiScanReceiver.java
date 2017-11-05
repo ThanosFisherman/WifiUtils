@@ -7,7 +7,7 @@ import android.content.Intent;
 
 public class WifiScanReceiver extends BroadcastReceiver
 {
-    private WifiScanCallback callback;
+    private final WifiScanCallback callback;
 
     public WifiScanReceiver(WifiScanCallback callback)
     {

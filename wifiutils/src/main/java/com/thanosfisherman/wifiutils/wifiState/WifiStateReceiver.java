@@ -9,7 +9,7 @@ import android.net.wifi.WifiManager;
 public final class WifiStateReceiver extends BroadcastReceiver
 {
 
-    private WifiStateCallback wifiStateCallback;
+    private final WifiStateCallback wifiStateCallback;
 
     public WifiStateReceiver(WifiStateCallback callbacks)
     {

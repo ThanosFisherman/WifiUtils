@@ -16,11 +16,11 @@ import static com.thanosfisherman.wifiutils.WifiUtils.wifiLog;
 
 public final class WifiConnectionReceiver extends BroadcastReceiver
 {
-    @NonNull private WifiConnectionCallback mWifiConnectionCallback;
+    @NonNull private final WifiConnectionCallback mWifiConnectionCallback;
     @Nullable private String mBssid;
-    @Nullable private WifiManager mWifiManager;
+    @Nullable private final WifiManager mWifiManager;
     private long mDelay;
-    @NonNull private WeakHandler handler;
+    @NonNull private final WeakHandler handler;
     @NonNull private final Runnable handlerCallback = new Runnable()
     {
         @Override
@@ -35,9 +35,10 @@ public final class WifiConnectionReceiver extends BroadcastReceiver
         }
     };
 
-    public WifiConnectionReceiver(@NonNull WifiConnectionCallback callback, long delayMillis)
+    public WifiConnectionReceiver(@NonNull WifiConnectionCallback callback, @NonNull WifiManager wifiManager, long delayMillis)
     {
         this.mWifiConnectionCallback = callback;
+        this.mWifiManager = wifiManager;
         this.mDelay = delayMillis;
         this.handler = new WeakHandler();
     }
@@ -45,10 +46,11 @@ public final class WifiConnectionReceiver extends BroadcastReceiver
     @Override
     public void onReceive(Context context, Intent intent)
     {
-        String action = intent.getAction();
-        if (action.equals(WifiManager.SUPPLICANT_STATE_CHANGED_ACTION))
+        final String action = intent.getAction();
+        if (WifiManager.SUPPLICANT_STATE_CHANGED_ACTION.equals(action))
         {
             final SupplicantState state = intent.getParcelableExtra(WifiManager.EXTRA_NEW_STATE);
+            final int supl_error = intent.getIntExtra(WifiManager.EXTRA_SUPPLICANT_ERROR, -1);
 
             if (state == null)
             {
@@ -68,7 +70,6 @@ public final class WifiConnectionReceiver extends BroadcastReceiver
                     }
                     break;
                 case DISCONNECTED:
-                    final int supl_error = intent.getIntExtra(WifiManager.EXTRA_SUPPLICANT_ERROR, -1);
                     if (supl_error == WifiManager.ERROR_AUTHENTICATING)
                     {
                         wifiLog("Authentication error...");
@@ -87,11 +88,35 @@ public final class WifiConnectionReceiver extends BroadcastReceiver
         this.mDelay = millis;
     }
 
-    public WifiConnectionReceiver activateTimeoutHandler(@NonNull WifiManager wifiManager, @NonNull String bssid)
+    public WifiConnectionReceiver activateTimeoutHandler(@NonNull String bssid)
     {
-        mWifiManager = wifiManager;
         mBssid = bssid;
         handler.postDelayed(handlerCallback, mDelay);
         return this;
+    }
+
+    //unused
+    private boolean isConnecting(SupplicantState state)
+    {
+        switch (state)
+        {
+            case AUTHENTICATING:
+            case ASSOCIATING:
+            case ASSOCIATED:
+            case FOUR_WAY_HANDSHAKE:
+            case GROUP_HANDSHAKE:
+            case COMPLETED:
+                return true;
+            case DISCONNECTED:
+            case INTERFACE_DISABLED:
+            case INACTIVE:
+            case SCANNING:
+            case DORMANT:
+            case UNINITIALIZED:
+            case INVALID:
+                return false;
+            default:
+                return false;
+        }
     }
 }

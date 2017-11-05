@@ -181,12 +181,16 @@ public final class ConnectorUtils
         }
     }
 
-    static boolean connectToWifi(@NonNull Context context, @NonNull WifiManager wifiManager, @NonNull ScanResult scanResult, @Nullable String password)
+    static boolean connectToWifi(@NonNull Context context, @NonNull WifiManager wifiManager, @NonNull ScanResult scanResult, @NonNull String password)
     {
-        cleanPreviousConfiguration(wifiManager, scanResult);
-
         WifiConfiguration config = ConfigSecurities.getWifiConfiguration(wifiManager, scanResult);
-        if (config != null)
+        if (config != null && password.isEmpty())
+        {
+            wifiLog("PASSWORD WAS EMPTY. TRYING TO CONNECT TO EXISTING NETWORK CONFIGURATION");
+            return connectToConfiguredNetwork(wifiManager, config, true);
+        }
+
+        if (!cleanPreviousConfiguration(wifiManager, config))
         {
             wifiLog("COULDN'T REMOVE PREVIOUS CONFIG, CONNECTING TO EXISTING ONE");
             return connectToConfiguredNetwork(wifiManager, config, true);
@@ -222,8 +226,11 @@ public final class ConnectorUtils
         return connectToConfiguredNetwork(wifiManager, config, true);
     }
 
-    private static boolean connectToConfiguredNetwork(@NonNull WifiManager wifiManager, @NonNull WifiConfiguration config, boolean reassociate)
+    private static boolean connectToConfiguredNetwork(@NonNull WifiManager wifiManager, @Nullable WifiConfiguration config, boolean reassociate)
     {
+        if (config == null)
+            return false;
+
         if (Build.VERSION.SDK_INT >= 23)
             return wifiManager.enableNetwork(config.networkId, true) && (reassociate ? wifiManager.reassociate() : wifiManager.reconnect());
 
@@ -342,16 +349,36 @@ public final class ConnectorUtils
         wifiManager.startWps(wpsInfo, wpsCallback);
     }
 
-    static void cleanPreviousConfiguration(@NonNull final WifiManager wifiManager, @NonNull final ScanResult scanResult)
+    static boolean cleanPreviousConfiguration(@NonNull final WifiManager wifiManager, @NonNull final ScanResult scanResult)
     {
+        //On Android 6.0 (API level 23) and above if my app did not create the configuration in the first place, it can not remove it either.
         final WifiConfiguration config = ConfigSecurities.getWifiConfiguration(wifiManager, scanResult);
+        wifiLog("Attempting to remove previous network config...");
+        if (config == null)
+            return true;
 
-        if (config != null)
+        if (wifiManager.removeNetwork(config.networkId))
         {
-            wifiLog("Attempting to remove previous network config...");
-            if (wifiManager.removeNetwork(config.networkId))
-                wifiManager.saveConfiguration();
+            wifiManager.saveConfiguration();
+            return true;
         }
+        return false;
+    }
+
+    static boolean cleanPreviousConfiguration(@NonNull final WifiManager wifiManager, @Nullable final WifiConfiguration config)
+    {
+        //On Android 6.0 (API level 23) and above if my app did not create the configuration in the first place, it can not remove it either.
+
+        wifiLog("Attempting to remove previous network config...");
+        if (config == null)
+            return true;
+
+        if (wifiManager.removeNetwork(config.networkId))
+        {
+            wifiManager.saveConfiguration();
+            return true;
+        }
+        return false;
     }
 
     static void reenableAllHotspots(WifiManager wifi)

@@ -36,12 +36,13 @@ import static com.thanosfisherman.wifiutils.ConnectorUtils.reenableAllHotspots;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.registerReceiver;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.unregisterReceiver;
 
-public final class WifiUtils implements WifiConnectorBuilder, WifiConnectorBuilder.WifiUtilsBuilder,
+public final class WifiUtils implements WifiConnectorBuilder,
+                                        WifiConnectorBuilder.WifiUtilsBuilder,
                                         WifiConnectorBuilder.WifiSuccessListener,
                                         WifiConnectorBuilder.WifiWpsSuccessListener
 {
-    private WifiManager mWifiManager;
-    private Context mContext;
+    private final WifiManager mWifiManager;
+    private final Context mContext;
     private static boolean mEnableLog;
     private long mWpsTimeoutMillis = 30000;
     private long mTimeoutMillis = 30000;
@@ -134,8 +135,7 @@ public final class WifiUtils implements WifiConnectorBuilder, WifiConnectorBuild
                     return;
                 }
                 if (connectToWifi(mContext, mWifiManager, mSingleScanResult, mPassword))
-                    registerReceiver(mContext,
-                                     mWifiConnectionReceiver.activateTimeoutHandler(mWifiManager, mSingleScanResult.BSSID),
+                    registerReceiver(mContext, mWifiConnectionReceiver.activateTimeoutHandler(mSingleScanResult.BSSID),
                                      new IntentFilter(WifiManager.SUPPLICANT_STATE_CHANGED_ACTION));
                 else
                     mWifiConnectionCallback.errorConnect();
@@ -171,19 +171,20 @@ public final class WifiUtils implements WifiConnectorBuilder, WifiConnectorBuild
         }
     };
 
-    private WifiUtils()
+    private WifiUtils(@NonNull Context context)
     {
+        mContext = context;
+        mWifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+
         mWifiStateReceiver = new WifiStateReceiver(mWifiStateCallback);
         mWifiScanReceiver = new WifiScanReceiver(mWifiScanResultsCallback);
-        mWifiConnectionReceiver = new WifiConnectionReceiver(mWifiConnectionCallback, mTimeoutMillis);
+        mWifiConnectionReceiver = new WifiConnectionReceiver(mWifiConnectionCallback, mWifiManager, mTimeoutMillis);
     }
 
     public static WifiUtilsBuilder withContext(@NonNull final Context context)
     {
         //INSTANCE.setContext(context);
-        final WifiUtils wifiUtils = new WifiUtils();
-        wifiUtils.setContext(context);
-        return wifiUtils;
+        return new WifiUtils(context);
     }
 
     public static void wifiLog(final String text)
@@ -195,12 +196,6 @@ public final class WifiUtils implements WifiConnectorBuilder, WifiConnectorBuild
     public static void enableLog(final boolean enabled)
     {
         mEnableLog = enabled;
-    }
-
-    private void setContext(@NonNull final Context context)
-    {
-        mContext = context;
-        mWifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
     }
 
     @Override

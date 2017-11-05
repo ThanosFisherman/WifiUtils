@@ -27,7 +27,7 @@ final class ConfigSecurities
      * @param password Password of the network if security is not OPEN.
      */
 
-    static void setupSecurity(@NonNull WifiConfiguration config, int security, @Nullable final String password)
+    static void setupSecurity(@NonNull WifiConfiguration config, int security, @NonNull final String password)
     {
         config.allowedAuthAlgorithms.clear();
         config.allowedGroupCiphers.clear();
@@ -35,7 +35,6 @@ final class ConfigSecurities
         config.allowedPairwiseCiphers.clear();
         config.allowedProtocols.clear();
 
-        final boolean isPassOk = password != null && !password.isEmpty();
         switch (security)
         {
             case SECURITY_NONE:
@@ -45,33 +44,25 @@ final class ConfigSecurities
                 config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
                 config.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
                 config.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.SHARED);
-                if (isPassOk)
-                {
-                    // WEP-40, WEP-104, and 256-bit WEP (WEP-232?)
-                    if (ConnectorUtils.isHexWepKey(password))
-                        config.wepKeys[0] = password;
-                    else
-                        config.wepKeys[0] = convertToQuotedString(password);
-                }
+                // WEP-40, WEP-104, and 256-bit WEP (WEP-232?)
+                if (ConnectorUtils.isHexWepKey(password))
+                    config.wepKeys[0] = password;
+                else
+                    config.wepKeys[0] = convertToQuotedString(password);
                 break;
             case SECURITY_PSK:
                 config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
-                if (isPassOk)
-                {
-                    if (password.matches("[0-9A-Fa-f]{64}"))
-                        config.preSharedKey = password;
-                    else
-                        config.preSharedKey = convertToQuotedString(password);
-                }
+                if (password.matches("[0-9A-Fa-f]{64}"))
+                    config.preSharedKey = password;
+                else
+                    config.preSharedKey = convertToQuotedString(password);
                 break;
             case SECURITY_EAP:
                 config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_EAP);
                 config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.IEEE8021X);
                 config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
                 config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
-
-                if (isPassOk)
-                    config.preSharedKey = convertToQuotedString(password);
+                config.preSharedKey = convertToQuotedString(password);
                 break;
 
             default:
