@@ -54,32 +54,32 @@ public final class WifiConnectionReceiver extends BroadcastReceiver
 
             if (state == null)
             {
+                handler.removeCallbacks(handlerCallback);
                 mWifiConnectionCallback.errorConnect();
                 return;
             }
 
             wifiLog("Connection Broadcast action: " + state);
-            switch (state)
+
+            if (isConnected(state))
             {
-                case COMPLETED:
-                    if (isAlreadyConnected(mWifiManager, mBssid))
-                    {
-                        handler.removeCallbacks(handlerCallback);
-                        mWifiConnectionCallback.successfulConnect();
-                        return;
-                    }
-                    break;
-                case DISCONNECTED:
-                    if (supl_error == WifiManager.ERROR_AUTHENTICATING)
-                    {
-                        wifiLog("Authentication error...");
-                        handler.removeCallbacks(handlerCallback);
-                        mWifiConnectionCallback.errorConnect();
-                        return;
-                    }
-                    wifiLog("Disconnected. Re-attempting to connect...");
-                    break;
+                if (isAlreadyConnected(mWifiManager, mBssid))
+                {
+                    handler.removeCallbacks(handlerCallback);
+                    mWifiConnectionCallback.successfulConnect();
+                }
             }
+            else
+            {
+                wifiLog("Disconnected. Re-attempting to connect...");
+                if (supl_error == WifiManager.ERROR_AUTHENTICATING)
+                {
+                    wifiLog("Authentication error...");
+                    handler.removeCallbacks(handlerCallback);
+                    mWifiConnectionCallback.errorConnect();
+                }
+            }
+
         }
     }
 
@@ -96,14 +96,10 @@ public final class WifiConnectionReceiver extends BroadcastReceiver
     }
 
     //unused
-    private boolean isConnecting(SupplicantState state)
+    private boolean isConnected(SupplicantState state)
     {
         switch (state)
         {
-            case AUTHENTICATING:
-            case ASSOCIATING:
-            case ASSOCIATED:
-            case FOUR_WAY_HANDSHAKE:
             case GROUP_HANDSHAKE:
             case COMPLETED:
                 return true;

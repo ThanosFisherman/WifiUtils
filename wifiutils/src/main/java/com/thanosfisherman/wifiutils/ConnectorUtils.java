@@ -101,9 +101,7 @@ public final class ConnectorUtils
     private static String trimQuotes(String str)
     {
         if (!str.isEmpty())
-        {
             return str.replaceAll("^\"*", "").replaceAll("\"*$", "");
-        }
         return str;
     }
 
@@ -187,13 +185,13 @@ public final class ConnectorUtils
         if (config != null && password.isEmpty())
         {
             wifiLog("PASSWORD WAS EMPTY. TRYING TO CONNECT TO EXISTING NETWORK CONFIGURATION");
-            return connectToConfiguredNetwork(wifiManager, config, true);
+            return connectToConfiguredNetwork(wifiManager, config, false);
         }
 
         if (!cleanPreviousConfiguration(wifiManager, config))
         {
             wifiLog("COULDN'T REMOVE PREVIOUS CONFIG, CONNECTING TO EXISTING ONE");
-            return connectToConfiguredNetwork(wifiManager, config, true);
+            return connectToConfiguredNetwork(wifiManager, config, false);
         }
 
         final int security = ConfigSecurities.getSecurity(scanResult);
@@ -223,7 +221,7 @@ public final class ConnectorUtils
             wifiLog("Error getting wifi config after save. (config == null)");
             return false;
         }
-        return connectToConfiguredNetwork(wifiManager, config, true);
+        return connectToConfiguredNetwork(wifiManager, config, false);
     }
 
     private static boolean connectToConfiguredNetwork(@NonNull WifiManager wifiManager, @Nullable WifiConfiguration config, boolean reassociate)
@@ -232,7 +230,10 @@ public final class ConnectorUtils
             return false;
 
         if (Build.VERSION.SDK_INT >= 23)
+        {
+            disableAllButOne(wifiManager, config);
             return wifiManager.enableNetwork(config.networkId, true) && (reassociate ? wifiManager.reassociate() : wifiManager.reconnect());
+        }
 
         int oldPri = config.priority;
         // Make it the highest priority.
@@ -269,16 +270,40 @@ public final class ConnectorUtils
         if (config == null)
             return false;
 
-        // Disable others, but do not save.
-        // Just to force the WifiManager to connect to it.
+        disableAllButOne(wifiManager, config);
         return wifiManager.enableNetwork(config.networkId, true) && (reassociate ? wifiManager.reassociate() : wifiManager.reconnect());
+    }
+
+    private static void disableAllButOne(@NonNull final WifiManager wifiManager, @NonNull final WifiConfiguration config)
+    {
+        @Nullable final List<WifiConfiguration> configurations = wifiManager.getConfiguredNetworks();
+        if (configurations == null || configurations.isEmpty())
+            return;
+
+        for (WifiConfiguration wifiConfig : configurations)
+            if (config.networkId == wifiConfig.networkId && config.BSSID.equals(wifiConfig.BSSID))
+                wifiManager.enableNetwork(wifiConfig.networkId, true);
+            else
+                wifiManager.disableNetwork(wifiConfig.networkId);
+    }
+
+    private static void disableAllButOne(@NonNull final WifiManager wifiManager, @NonNull final ScanResult result)
+    {
+        @Nullable final List<WifiConfiguration> configurations = wifiManager.getConfiguredNetworks();
+        if (configurations == null || configurations.isEmpty())
+            return;
+
+        for (WifiConfiguration wifiConfig : configurations)
+            if (result.BSSID.equals(wifiConfig.BSSID) && result.SSID.equals(wifiConfig.SSID))
+                wifiManager.enableNetwork(wifiConfig.networkId, true);
+            else
+                wifiManager.disableNetwork(wifiConfig.networkId);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     static void connectWps(@NonNull final WifiManager wifiManager, @NonNull final ScanResult scanResult, @NonNull String pin, long timeOutMillis,
                            @NonNull final ConnectionWpsListener connectionWpsListener)
     {
-        cleanPreviousConfiguration(wifiManager, scanResult);
         final WeakHandler handler = new WeakHandler();
         final WpsInfo wpsInfo = new WpsInfo();
         final Runnable handlerTimeoutRunnable = new Runnable()
@@ -336,15 +361,20 @@ public final class ConnectorUtils
                 }
                 wifiLog("FAILED to connect with WPS. Reason: " + reasonStr);
                 cleanPreviousConfiguration(wifiManager, scanResult);
+                reenableAllHotspots(wifiManager);
                 connectionWpsListener.isSuccessful(false);
             }
         };
 
+        wifiLog("Connecting with WPS...");
         wpsInfo.setup = WpsInfo.KEYPAD;
         wpsInfo.BSSID = scanResult.BSSID;
         wpsInfo.pin = pin;
         wifiManager.cancelWps(null);
-        wifiLog("Connecting with WPS...");
+
+        if (!cleanPreviousConfiguration(wifiManager, scanResult))
+            disableAllButOne(wifiManager, scanResult);
+
         handler.postDelayed(handlerTimeoutRunnable, timeOutMillis);
         wifiManager.startWps(wpsInfo, wpsCallback);
     }
