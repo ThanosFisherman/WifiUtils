@@ -30,7 +30,8 @@ public final class ConnectorUtils
     {
         if (bssid != null && wifiManager != null)
         {
-            if (wifiManager.getConnectionInfo().getBSSID() != null && wifiManager.getConnectionInfo().getBSSID().equals(bssid))
+            if (wifiManager.getConnectionInfo() != null && wifiManager.getConnectionInfo().getBSSID() != null &&
+                Objects.equals(bssid, wifiManager.getConnectionInfo().getBSSID()))
             {
                 wifiLog("Already connected to: " + wifiManager.getConnectionInfo().getSSID() + "  BSSID: " + wifiManager.getConnectionInfo().getBSSID());
                 return true;
@@ -40,7 +41,8 @@ public final class ConnectorUtils
     }
 
 
-    private static boolean checkForExcessOpenNetworkAndSave(final ContentResolver resolver, final WifiManager wifiMgr)
+    @SuppressWarnings("UnusedReturnValue")
+    private static boolean checkForExcessOpenNetworkAndSave(@NonNull final ContentResolver resolver, @NonNull final WifiManager wifiMgr)
     {
         final List<WifiConfiguration> configurations = wifiMgr.getConfiguredNetworks();
         sortByPriority(configurations);
@@ -68,7 +70,7 @@ public final class ConnectorUtils
 
     }
 
-    private static int getMaxPriority(final WifiManager wifiManager)
+    private static int getMaxPriority(@NonNull final WifiManager wifiManager)
     {
         final List<WifiConfiguration> configurations = wifiManager.getConfiguredNetworks();
         int pri = 0;
@@ -82,7 +84,7 @@ public final class ConnectorUtils
         return pri;
     }
 
-    private static int shiftPriorityAndSave(final WifiManager wifiMgr)
+    private static int shiftPriorityAndSave(@NonNull final WifiManager wifiMgr)
     {
         final List<WifiConfiguration> configurations = wifiMgr.getConfiguredNetworks();
         sortByPriority(configurations);
@@ -98,13 +100,15 @@ public final class ConnectorUtils
     }
 
 
-    private static String trimQuotes(String str)
+    @Nullable
+    private static String trimQuotes(@Nullable String str)
     {
-        if (!str.isEmpty())
+        if (str != null && !str.isEmpty())
             return str.replaceAll("^\"*", "").replaceAll("\"*$", "");
         return str;
     }
 
+    @SuppressWarnings("unused")
     public static int getPowerPercentage(int power)
     {
         int i;
@@ -117,7 +121,8 @@ public final class ConnectorUtils
         return i;
     }
 
-    static String convertToQuotedString(String string)
+    @NonNull
+    static String convertToQuotedString(@NonNull String string)
     {
         if (TextUtils.isEmpty(string))
             return "";
@@ -136,11 +141,12 @@ public final class ConnectorUtils
     }
 
 
-    private static void sortByPriority(final List<WifiConfiguration> configurations)
+    private static void sortByPriority(@NonNull final List<WifiConfiguration> configurations)
     {
         Collections.sort(configurations, (o1, o2) -> o1.priority - o2.priority);
     }
 
+    @SuppressWarnings("unused")
     public static int frequencyToChannel(int freq)
     {
         if (2412 <= freq && freq <= 2484)
@@ -165,7 +171,7 @@ public final class ConnectorUtils
         }
     }
 
-    static void unregisterReceiver(Context context, BroadcastReceiver receiver)
+    static void unregisterReceiver(@NonNull Context context, @Nullable BroadcastReceiver receiver)
     {
         if (receiver != null)
         {
@@ -230,10 +236,7 @@ public final class ConnectorUtils
             return false;
 
         if (Build.VERSION.SDK_INT >= 23)
-        {
-            disableAllButOne(wifiManager, config);
-            return wifiManager.enableNetwork(config.networkId, true) && (reassociate ? wifiManager.reassociate() : wifiManager.reconnect());
-        }
+            return disableAllButOne(wifiManager, config) && (reassociate ? wifiManager.reassociate() : wifiManager.reconnect());
 
         int oldPri = config.priority;
         // Make it the highest priority.
@@ -267,37 +270,60 @@ public final class ConnectorUtils
 
         // We have to retrieve the WifiConfiguration after save.
         config = ConfigSecurities.getWifiConfiguration(wifiManager, config);
-        if (config == null)
+        return config != null && disableAllButOne(wifiManager, config) && (reassociate ? wifiManager.reassociate() : wifiManager.reconnect());
+
+    }
+
+    private static boolean disableAllButOne(@NonNull final WifiManager wifiManager, @Nullable final WifiConfiguration config)
+    {
+        @Nullable final List<WifiConfiguration> configurations = wifiManager.getConfiguredNetworks();
+        if (configurations == null || config == null || configurations.isEmpty())
             return false;
-
-        disableAllButOne(wifiManager, config);
-        return wifiManager.enableNetwork(config.networkId, true) && (reassociate ? wifiManager.reassociate() : wifiManager.reconnect());
-    }
-
-    private static void disableAllButOne(@NonNull final WifiManager wifiManager, @NonNull final WifiConfiguration config)
-    {
-        @Nullable final List<WifiConfiguration> configurations = wifiManager.getConfiguredNetworks();
-        if (configurations == null || configurations.isEmpty())
-            return;
+        boolean result = false;
 
         for (WifiConfiguration wifiConfig : configurations)
-            if (config.networkId == wifiConfig.networkId && config.BSSID.equals(wifiConfig.BSSID))
-                wifiManager.enableNetwork(wifiConfig.networkId, true);
+            if (wifiConfig.networkId == config.networkId)
+                result = wifiManager.enableNetwork(wifiConfig.networkId, true);
             else
                 wifiManager.disableNetwork(wifiConfig.networkId);
+        wifiLog("disableAllButOne " + result);
+        return result;
     }
 
-    private static void disableAllButOne(@NonNull final WifiManager wifiManager, @NonNull final ScanResult result)
+
+    @SuppressWarnings("UnusedReturnValue")
+    private static boolean disableAllButOne(@NonNull final WifiManager wifiManager, @Nullable final ScanResult scanResult)
     {
         @Nullable final List<WifiConfiguration> configurations = wifiManager.getConfiguredNetworks();
-        if (configurations == null || configurations.isEmpty())
-            return;
-
+        if (configurations == null || scanResult == null || configurations.isEmpty())
+            return false;
+        boolean result = false;
         for (WifiConfiguration wifiConfig : configurations)
-            if (result.BSSID.equals(wifiConfig.BSSID) && result.SSID.equals(wifiConfig.SSID))
-                wifiManager.enableNetwork(wifiConfig.networkId, true);
+        {
+            if (Objects.equals(scanResult.BSSID, wifiConfig.BSSID) && Objects.equals(scanResult.SSID, trimQuotes(wifiConfig.SSID)))
+                result = wifiManager.enableNetwork(wifiConfig.networkId, true);
             else
                 wifiManager.disableNetwork(wifiConfig.networkId);
+        }
+        return result;
+    }
+
+    public static boolean reEnableNetworkIfPossible(@NonNull final WifiManager wifiManager, @Nullable final ScanResult scanResult)
+    {
+        @Nullable final List<WifiConfiguration> configurations = wifiManager.getConfiguredNetworks();
+        if (configurations == null || scanResult == null || configurations.isEmpty())
+            return false;
+        boolean result = false;
+        for (WifiConfiguration wifiConfig : configurations)
+        {
+            if (Objects.equals(scanResult.BSSID, wifiConfig.BSSID) && Objects.equals(scanResult.SSID, trimQuotes(wifiConfig.SSID)))
+            {
+                result = wifiManager.enableNetwork(wifiConfig.networkId, true);
+                break;
+            }
+        }
+        wifiLog("reEnableNetworkIfPossible " + result);
+        return result;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -411,7 +437,7 @@ public final class ConnectorUtils
         return false;
     }
 
-    static void reenableAllHotspots(WifiManager wifi)
+    static void reenableAllHotspots(@NonNull WifiManager wifi)
     {
         final List<WifiConfiguration> configurations = wifi.getConfiguredNetworks();
         if (configurations != null && !configurations.isEmpty())
@@ -419,26 +445,29 @@ public final class ConnectorUtils
                 wifi.enableNetwork(config.networkId, false);
     }
 
+    @Nullable
     static ScanResult matchScanResultSsid(@NonNull String ssid, @NonNull Iterable<ScanResult> results)
     {
         for (ScanResult result : results)
-            if (result.SSID.equals(ssid))
+            if (Objects.equals(result.SSID, ssid))
                 return result;
         return null;
     }
 
+    @Nullable
     static ScanResult matchScanResult(@NonNull String ssid, @NonNull String bssid, @NonNull Iterable<ScanResult> results)
     {
         for (ScanResult result : results)
-            if (result.SSID.equals(ssid) && result.BSSID.equals(bssid))
+            if (Objects.equals(result.SSID, ssid) && Objects.equals(result.BSSID, bssid))
                 return result;
         return null;
     }
 
+    @Nullable
     static ScanResult matchScanResultBssid(@NonNull String bssid, @NonNull Iterable<ScanResult> results)
     {
         for (ScanResult result : results)
-            if (result.BSSID.equals(bssid))
+            if (Objects.equals(result.BSSID, bssid))
                 return result;
         return null;
     }

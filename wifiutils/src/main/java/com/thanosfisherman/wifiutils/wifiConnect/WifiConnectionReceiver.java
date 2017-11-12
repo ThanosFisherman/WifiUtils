@@ -3,22 +3,25 @@ package com.thanosfisherman.wifiutils.wifiConnect;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.net.wifi.ScanResult;
 import android.net.wifi.SupplicantState;
 import android.net.wifi.WifiManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.thanosfisherman.wifiutils.Objects;
 import com.thanosfisherman.wifiutils.WeakHandler;
 
 import static com.thanosfisherman.wifiutils.ConnectorUtils.isAlreadyConnected;
+import static com.thanosfisherman.wifiutils.ConnectorUtils.reEnableNetworkIfPossible;
 import static com.thanosfisherman.wifiutils.WifiUtils.wifiLog;
 
 
 public final class WifiConnectionReceiver extends BroadcastReceiver
 {
     @NonNull private final WifiConnectionCallback mWifiConnectionCallback;
-    @Nullable private String mBssid;
-    @Nullable private final WifiManager mWifiManager;
+    @Nullable private ScanResult mScanResult;
+    @NonNull private final WifiManager mWifiManager;
     private long mDelay;
     @NonNull private final WeakHandler handler;
     @NonNull private final Runnable handlerCallback = new Runnable()
@@ -27,7 +30,8 @@ public final class WifiConnectionReceiver extends BroadcastReceiver
         public void run()
         {
             wifiLog("Connection Timed out...");
-            if (isAlreadyConnected(mWifiManager, mBssid))
+            reEnableNetworkIfPossible(mWifiManager, mScanResult);
+            if (isAlreadyConnected(mWifiManager, mScanResult != null ? mScanResult.BSSID : null))
                 mWifiConnectionCallback.successfulConnect();
             else
                 mWifiConnectionCallback.errorConnect();
@@ -44,10 +48,10 @@ public final class WifiConnectionReceiver extends BroadcastReceiver
     }
 
     @Override
-    public void onReceive(Context context, Intent intent)
+    public void onReceive(Context context, @NonNull Intent intent)
     {
         final String action = intent.getAction();
-        if (WifiManager.SUPPLICANT_STATE_CHANGED_ACTION.equals(action))
+        if (Objects.equals(WifiManager.SUPPLICANT_STATE_CHANGED_ACTION, action))
         {
             final SupplicantState state = intent.getParcelableExtra(WifiManager.EXTRA_NEW_STATE);
             final int supl_error = intent.getIntExtra(WifiManager.EXTRA_SUPPLICANT_ERROR, -1);
@@ -61,25 +65,29 @@ public final class WifiConnectionReceiver extends BroadcastReceiver
 
             wifiLog("Connection Broadcast action: " + state);
 
-            if (isConnected(state))
+            switch (state)
             {
-                if (isAlreadyConnected(mWifiManager, mBssid))
-                {
-                    handler.removeCallbacks(handlerCallback);
-                    mWifiConnectionCallback.successfulConnect();
-                }
+                case COMPLETED:
+                case FOUR_WAY_HANDSHAKE:
+                    if (isAlreadyConnected(mWifiManager, mScanResult != null ? mScanResult.BSSID : null))
+                    {
+                        handler.removeCallbacks(handlerCallback);
+                        mWifiConnectionCallback.successfulConnect();
+                    }
+                    break;
+                case DISCONNECTED:
+                    if (supl_error == WifiManager.ERROR_AUTHENTICATING)
+                    {
+                        wifiLog("Authentication error...");
+                        handler.removeCallbacks(handlerCallback);
+                        mWifiConnectionCallback.errorConnect();
+                    }
+                    else
+                    {
+                        wifiLog("Disconnected. Re-attempting to connect...");
+                        reEnableNetworkIfPossible(mWifiManager, mScanResult);
+                    }
             }
-            else
-            {
-                wifiLog("Disconnected. Re-attempting to connect...");
-                if (supl_error == WifiManager.ERROR_AUTHENTICATING)
-                {
-                    wifiLog("Authentication error...");
-                    handler.removeCallbacks(handlerCallback);
-                    mWifiConnectionCallback.errorConnect();
-                }
-            }
-
         }
     }
 
@@ -88,31 +96,11 @@ public final class WifiConnectionReceiver extends BroadcastReceiver
         this.mDelay = millis;
     }
 
-    public WifiConnectionReceiver activateTimeoutHandler(@NonNull String bssid)
+    @NonNull
+    public WifiConnectionReceiver activateTimeoutHandler(@NonNull ScanResult result)
     {
-        mBssid = bssid;
+        mScanResult = result;
         handler.postDelayed(handlerCallback, mDelay);
         return this;
-    }
-
-    //unused
-    private boolean isConnected(SupplicantState state)
-    {
-        switch (state)
-        {
-            case GROUP_HANDSHAKE:
-            case COMPLETED:
-                return true;
-            case DISCONNECTED:
-            case INTERFACE_DISABLED:
-            case INACTIVE:
-            case SCANNING:
-            case DORMANT:
-            case UNINITIALIZED:
-            case INVALID:
-                return false;
-            default:
-                return false;
-        }
     }
 }
