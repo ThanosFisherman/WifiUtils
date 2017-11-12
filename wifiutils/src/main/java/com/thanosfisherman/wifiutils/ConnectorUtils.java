@@ -299,12 +299,10 @@ public final class ConnectorUtils
             return false;
         boolean result = false;
         for (WifiConfiguration wifiConfig : configurations)
-        {
             if (Objects.equals(scanResult.BSSID, wifiConfig.BSSID) && Objects.equals(scanResult.SSID, trimQuotes(wifiConfig.SSID)))
                 result = wifiManager.enableNetwork(wifiConfig.networkId, true);
             else
                 wifiManager.disableNetwork(wifiConfig.networkId);
-        }
         return result;
     }
 
@@ -315,13 +313,11 @@ public final class ConnectorUtils
             return false;
         boolean result = false;
         for (WifiConfiguration wifiConfig : configurations)
-        {
             if (Objects.equals(scanResult.BSSID, wifiConfig.BSSID) && Objects.equals(scanResult.SSID, trimQuotes(wifiConfig.SSID)))
             {
                 result = wifiManager.enableNetwork(wifiConfig.networkId, true);
                 break;
             }
-        }
         wifiLog("reEnableNetworkIfPossible " + result);
         return result;
     }
