@@ -152,7 +152,7 @@ public final class WifiUtils implements WifiConnectorBuilder,
         {
             wifiLog("CONNECTED SUCCESSFULLY");
             unregisterReceiver(mContext, mWifiConnectionReceiver);
-            reenableAllHotspots(mWifiManager);
+            //reenableAllHotspots(mWifiManager);
             if (mConnectionSuccessListener != null)
                 mConnectionSuccessListener.isSuccessful(true);
         }
@@ -162,8 +162,8 @@ public final class WifiUtils implements WifiConnectorBuilder,
         {
             unregisterReceiver(mContext, mWifiConnectionReceiver);
             reenableAllHotspots(mWifiManager);
-            if (mSingleScanResult != null)
-                cleanPreviousConfiguration(mWifiManager, mSingleScanResult);
+            //if (mSingleScanResult != null)
+            //cleanPreviousConfiguration(mWifiManager, mSingleScanResult);
             if (mConnectionSuccessListener != null)
             {
                 wifiLog("DIDN'T CONNECT TO WIFI");
@@ -185,7 +185,6 @@ public final class WifiUtils implements WifiConnectorBuilder,
 
     public static WifiUtilsBuilder withContext(@NonNull final Context context)
     {
-        //INSTANCE.setContext(context);
         return new WifiUtils(context);
     }
 

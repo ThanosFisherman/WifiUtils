@@ -191,13 +191,13 @@ public final class ConnectorUtils
         if (config != null && password.isEmpty())
         {
             wifiLog("PASSWORD WAS EMPTY. TRYING TO CONNECT TO EXISTING NETWORK CONFIGURATION");
-            return connectToConfiguredNetwork(wifiManager, config, false);
+            return connectToConfiguredNetwork(wifiManager, config, true);
         }
 
         if (!cleanPreviousConfiguration(wifiManager, config))
         {
             wifiLog("COULDN'T REMOVE PREVIOUS CONFIG, CONNECTING TO EXISTING ONE");
-            return connectToConfiguredNetwork(wifiManager, config, false);
+            return connectToConfiguredNetwork(wifiManager, config, true);
         }
 
         final int security = ConfigSecurities.getSecurity(scanResult);
@@ -227,7 +227,7 @@ public final class ConnectorUtils
             wifiLog("Error getting wifi config after save. (config == null)");
             return false;
         }
-        return connectToConfiguredNetwork(wifiManager, config, false);
+        return connectToConfiguredNetwork(wifiManager, config, true);
     }
 
     private static boolean connectToConfiguredNetwork(@NonNull WifiManager wifiManager, @Nullable WifiConfiguration config, boolean reassociate)

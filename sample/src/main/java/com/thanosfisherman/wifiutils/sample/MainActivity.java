@@ -33,7 +33,11 @@ public class MainActivity extends AppCompatActivity
 
     private void connectWithWpa()
     {
-        WifiUtils.withContext(getApplicationContext()).connectWith("kommotirio", "kommotirio@maria").onConnectionResult(this::checkResult).start();
+        WifiUtils.withContext(getApplicationContext())
+                 .connectWith("kommotirio", "kommotirio@maria")
+                 .setTimeout(40000)
+                 .onConnectionResult(this::checkResult)
+                 .start();
     }
 
     private void checkResult(boolean isSuccess)

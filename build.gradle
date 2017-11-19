@@ -29,6 +29,6 @@ ext {
     minSdkVersion = 14
     targetSdkVersion = 26
     supportLibrariesVersion = '26.1.0'
-    publishVersionName = '1.3.3'
-    publishVersionCode = 7
+    publishVersionName = '1.3.4'
+    publishVersionCode = 8
 }
