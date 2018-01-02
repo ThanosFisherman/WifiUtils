@@ -22,17 +22,13 @@ import java.util.List;
 
 import static com.thanosfisherman.wifiutils.WifiUtils.wifiLog;
 
-public final class ConnectorUtils
-{
+public final class ConnectorUtils {
     private static final int MAX_PRIORITY = 99999;
 
-    public static boolean isAlreadyConnected(@Nullable WifiManager wifiManager, @Nullable String bssid)
-    {
-        if (bssid != null && wifiManager != null)
-        {
+    public static boolean isAlreadyConnected(@Nullable WifiManager wifiManager, @Nullable String bssid) {
+        if (bssid != null && wifiManager != null) {
             if (wifiManager.getConnectionInfo() != null && wifiManager.getConnectionInfo().getBSSID() != null &&
-                Objects.equals(bssid, wifiManager.getConnectionInfo().getBSSID()))
-            {
+                    Objects.equals(bssid, wifiManager.getConnectionInfo().getBSSID())) {
                 wifiLog("Already connected to: " + wifiManager.getConnectionInfo().getSSID() + "  BSSID: " + wifiManager.getConnectionInfo().getBSSID());
                 return true;
             }
@@ -42,25 +38,21 @@ public final class ConnectorUtils
 
 
     @SuppressWarnings("UnusedReturnValue")
-    private static boolean checkForExcessOpenNetworkAndSave(@NonNull final ContentResolver resolver, @NonNull final WifiManager wifiMgr)
-    {
+    private static boolean checkForExcessOpenNetworkAndSave(@NonNull final ContentResolver resolver, @NonNull final WifiManager wifiMgr) {
         final List<WifiConfiguration> configurations = wifiMgr.getConfiguredNetworks();
         sortByPriority(configurations);
 
         boolean modified = false;
         int tempCount = 0;
         final int numOpenNetworksKept = Build.VERSION.SDK_INT >= 17
-                                        ? Settings.Secure.getInt(resolver, Settings.Global.WIFI_NUM_OPEN_NETWORKS_KEPT, 10)
-                                        : Settings.Secure.getInt(resolver, Settings.Secure.WIFI_NUM_OPEN_NETWORKS_KEPT, 10);
+                ? Settings.Secure.getInt(resolver, Settings.Global.WIFI_NUM_OPEN_NETWORKS_KEPT, 10)
+                : Settings.Secure.getInt(resolver, Settings.Secure.WIFI_NUM_OPEN_NETWORKS_KEPT, 10);
 
-        for (int i = configurations.size() - 1; i >= 0; i--)
-        {
+        for (int i = configurations.size() - 1; i >= 0; i--) {
             final WifiConfiguration config = configurations.get(i);
-            if (ConfigSecurities.SECURITY_NONE == ConfigSecurities.getSecurity(config))
-            {
+            if (ConfigSecurities.SECURITY_NONE.equals(ConfigSecurities.getSecurity(config))) {
                 tempCount++;
-                if (tempCount >= numOpenNetworksKept)
-                {
+                if (tempCount >= numOpenNetworksKept) {
                     modified = true;
                     wifiMgr.removeNetwork(config.networkId);
                 }
@@ -70,27 +62,22 @@ public final class ConnectorUtils
 
     }
 
-    private static int getMaxPriority(@NonNull final WifiManager wifiManager)
-    {
+    private static int getMaxPriority(@NonNull final WifiManager wifiManager) {
         final List<WifiConfiguration> configurations = wifiManager.getConfiguredNetworks();
         int pri = 0;
-        for (final WifiConfiguration config : configurations)
-        {
-            if (config.priority > pri)
-            {
+        for (final WifiConfiguration config : configurations) {
+            if (config.priority > pri) {
                 pri = config.priority;
             }
         }
         return pri;
     }
 
-    private static int shiftPriorityAndSave(@NonNull final WifiManager wifiMgr)
-    {
+    private static int shiftPriorityAndSave(@NonNull final WifiManager wifiMgr) {
         final List<WifiConfiguration> configurations = wifiMgr.getConfiguredNetworks();
         sortByPriority(configurations);
         final int size = configurations.size();
-        for (int i = 0; i < size; i++)
-        {
+        for (int i = 0; i < size; i++) {
             final WifiConfiguration config = configurations.get(i);
             config.priority = i;
             wifiMgr.updateNetwork(config);
@@ -101,16 +88,14 @@ public final class ConnectorUtils
 
 
     @Nullable
-    private static String trimQuotes(@Nullable String str)
-    {
+    private static String trimQuotes(@Nullable String str) {
         if (str != null && !str.isEmpty())
             return str.replaceAll("^\"*", "").replaceAll("\"*$", "");
         return str;
     }
 
     @SuppressWarnings("unused")
-    public static int getPowerPercentage(int power)
-    {
+    public static int getPowerPercentage(int power) {
         int i;
         if (power <= -93)
             i = 0;
@@ -122,8 +107,7 @@ public final class ConnectorUtils
     }
 
     @NonNull
-    static String convertToQuotedString(@NonNull String string)
-    {
+    static String convertToQuotedString(@NonNull String string) {
         if (TextUtils.isEmpty(string))
             return "";
 
@@ -134,21 +118,18 @@ public final class ConnectorUtils
         return "\"" + string + "\"";
     }
 
-    static boolean isHexWepKey(@Nullable String wepKey)
-    {
+    static boolean isHexWepKey(@Nullable String wepKey) {
         final int passwordLen = wepKey == null ? 0 : wepKey.length();
         return passwordLen != 0 && (passwordLen == 10 || passwordLen == 26 || passwordLen == 58) && wepKey.matches("[0-9A-Fa-f]*");
     }
 
 
-    private static void sortByPriority(@NonNull final List<WifiConfiguration> configurations)
-    {
+    private static void sortByPriority(@NonNull final List<WifiConfiguration> configurations) {
         Collections.sort(configurations, (o1, o2) -> o1.priority - o2.priority);
     }
 
     @SuppressWarnings("unused")
-    public static int frequencyToChannel(int freq)
-    {
+    public static int frequencyToChannel(int freq) {
         if (2412 <= freq && freq <= 2484)
             return (freq - 2412) / 5 + 1;
         else if (5170 <= freq && freq <= 5825)
@@ -157,52 +138,39 @@ public final class ConnectorUtils
             return -1;
     }
 
-    static void registerReceiver(@NonNull Context context, @Nullable BroadcastReceiver receiver, @NonNull IntentFilter filter)
-    {
-        if (receiver != null)
-        {
-            try
-            {
+    static void registerReceiver(@NonNull Context context, @Nullable BroadcastReceiver receiver, @NonNull IntentFilter filter) {
+        if (receiver != null) {
+            try {
                 context.registerReceiver(receiver, filter);
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
             }
         }
     }
 
-    static void unregisterReceiver(@NonNull Context context, @Nullable BroadcastReceiver receiver)
-    {
-        if (receiver != null)
-        {
-            try
-            {
+    static void unregisterReceiver(@NonNull Context context, @Nullable BroadcastReceiver receiver) {
+        if (receiver != null) {
+            try {
                 context.unregisterReceiver(receiver);
-            }
-            catch (IllegalArgumentException e)
-            {
+            } catch (IllegalArgumentException e) {
             }
         }
     }
 
-    static boolean connectToWifi(@NonNull Context context, @NonNull WifiManager wifiManager, @NonNull ScanResult scanResult, @NonNull String password)
-    {
+    static boolean connectToWifi(@NonNull Context context, @NonNull WifiManager wifiManager, @NonNull ScanResult scanResult, @NonNull String password) {
         WifiConfiguration config = ConfigSecurities.getWifiConfiguration(wifiManager, scanResult);
-        if (config != null && password.isEmpty())
-        {
+        if (config != null && password.isEmpty()) {
             wifiLog("PASSWORD WAS EMPTY. TRYING TO CONNECT TO EXISTING NETWORK CONFIGURATION");
             return connectToConfiguredNetwork(wifiManager, config, true);
         }
 
-        if (!cleanPreviousConfiguration(wifiManager, config))
-        {
+        if (!cleanPreviousConfiguration(wifiManager, config)) {
             wifiLog("COULDN'T REMOVE PREVIOUS CONFIG, CONNECTING TO EXISTING ONE");
             return connectToConfiguredNetwork(wifiManager, config, true);
         }
 
-        final int security = ConfigSecurities.getSecurity(scanResult);
+        final String security = ConfigSecurities.getSecurity(scanResult);
 
-        if (ConfigSecurities.SECURITY_NONE == security)
+        if (ConfigSecurities.SECURITY_NONE.equals(security))
             checkForExcessOpenNetworkAndSave(context.getContentResolver(), wifiManager);
 
         config = new WifiConfiguration();
@@ -215,23 +183,20 @@ public final class ConnectorUtils
         if (id == -1)
             return false;
 
-        if (!wifiManager.saveConfiguration())
-        {
+        if (!wifiManager.saveConfiguration()) {
             wifiLog("Couldn't save wifi config");
             return false;
         }
         // We have to retrieve the WifiConfiguration after save
         config = ConfigSecurities.getWifiConfiguration(wifiManager, config);
-        if (config == null)
-        {
+        if (config == null) {
             wifiLog("Error getting wifi config after save. (config == null)");
             return false;
         }
         return connectToConfiguredNetwork(wifiManager, config, true);
     }
 
-    private static boolean connectToConfiguredNetwork(@NonNull WifiManager wifiManager, @Nullable WifiConfiguration config, boolean reassociate)
-    {
+    private static boolean connectToConfiguredNetwork(@NonNull WifiManager wifiManager, @Nullable WifiConfiguration config, boolean reassociate) {
         if (config == null)
             return false;
 
@@ -241,8 +206,7 @@ public final class ConnectorUtils
         int oldPri = config.priority;
         // Make it the highest priority.
         int newPri = getMaxPriority(wifiManager) + 1;
-        if (newPri > MAX_PRIORITY)
-        {
+        if (newPri > MAX_PRIORITY) {
             newPri = shiftPriorityAndSave(wifiManager);
             config = ConfigSecurities.getWifiConfiguration(wifiManager, config);
             if (config == null)
@@ -256,14 +220,12 @@ public final class ConnectorUtils
             return false;
 
         // Do not disable others
-        if (!wifiManager.enableNetwork(networkId, false))
-        {
+        if (!wifiManager.enableNetwork(networkId, false)) {
             config.priority = oldPri;
             return false;
         }
 
-        if (!wifiManager.saveConfiguration())
-        {
+        if (!wifiManager.saveConfiguration()) {
             config.priority = oldPri;
             return false;
         }
@@ -274,8 +236,7 @@ public final class ConnectorUtils
 
     }
 
-    private static boolean disableAllButOne(@NonNull final WifiManager wifiManager, @Nullable final WifiConfiguration config)
-    {
+    private static boolean disableAllButOne(@NonNull final WifiManager wifiManager, @Nullable final WifiConfiguration config) {
         @Nullable final List<WifiConfiguration> configurations = wifiManager.getConfiguredNetworks();
         if (configurations == null || config == null || configurations.isEmpty())
             return false;
@@ -292,8 +253,7 @@ public final class ConnectorUtils
 
 
     @SuppressWarnings("UnusedReturnValue")
-    private static boolean disableAllButOne(@NonNull final WifiManager wifiManager, @Nullable final ScanResult scanResult)
-    {
+    private static boolean disableAllButOne(@NonNull final WifiManager wifiManager, @Nullable final ScanResult scanResult) {
         @Nullable final List<WifiConfiguration> configurations = wifiManager.getConfiguredNetworks();
         if (configurations == null || scanResult == null || configurations.isEmpty())
             return false;
@@ -306,15 +266,13 @@ public final class ConnectorUtils
         return result;
     }
 
-    public static boolean reEnableNetworkIfPossible(@NonNull final WifiManager wifiManager, @Nullable final ScanResult scanResult)
-    {
+    public static boolean reEnableNetworkIfPossible(@NonNull final WifiManager wifiManager, @Nullable final ScanResult scanResult) {
         @Nullable final List<WifiConfiguration> configurations = wifiManager.getConfiguredNetworks();
         if (configurations == null || scanResult == null || configurations.isEmpty())
             return false;
         boolean result = false;
         for (WifiConfiguration wifiConfig : configurations)
-            if (Objects.equals(scanResult.BSSID, wifiConfig.BSSID) && Objects.equals(scanResult.SSID, trimQuotes(wifiConfig.SSID)))
-            {
+            if (Objects.equals(scanResult.BSSID, wifiConfig.BSSID) && Objects.equals(scanResult.SSID, trimQuotes(wifiConfig.SSID))) {
                 result = wifiManager.enableNetwork(wifiConfig.networkId, true);
                 break;
             }
@@ -324,15 +282,12 @@ public final class ConnectorUtils
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     static void connectWps(@NonNull final WifiManager wifiManager, @NonNull final ScanResult scanResult, @NonNull String pin, long timeOutMillis,
-                           @NonNull final ConnectionWpsListener connectionWpsListener)
-    {
+                           @NonNull final ConnectionWpsListener connectionWpsListener) {
         final WeakHandler handler = new WeakHandler();
         final WpsInfo wpsInfo = new WpsInfo();
-        final Runnable handlerTimeoutRunnable = new Runnable()
-        {
+        final Runnable handlerTimeoutRunnable = new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
                 wifiManager.cancelWps(null);
                 wifiLog("Connection with WPS has timed out");
                 cleanPreviousConfiguration(wifiManager, scanResult);
@@ -341,28 +296,23 @@ public final class ConnectorUtils
             }
         };
 
-        final WifiManager.WpsCallback wpsCallback = new WifiManager.WpsCallback()
-        {
+        final WifiManager.WpsCallback wpsCallback = new WifiManager.WpsCallback() {
             @Override
-            public void onStarted(String pin)
-            {
+            public void onStarted(String pin) {
             }
 
             @Override
-            public void onSucceeded()
-            {
+            public void onSucceeded() {
                 handler.removeCallbacks(handlerTimeoutRunnable);
                 wifiLog("CONNECTED With WPS successfully");
                 connectionWpsListener.isSuccessful(true);
             }
 
             @Override
-            public void onFailed(int reason)
-            {
+            public void onFailed(int reason) {
                 handler.removeCallbacks(handlerTimeoutRunnable);
                 final String reasonStr;
-                switch (reason)
-                {
+                switch (reason) {
                     case 3:
                         reasonStr = "WPS_OVERLAP_ERROR";
                         break;
@@ -401,40 +351,35 @@ public final class ConnectorUtils
         wifiManager.startWps(wpsInfo, wpsCallback);
     }
 
-    static boolean cleanPreviousConfiguration(@NonNull final WifiManager wifiManager, @NonNull final ScanResult scanResult)
-    {
+    static boolean cleanPreviousConfiguration(@NonNull final WifiManager wifiManager, @NonNull final ScanResult scanResult) {
         //On Android 6.0 (API level 23) and above if my app did not create the configuration in the first place, it can not remove it either.
         final WifiConfiguration config = ConfigSecurities.getWifiConfiguration(wifiManager, scanResult);
         wifiLog("Attempting to remove previous network config...");
         if (config == null)
             return true;
 
-        if (wifiManager.removeNetwork(config.networkId))
-        {
+        if (wifiManager.removeNetwork(config.networkId)) {
             wifiManager.saveConfiguration();
             return true;
         }
         return false;
     }
 
-    static boolean cleanPreviousConfiguration(@NonNull final WifiManager wifiManager, @Nullable final WifiConfiguration config)
-    {
+    static boolean cleanPreviousConfiguration(@NonNull final WifiManager wifiManager, @Nullable final WifiConfiguration config) {
         //On Android 6.0 (API level 23) and above if my app did not create the configuration in the first place, it can not remove it either.
 
         wifiLog("Attempting to remove previous network config...");
         if (config == null)
             return true;
 
-        if (wifiManager.removeNetwork(config.networkId))
-        {
+        if (wifiManager.removeNetwork(config.networkId)) {
             wifiManager.saveConfiguration();
             return true;
         }
         return false;
     }
 
-    static void reenableAllHotspots(@NonNull WifiManager wifi)
-    {
+    static void reenableAllHotspots(@NonNull WifiManager wifi) {
         final List<WifiConfiguration> configurations = wifi.getConfiguredNetworks();
         if (configurations != null && !configurations.isEmpty())
             for (final WifiConfiguration config : configurations)
@@ -442,8 +387,7 @@ public final class ConnectorUtils
     }
 
     @Nullable
-    static ScanResult matchScanResultSsid(@NonNull String ssid, @NonNull Iterable<ScanResult> results)
-    {
+    static ScanResult matchScanResultSsid(@NonNull String ssid, @NonNull Iterable<ScanResult> results) {
         for (ScanResult result : results)
             if (Objects.equals(result.SSID, ssid))
                 return result;
@@ -451,8 +395,7 @@ public final class ConnectorUtils
     }
 
     @Nullable
-    static ScanResult matchScanResult(@NonNull String ssid, @NonNull String bssid, @NonNull Iterable<ScanResult> results)
-    {
+    static ScanResult matchScanResult(@NonNull String ssid, @NonNull String bssid, @NonNull Iterable<ScanResult> results) {
         for (ScanResult result : results)
             if (Objects.equals(result.SSID, ssid) && Objects.equals(result.BSSID, bssid))
                 return result;
@@ -460,8 +403,7 @@ public final class ConnectorUtils
     }
 
     @Nullable
-    static ScanResult matchScanResultBssid(@NonNull String bssid, @NonNull Iterable<ScanResult> results)
-    {
+    static ScanResult matchScanResultBssid(@NonNull String bssid, @NonNull Iterable<ScanResult> results) {
         for (ScanResult result : results)
             if (Objects.equals(result.BSSID, bssid))
                 return result;
