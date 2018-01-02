@@ -6,6 +6,7 @@ import android.net.wifi.WifiManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.thanosfisherman.wifiutils.ConnectorUtils.convertToQuotedString;
@@ -34,7 +35,7 @@ final class ConfigSecurities {
         config.allowedKeyManagement.clear();
         config.allowedPairwiseCiphers.clear();
         config.allowedProtocols.clear();
-
+        wifiLog("Setting up security " + security);
         switch (security) {
             case SECURITY_NONE:
                 config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
@@ -43,6 +44,8 @@ final class ConfigSecurities {
                 config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
                 config.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
                 config.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.SHARED);
+                config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP40);
+                config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP104);
                 // WEP-40, WEP-104, and 256-bit WEP (WEP-232?)
                 if (ConnectorUtils.isHexWepKey(password))
                     config.wepKeys[0] = password;
@@ -53,13 +56,12 @@ final class ConfigSecurities {
             case SECURITY_WPA2:
                 config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
                 config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
-
-                config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
-
-                config.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
                 config.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.TKIP);
-
-                config.allowedProtocols.set(Objects.equals(SECURITY_WPA2, security) ? WifiConfiguration.Protocol.RSN : WifiConfiguration.Protocol.WPA);
+                config.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
+                config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
+                config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_EAP);
+                config.allowedProtocols.set(WifiConfiguration.Protocol.WPA); // For WPA
+                config.allowedProtocols.set(WifiConfiguration.Protocol.RSN); // For WPA2
                 if (password.matches("[0-9A-Fa-f]{64}"))
                     config.preSharedKey = password;
                 else
@@ -69,7 +71,10 @@ final class ConfigSecurities {
             case SECURITY_IEEE8021X:
                 config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
                 config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
-                config.allowedKeyManagement.set(Objects.equals(SECURITY_WPA_EAP, security) ? WifiConfiguration.KeyMgmt.WPA_EAP : WifiConfiguration.KeyMgmt.IEEE8021X);
+                config.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.TKIP);
+                config.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
+                config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_EAP);
+                config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.IEEE8021X);
                 config.preSharedKey = convertToQuotedString(password);
                 break;
 
@@ -108,6 +113,24 @@ final class ConfigSecurities {
     }
 
     @Nullable
+    static WifiConfiguration getWifiConfiguration(@NonNull final WifiManager wifiMgr, @NonNull final String ssid) {
+
+        final List<WifiConfiguration> configurations = wifiMgr.getConfiguredNetworks();
+        if (configurations == null) {
+            wifiLog("NULL configs");
+            return null;
+        }
+
+        for (final WifiConfiguration config : configurations) {
+            //wifiLog(config.SSID);
+            if (Objects.equals(config.SSID, ssid)) {
+                return config;
+            }
+        }
+        wifiLog("Couldn't find " + ssid);
+        return null;
+    }
+    @Nullable
     static WifiConfiguration getWifiConfiguration(@NonNull final WifiManager wifiMgr, @NonNull final ScanResult scanResult) {
         final String ssid = convertToQuotedString(scanResult.SSID);
         if (ssid.isEmpty())
@@ -134,6 +157,8 @@ final class ConfigSecurities {
     }
 
     static String getSecurity(@NonNull WifiConfiguration config) {
+        String security = SECURITY_NONE;
+        List<String> securities = new ArrayList<>();
         if (config.allowedKeyManagement.get(WifiConfiguration.KeyMgmt.NONE)) {
             // If we never set group ciphers, wpa_supplicant puts all of them.
             // For open, we don't set group ciphers.
@@ -141,38 +166,53 @@ final class ConfigSecurities {
             // and TKIP should not be there.
             if (!config.allowedGroupCiphers.get(WifiConfiguration.GroupCipher.CCMP)
                     && (config.allowedGroupCiphers.get(WifiConfiguration.GroupCipher.WEP40)
-                    || config.allowedGroupCiphers.get(WifiConfiguration.GroupCipher.WEP104)))
-                return SECURITY_WEP;
-            else
-                return SECURITY_NONE;
-
-        } else if (config.allowedProtocols.get(WifiConfiguration.Protocol.RSN)) {
-            return SECURITY_WPA2;
-        } else if (config.allowedKeyManagement.get(WifiConfiguration.KeyMgmt.WPA_EAP)) {
-            return SECURITY_WPA_EAP;
-        } else if (config.allowedKeyManagement.get(WifiConfiguration.KeyMgmt.IEEE8021X)) {
-            return SECURITY_IEEE8021X;
-        } else if (config.allowedProtocols.get(WifiConfiguration.Protocol.WPA)) {
-            return SECURITY_WPA;
-        } else {
-            wifiLog("Unknown security type from WifiConfiguration, falling back on open.");
-            return SECURITY_NONE;
+                    || config.allowedGroupCiphers.get(WifiConfiguration.GroupCipher.WEP104))) {
+                security = SECURITY_WEP;
+                securities.add(security);
+            } else {
+                security = SECURITY_NONE;
+                securities.add(security);
+            }
         }
+        if (config.allowedProtocols.get(WifiConfiguration.Protocol.WPA)) {
+            security = SECURITY_WPA;
+            securities.add(security);
+        }
+        if (config.allowedProtocols.get(WifiConfiguration.Protocol.RSN)) {
+            security = SECURITY_WPA2;
+            securities.add(security);
+        }
+        if (config.allowedKeyManagement.get(WifiConfiguration.KeyMgmt.WPA_PSK)) {
+            security = "psk";
+            securities.add(security);
+        }
+        if (config.allowedKeyManagement.get(WifiConfiguration.KeyMgmt.WPA_EAP)) {
+            security = SECURITY_WPA_EAP;
+            securities.add(security);
+        }
+        if (config.allowedKeyManagement.get(WifiConfiguration.KeyMgmt.IEEE8021X)) {
+            security = SECURITY_IEEE8021X;
+            securities.add(security);
+        }
+        wifiLog("Got Security Via WifiConfiguration " + securities);
+        return security;
     }
 
     static String getSecurity(@NonNull ScanResult result) {
+        String security = SECURITY_NONE;
         if (result.capabilities.contains(SECURITY_WEP))
-            return SECURITY_WEP;
-        else if (result.capabilities.contains(SECURITY_WPA))
-            return SECURITY_WPA;
+            security = SECURITY_WEP;
         else if (result.capabilities.contains(SECURITY_WPA2))
-            return SECURITY_WPA2;
+            security = SECURITY_WPA2;
+        else if (result.capabilities.contains(SECURITY_WPA))
+            security = SECURITY_WPA;
         else if (result.capabilities.contains(SECURITY_WPA_EAP))
-            return SECURITY_WPA_EAP;
+            security = SECURITY_WPA_EAP;
         else if (result.capabilities.contains(SECURITY_IEEE8021X))
-            return SECURITY_IEEE8021X;
-        else
-            return SECURITY_NONE;
+            security = SECURITY_IEEE8021X;
+        wifiLog("ScanResult capabilities " + result.capabilities);
+        wifiLog("Got security via ScanResult " + security);
+        return security;
     }
 
     /**

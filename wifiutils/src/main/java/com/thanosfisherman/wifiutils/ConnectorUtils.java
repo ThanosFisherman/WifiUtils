@@ -30,6 +30,9 @@ public final class ConnectorUtils {
             if (wifiManager.getConnectionInfo() != null && wifiManager.getConnectionInfo().getBSSID() != null &&
                     Objects.equals(bssid, wifiManager.getConnectionInfo().getBSSID())) {
                 wifiLog("Already connected to: " + wifiManager.getConnectionInfo().getSSID() + "  BSSID: " + wifiManager.getConnectionInfo().getBSSID());
+                WifiConfiguration config = ConfigSecurities.getWifiConfiguration(wifiManager, wifiManager.getConnectionInfo().getSSID());
+                if (config != null)
+                    ConfigSecurities.getSecurity(config);
                 return true;
             }
         }

@@ -33,8 +33,12 @@ public class MainActivity extends AppCompatActivity
 
     private void connectWithWpa()
     {
+        String ote = "conn-x828678";
+        String oteWps = "OTEe6f5f8";
+        String otePass = "146080828678";
+
         WifiUtils.withContext(getApplicationContext())
-                .connectWith("conn-x828678", "146080828678")
+                .connectWith(ote, otePass)
                  .setTimeout(40000)
                  .onConnectionResult(this::checkResult)
                  .start();
