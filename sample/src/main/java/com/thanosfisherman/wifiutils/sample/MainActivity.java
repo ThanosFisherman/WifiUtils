@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity
     private void connectWithWpa()
     {
         WifiUtils.withContext(getApplicationContext())
-                .connectWith("BAC-0ec98f", "!qaz#EDC5tgb")
+                .connectWith("conn-x828678", "146080828678")
                  .setTimeout(40000)
                  .onConnectionResult(this::checkResult)
                  .start();

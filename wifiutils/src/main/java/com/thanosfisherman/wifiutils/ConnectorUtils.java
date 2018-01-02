@@ -50,7 +50,7 @@ public final class ConnectorUtils {
 
         for (int i = configurations.size() - 1; i >= 0; i--) {
             final WifiConfiguration config = configurations.get(i);
-            if (ConfigSecurities.SECURITY_NONE.equals(ConfigSecurities.getSecurity(config))) {
+            if (Objects.equals(ConfigSecurities.SECURITY_NONE, ConfigSecurities.getSecurity(config))) {
                 tempCount++;
                 if (tempCount >= numOpenNetworksKept) {
                     modified = true;
@@ -170,7 +170,7 @@ public final class ConnectorUtils {
 
         final String security = ConfigSecurities.getSecurity(scanResult);
 
-        if (ConfigSecurities.SECURITY_NONE.equals(security))
+        if (Objects.equals(ConfigSecurities.SECURITY_NONE, security))
             checkForExcessOpenNetworkAndSave(context.getContentResolver(), wifiManager);
 
         config = new WifiConfiguration();

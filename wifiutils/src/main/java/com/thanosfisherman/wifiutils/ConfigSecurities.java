@@ -59,7 +59,7 @@ final class ConfigSecurities {
                 config.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
                 config.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.TKIP);
 
-                config.allowedProtocols.set(SECURITY_WPA2.equals(security) ? WifiConfiguration.Protocol.RSN : WifiConfiguration.Protocol.WPA);
+                config.allowedProtocols.set(Objects.equals(SECURITY_WPA2, security) ? WifiConfiguration.Protocol.RSN : WifiConfiguration.Protocol.WPA);
                 if (password.matches("[0-9A-Fa-f]{64}"))
                     config.preSharedKey = password;
                 else
@@ -69,7 +69,7 @@ final class ConfigSecurities {
             case SECURITY_IEEE8021X:
                 config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
                 config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
-                config.allowedKeyManagement.set(SECURITY_WPA_EAP.equals(security) ? WifiConfiguration.KeyMgmt.WPA_EAP : WifiConfiguration.KeyMgmt.IEEE8021X);
+                config.allowedKeyManagement.set(Objects.equals(SECURITY_WPA_EAP, security) ? WifiConfiguration.KeyMgmt.WPA_EAP : WifiConfiguration.KeyMgmt.IEEE8021X);
                 config.preSharedKey = convertToQuotedString(password);
                 break;
 
@@ -99,8 +99,7 @@ final class ConfigSecurities {
         for (final WifiConfiguration config : configurations) {
             if (bssid.equals(config.BSSID) || ssid.equals(config.SSID)) {
                 final String configSecurity = getSecurity(config);
-
-                if (security.equals(configSecurity))
+                if (Objects.equals(security, configSecurity))
                     return config;
             }
         }
@@ -127,7 +126,7 @@ final class ConfigSecurities {
         for (final WifiConfiguration config : configurations) {
             if (bssid.equals(config.BSSID) || ssid.equals(config.SSID)) {
                 final String configSecurity = getSecurity(config);
-                if (security.equals(configSecurity))
+                if (Objects.equals(security, configSecurity))
                     return config;
             }
         }
