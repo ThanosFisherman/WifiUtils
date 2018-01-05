@@ -11,12 +11,10 @@ import android.widget.Toast;
 
 import com.thanosfisherman.wifiutils.WifiUtils;
 
-public class MainActivity extends AppCompatActivity
-{
+public class MainActivity extends AppCompatActivity {
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 555);
@@ -26,26 +24,22 @@ public class MainActivity extends AppCompatActivity
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    private void connectWithWps()
-    {
+    private void connectWithWps() {
         WifiUtils.withContext(getApplicationContext()).connectWithWps("d8:74:95:e6:f5:f8", "51362485").onConnectionWpsResult(this::checkResult).start();
     }
 
-    private void connectWithWpa()
-    {
+    private void connectWithWpa() {
         String ote = "conn-x828678";
-        String oteWps = "OTEe6f5f8";
         String otePass = "146080828678";
 
         WifiUtils.withContext(getApplicationContext())
                 .connectWith(ote, otePass)
-                 .setTimeout(40000)
-                 .onConnectionResult(this::checkResult)
-                 .start();
+                .setTimeout(40000)
+                .onConnectionResult(this::checkResult)
+                .start();
     }
 
-    private void checkResult(boolean isSuccess)
-    {
+    private void checkResult(boolean isSuccess) {
         if (isSuccess)
             Toast.makeText(MainActivity.this, "CONNECTED YAY", Toast.LENGTH_SHORT).show();
         else
