@@ -17,12 +17,12 @@ Where `checkResult` could be a custom-defined method of your own that would deal
 
 ```java
   private void checkResult(boolean isSuccess)
-    {
-        if (isSuccess)
-            Toast.makeText(MainActivity.this, "WIFI ENABLED", Toast.LENGTH_SHORT).show();
-        else
-            Toast.makeText(MainActivity.this, "COULDN'T ENABLE WIFI", Toast.LENGTH_SHORT).show();
-    }
+  {
+       if (isSuccess)
+           Toast.makeText(MainActivity.this, "WIFI ENABLED", Toast.LENGTH_SHORT).show();
+       else
+           Toast.makeText(MainActivity.this, "COULDN'T ENABLE WIFI", Toast.LENGTH_SHORT).show();
+  }
 ```
 
 If you don't want to deal with call backs you can just pass `null` to `enableWifi` method like so.
@@ -44,14 +44,14 @@ You can easily perform a WiFi Network scan like so:
 WifiUtils.withContext(getApplicationContext()).scanWifi(this::getScanResults).start();
 
 private void getScanResults(@NonNull final List<ScanResult> results)
- {
+{
     if (results.isEmpty())
     {
         Log.i(TAG, "SCAN RESULTS IT'S EMPTY");
         return;
     }
     Log.i(TAG, "GOT SCAN RESULTS " + results);
- }
+}
 ```
 
 ### Connecting to WiFi Networks
@@ -68,12 +68,12 @@ Again checkResult could be something like:
 
 ```java
   private void checkResult(boolean isSuccess)
-    {
+  {
         if (isSuccess)
             Toast.makeText(MainActivity.this, "CONNECTED YAY", Toast.LENGTH_SHORT).show();
         else
             Toast.makeText(MainActivity.this, "COULDN'T CONNECT", Toast.LENGTH_SHORT).show();
-    }
+  }
 ```
 
 There are also a few other options that would allow you to do the same job: For example you can connect using SSID, BSSID and WPA/WPA2 Key:
