@@ -10,9 +10,9 @@ import android.support.annotation.NonNull;
 public final class WifiStateReceiver extends BroadcastReceiver
 {
 
-    private final WifiStateCallback wifiStateCallback;
+    @NonNull private final WifiStateCallback wifiStateCallback;
 
-    public WifiStateReceiver(WifiStateCallback callbacks)
+    public WifiStateReceiver(@NonNull WifiStateCallback callbacks)
     {
         wifiStateCallback = callbacks;
     }

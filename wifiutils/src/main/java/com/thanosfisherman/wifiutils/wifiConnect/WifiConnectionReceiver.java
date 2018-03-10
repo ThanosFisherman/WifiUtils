@@ -9,9 +9,10 @@ import android.net.wifi.WifiManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.thanosfisherman.wifiutils.Objects;
+import com.thanosfisherman.elvis.Objects;
 import com.thanosfisherman.wifiutils.WeakHandler;
 
+import static com.thanosfisherman.elvis.Elvis.of;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.isAlreadyConnected;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.reEnableNetworkIfPossible;
 import static com.thanosfisherman.wifiutils.WifiUtils.wifiLog;
@@ -31,7 +32,7 @@ public final class WifiConnectionReceiver extends BroadcastReceiver
         {
             wifiLog("Connection Timed out...");
             reEnableNetworkIfPossible(mWifiManager, mScanResult);
-            if (isAlreadyConnected(mWifiManager, mScanResult != null ? mScanResult.BSSID : null))
+            if (isAlreadyConnected(mWifiManager, of(mScanResult).next(scanResult -> scanResult.BSSID).get()))
                 mWifiConnectionCallback.successfulConnect();
             else
                 mWifiConnectionCallback.errorConnect();
@@ -69,7 +70,7 @@ public final class WifiConnectionReceiver extends BroadcastReceiver
             {
                 case COMPLETED:
                 case FOUR_WAY_HANDSHAKE:
-                    if (isAlreadyConnected(mWifiManager, mScanResult != null ? mScanResult.BSSID : null))
+                    if (isAlreadyConnected(mWifiManager, of(mScanResult).next(scanResult -> scanResult.BSSID).get()))
                     {
                         handler.removeCallbacks(handlerCallback);
                         mWifiConnectionCallback.successfulConnect();

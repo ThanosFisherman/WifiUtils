@@ -6,6 +6,8 @@ import android.net.wifi.WifiManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.thanosfisherman.elvis.Objects;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;

@@ -3,13 +3,14 @@ package com.thanosfisherman.wifiutils.wifiScan;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.support.annotation.NonNull;
 
 
 public class WifiScanReceiver extends BroadcastReceiver
 {
-    private final WifiScanCallback callback;
+    @NonNull private final WifiScanCallback callback;
 
-    public WifiScanReceiver(WifiScanCallback callback)
+    public WifiScanReceiver(@NonNull WifiScanCallback callback)
     {
         this.callback = callback;
     }

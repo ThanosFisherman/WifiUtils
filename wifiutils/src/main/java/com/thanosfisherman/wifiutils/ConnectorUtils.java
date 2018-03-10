@@ -15,6 +15,7 @@ import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.text.TextUtils;
 
+import com.thanosfisherman.elvis.Objects;
 import com.thanosfisherman.wifiutils.wifiWps.ConnectionWpsListener;
 
 import java.util.Collections;
