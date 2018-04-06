@@ -169,6 +169,8 @@ There are a few more things left to be covered in this tutorial. Hopefully I wil
 
 Feel free to add/correct/fix something to this library, I will be glad to improve it with your help.
 
+**Please have a look at the [Contributing Guide](https://github.com/ThanosFisherman/WifiUtils/blob/master/docs/CONTRIBUTING.md) before making a Pull Request.**
+
 License
 -------
 [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg?style=flat-square)](https://www.apache.org/licenses/LICENSE-2.0.html)
