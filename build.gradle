@@ -28,7 +28,7 @@ ext {
     buildToolsVersion = '27.0.3'
     minSdkVersion = 14
     targetSdkVersion = 27
-    supportLibrariesVersion = '27.0.2'
-    publishVersionName = '1.3.5'
-    publishVersionCode = 9
+    supportLibrariesVersion = '27.1.1'
+    publishVersionName = '1.3.6'
+    publishVersionCode = 10
 }
