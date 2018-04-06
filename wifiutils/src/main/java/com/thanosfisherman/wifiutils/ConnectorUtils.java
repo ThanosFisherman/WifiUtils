@@ -29,6 +29,7 @@ public final class ConnectorUtils {
     public static boolean isAlreadyConnected(@Nullable WifiManager wifiManager, @Nullable String bssid) {
         if (bssid != null && wifiManager != null) {
             if (wifiManager.getConnectionInfo() != null && wifiManager.getConnectionInfo().getBSSID() != null &&
+                    wifiManager.getConnectionInfo().getIpAddress() != 0 &&
                     Objects.equals(bssid, wifiManager.getConnectionInfo().getBSSID())) {
                 wifiLog("Already connected to: " + wifiManager.getConnectionInfo().getSSID() + "  BSSID: " + wifiManager.getConnectionInfo().getBSSID());
                 return true;
