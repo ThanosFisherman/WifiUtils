@@ -209,6 +209,12 @@ public final class WifiUtils implements WifiConnectorBuilder,
         }
     }
 
+    @Override
+    public void enableWifi()
+    {
+        enableWifi(null);
+    }
+
     @NonNull
     @Override
     public WifiConnectorBuilder scanWifi(final ScanResultsListener scanResultsListener)

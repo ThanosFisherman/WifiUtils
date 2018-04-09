@@ -18,6 +18,7 @@ public interface WifiConnectorBuilder
     interface WifiUtilsBuilder
     {
         void enableWifi(WifiStateListener wifiStateListener);
+        void enableWifi();
         void disableWifi();
 
         @NonNull
