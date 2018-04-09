@@ -6,18 +6,16 @@ import android.content.Intent;
 import android.support.annotation.NonNull;
 
 
-public class WifiScanReceiver extends BroadcastReceiver
-{
-    @NonNull private final WifiScanCallback callback;
+public class WifiScanReceiver extends BroadcastReceiver {
+    @NonNull
+    private final WifiScanCallback callback;
 
-    public WifiScanReceiver(@NonNull WifiScanCallback callback)
-    {
+    public WifiScanReceiver(@NonNull WifiScanCallback callback) {
         this.callback = callback;
     }
 
     @Override
-    public void onReceive(Context context, Intent intent)
-    {
+    public void onReceive(Context context, Intent intent) {
         callback.onScanResultsReady();
     }
 }
