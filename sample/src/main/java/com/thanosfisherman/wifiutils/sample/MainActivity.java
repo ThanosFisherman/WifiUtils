@@ -20,6 +20,7 @@ public class MainActivity extends AppCompatActivity {
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 555);
         final Button button = findViewById(R.id.button);
         WifiUtils.enableLog(true);
+        //TODO: CHECK IF LOCATION SERVICES ARE ON
         button.setOnClickListener(v -> connectWithWpa());
     }
 
@@ -39,10 +40,16 @@ public class MainActivity extends AppCompatActivity {
                 .start();
     }
 
+    private void enableWifi() {
+        WifiUtils.withContext(getApplicationContext()).enableWifi(this::checkResult);
+        //or without the callback
+        //WifiUtils.withContext(getApplicationContext()).enableWifi();
+    }
+
     private void checkResult(boolean isSuccess) {
         if (isSuccess)
-            Toast.makeText(MainActivity.this, "CONNECTED YAY", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, "SUCCESS!", Toast.LENGTH_SHORT).show();
         else
-            Toast.makeText(MainActivity.this, "COULDN'T CONNECT", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, "EPIC FAIL!", Toast.LENGTH_SHORT).show();
     }
 }
