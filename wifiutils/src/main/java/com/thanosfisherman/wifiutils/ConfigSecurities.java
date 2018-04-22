@@ -102,9 +102,8 @@ final class ConfigSecurities {
     @Nullable
     static WifiConfiguration getWifiConfiguration(@NonNull final WifiManager wifiMgr, @NonNull final WifiConfiguration configToFind) {
         final String ssid = configToFind.SSID;
-        if (ssid.isEmpty()) {
+        if (ssid == null || ssid.isEmpty())
             return null;
-        }
 
         final String bssid = configToFind.BSSID;
 

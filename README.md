@@ -25,10 +25,10 @@ Where `checkResult` could be a custom-defined method of your own that would deal
   }
 ```
 
-If you don't want to deal with call backs you can just pass `null` to `enableWifi` method like so.
+If you don't want to deal with call backs you can also call `enableWifi` method like so.
 
 ```java
- WifiUtils.withContext(getApplicationContext()).enableWifi(null);
+ WifiUtils.withContext(getApplicationContext()).enableWifi();
 ```
 
 Similarly you can turn off the wifi using this:
