@@ -8,14 +8,12 @@ There are a few ways of contributing into the project:
 4. Introduce any interesting functionality you might need. Please do let me know before doing this first. There might be a chance that a feature you might want to include be really specific to your needs and not fit the overall philosophy of the lib. For any questions on features PR, email me at **psaridis @ gmail . com**
 
 ## Creating Pull Requests (PR)
-The repo contains two main branches:
+In order to create a Pull Request
 
-* `master` which contains all changes currently available in production.
-* `development` which contains all changes to be integrated in the next production-ready versions of WiFiUtils.
-
-1. Create a branch from `development`.
-2. Make any modifications required.
-3. When done, open a PR of that branch against `development`.
+1. Fork the project.
+2. Create a new branch from `master`.
+3. Make any modifications required.
+4. When done, open a PR of your new branch against `master`.
 
 Make sure to consider testing the code you push.
 
