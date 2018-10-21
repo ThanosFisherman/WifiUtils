@@ -105,7 +105,7 @@ final class ConfigSecurities {
         if (ssid == null || ssid.isEmpty())
             return null;
 
-        final String bssid = configToFind.BSSID;
+        final String bssid = configToFind.BSSID != null ? configToFind.BSSID : "";
 
         final String security = getSecurity(configToFind);
 
