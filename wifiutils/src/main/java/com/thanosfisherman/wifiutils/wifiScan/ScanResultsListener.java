@@ -2,7 +2,7 @@ package com.thanosfisherman.wifiutils.wifiScan;
 
 
 import android.net.wifi.ScanResult;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import java.util.List;
 
