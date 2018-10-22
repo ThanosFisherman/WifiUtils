@@ -6,9 +6,9 @@ buildscript {
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.1.4'
+        classpath 'com.android.tools.build:gradle:3.2.1'
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4'
-        classpath 'com.github.dcendents:android-maven-gradle-plugin:2.0'
+        classpath 'com.github.dcendents:android-maven-gradle-plugin:2.1'
     }
 }
 
@@ -23,12 +23,35 @@ task clean(type: Delete) {
     delete rootProject.buildDir
 }
 
+
 ext {
-    compileSdkVersion = 27
-    buildToolsVersion = '27.0.3'
-    minSdkVersion = 14
-    targetSdkVersion = 27
-    supportLibrariesVersion = '27.1.1'
-    publishVersionName = '1.3.7'
-    publishVersionCode = 11
+    compileSdkVersion = 28
+    buildToolsVersion = '28.0.3'
+    minSdkVersion = 15
+    targetSdkVersion = 28
+    publishVersionName = '1.4'
+    publishVersionCode = 12
+
+    currentVersionDesc = 'WifiUtils current version'
+    bintrayRepo = 'maven'
+    bintrayName = 'mayi'   // Has to be same as your library module name
+
+    publishedGroupId = 'com.thanosfisherman.wifiutils'
+    libraryName = 'WifiUtils'
+    artifact = 'wifiutils'     // Has to be same as your library module name
+
+    libraryDescription = 'Library that makes it easy to Connect to WiFi hotspots using ssid and/or bssid'
+
+    // Your github repo link
+    siteUrl = 'https://github.com/ThanosFisherman/WifiUtils'
+    gitUrl = 'https://github.com/ThanosFisherman/WifiUtils.git'
+    githubRepository = 'ThanosFisherman/WifiUtils'
+
+    developerId = 'thanosfisherman'
+    developerName = 'Thanos Psaridis'
+    developerEmail = 'psaridis@gmail.com'
+
+    licenseName = 'The Apache Software License, Version 2.0'
+    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+    allLicenses = ["Apache-2.0"]
 }
