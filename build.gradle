@@ -34,7 +34,7 @@ ext {
 
     currentVersionDesc = 'WifiUtils current version'
     bintrayRepo = 'maven'
-    bintrayName = 'mayi'   // Has to be same as your library module name
+    bintrayName = 'wifiutils'   // Has to be same as your library module name
 
     publishedGroupId = 'com.thanosfisherman.wifiutils'
     libraryName = 'WifiUtils'
