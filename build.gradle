@@ -29,7 +29,7 @@ ext {
     buildToolsVersion = '28.0.3'
     minSdkVersion = 15
     targetSdkVersion = 28
-    publishVersionName = '1.4'
+    publishVersionName = '1.4.0'
     publishVersionCode = 12
 
     currentVersionDesc = 'WifiUtils current version'
