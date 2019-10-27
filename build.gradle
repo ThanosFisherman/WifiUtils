@@ -6,7 +6,7 @@ buildscript {
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.1'
+        classpath 'com.android.tools.build:gradle:3.5.1'
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4'
         classpath 'com.github.dcendents:android-maven-gradle-plugin:2.1'
     }
@@ -29,8 +29,8 @@ ext {
     buildToolsVersion = '28.0.3'
     minSdkVersion = 15
     targetSdkVersion = 28
-    publishVersionName = '1.4.0'
-    publishVersionCode = 12
+    publishVersionName = '1.4.1'
+    publishVersionCode = 13
 
     currentVersionDesc = 'WifiUtils current version'
     bintrayRepo = 'maven'
