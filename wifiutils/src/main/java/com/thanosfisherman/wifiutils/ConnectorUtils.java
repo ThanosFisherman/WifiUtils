@@ -10,10 +10,11 @@ import android.net.wifi.WifiManager;
 import android.net.wifi.WpsInfo;
 import android.os.Build;
 import android.provider.Settings;
+import android.text.TextUtils;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
-import android.text.TextUtils;
 
 import com.thanosfisherman.elvis.Objects;
 import com.thanosfisherman.wifiutils.wifiWps.ConnectionWpsListener;
@@ -122,7 +123,7 @@ public final class ConnectorUtils {
 
     static boolean isHexWepKey(@Nullable String wepKey) {
         final int passwordLen = wepKey == null ? 0 : wepKey.length();
-        return passwordLen != 0 && (passwordLen == 10 || passwordLen == 26 || passwordLen == 58) && wepKey.matches("[0-9A-Fa-f]*");
+        return (passwordLen == 10 || passwordLen == 26 || passwordLen == 58) && wepKey.matches("[0-9A-Fa-f]*");
     }
 
 
@@ -205,7 +206,6 @@ public final class ConnectorUtils {
         if (Build.VERSION.SDK_INT >= 23)
             return disableAllButOne(wifiManager, config) && (reassociate ? wifiManager.reassociate() : wifiManager.reconnect());
 
-        int oldPri = config.priority;
         // Make it the highest priority.
         int newPri = getMaxPriority(wifiManager) + 1;
         if (newPri > MAX_PRIORITY) {
@@ -223,12 +223,10 @@ public final class ConnectorUtils {
 
         // Do not disable others
         if (!wifiManager.enableNetwork(networkId, false)) {
-            config.priority = oldPri;
             return false;
         }
 
         if (!wifiManager.saveConfiguration()) {
-            config.priority = oldPri;
             return false;
         }
 
