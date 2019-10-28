@@ -65,7 +65,9 @@ public final class ConnectorUtils {
 
     }
 
-    private static int getMaxPriority(@NonNull final WifiManager wifiManager) {
+    private static int getMaxPriority(@Nullable final WifiManager wifiManager) {
+        if (wifiManager == null)
+            return 0;
         final List<WifiConfiguration> configurations = wifiManager.getConfiguredNetworks();
         int pri = 0;
         for (final WifiConfiguration config : configurations) {
@@ -76,7 +78,9 @@ public final class ConnectorUtils {
         return pri;
     }
 
-    private static int shiftPriorityAndSave(@NonNull final WifiManager wifiMgr) {
+    private static int shiftPriorityAndSave(@Nullable final WifiManager wifiMgr) {
+        if (wifiMgr == null)
+            return 0;
         final List<WifiConfiguration> configurations = wifiMgr.getConfiguredNetworks();
         sortByPriority(configurations);
         final int size = configurations.size();
@@ -159,7 +163,9 @@ public final class ConnectorUtils {
         }
     }
 
-    static boolean connectToWifi(@NonNull Context context, @NonNull WifiManager wifiManager, @NonNull ScanResult scanResult, @NonNull String password) {
+    static boolean connectToWifi(@NonNull Context context, @Nullable WifiManager wifiManager, @NonNull ScanResult scanResult, @NonNull String password) {
+        if (wifiManager == null)
+            return false;
         WifiConfiguration config = ConfigSecurities.getWifiConfiguration(wifiManager, scanResult);
         if (config != null && password.isEmpty()) {
             wifiLog("PASSWORD WAS EMPTY. TRYING TO CONNECT TO EXISTING NETWORK CONFIGURATION");
@@ -199,8 +205,8 @@ public final class ConnectorUtils {
         return connectToConfiguredNetwork(wifiManager, config, true);
     }
 
-    private static boolean connectToConfiguredNetwork(@NonNull WifiManager wifiManager, @Nullable WifiConfiguration config, boolean reassociate) {
-        if (config == null)
+    private static boolean connectToConfiguredNetwork(@Nullable WifiManager wifiManager, @Nullable WifiConfiguration config, boolean reassociate) {
+        if (config == null || wifiManager == null)
             return false;
 
         if (Build.VERSION.SDK_INT >= 23)
@@ -236,37 +242,49 @@ public final class ConnectorUtils {
 
     }
 
-    private static boolean disableAllButOne(@NonNull final WifiManager wifiManager, @Nullable final WifiConfiguration config) {
+    private static boolean disableAllButOne(@Nullable final WifiManager wifiManager, @Nullable final WifiConfiguration config) {
+        if (wifiManager == null)
+            return false;
         @Nullable final List<WifiConfiguration> configurations = wifiManager.getConfiguredNetworks();
         if (configurations == null || config == null || configurations.isEmpty())
             return false;
         boolean result = false;
 
-        for (WifiConfiguration wifiConfig : configurations)
+        for (WifiConfiguration wifiConfig : configurations) {
+            if (wifiConfig == null)
+                continue;
             if (wifiConfig.networkId == config.networkId)
                 result = wifiManager.enableNetwork(wifiConfig.networkId, true);
             else
                 wifiManager.disableNetwork(wifiConfig.networkId);
+        }
         wifiLog("disableAllButOne " + result);
         return result;
     }
 
 
     @SuppressWarnings("UnusedReturnValue")
-    private static boolean disableAllButOne(@NonNull final WifiManager wifiManager, @Nullable final ScanResult scanResult) {
+    private static boolean disableAllButOne(@Nullable final WifiManager wifiManager, @Nullable final ScanResult scanResult) {
+        if (wifiManager == null)
+            return false;
         @Nullable final List<WifiConfiguration> configurations = wifiManager.getConfiguredNetworks();
         if (configurations == null || scanResult == null || configurations.isEmpty())
             return false;
         boolean result = false;
-        for (WifiConfiguration wifiConfig : configurations)
+        for (WifiConfiguration wifiConfig : configurations) {
+            if (wifiConfig == null)
+                continue;
             if (Objects.equals(scanResult.BSSID, wifiConfig.BSSID) && Objects.equals(scanResult.SSID, trimQuotes(wifiConfig.SSID)))
                 result = wifiManager.enableNetwork(wifiConfig.networkId, true);
             else
                 wifiManager.disableNetwork(wifiConfig.networkId);
+        }
         return result;
     }
 
-    public static boolean reEnableNetworkIfPossible(@NonNull final WifiManager wifiManager, @Nullable final ScanResult scanResult) {
+    public static boolean reEnableNetworkIfPossible(@Nullable final WifiManager wifiManager, @Nullable final ScanResult scanResult) {
+        if (wifiManager == null)
+            return false;
         @Nullable final List<WifiConfiguration> configurations = wifiManager.getConfiguredNetworks();
         if (configurations == null || scanResult == null || configurations.isEmpty())
             return false;
@@ -281,8 +299,12 @@ public final class ConnectorUtils {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    static void connectWps(@NonNull final WifiManager wifiManager, @NonNull final ScanResult scanResult, @NonNull String pin, long timeOutMillis,
+    static void connectWps(@Nullable final WifiManager wifiManager, @NonNull final ScanResult scanResult, @NonNull String pin, long timeOutMillis,
                            @NonNull final ConnectionWpsListener connectionWpsListener) {
+        if (wifiManager == null) {
+            connectionWpsListener.isSuccessful(false);
+            return;
+        }
         final WeakHandler handler = new WeakHandler();
         final WpsInfo wpsInfo = new WpsInfo();
         final Runnable handlerTimeoutRunnable = new Runnable() {
@@ -351,7 +373,9 @@ public final class ConnectorUtils {
         wifiManager.startWps(wpsInfo, wpsCallback);
     }
 
-    static boolean cleanPreviousConfiguration(@NonNull final WifiManager wifiManager, @NonNull final ScanResult scanResult) {
+    static boolean cleanPreviousConfiguration(@Nullable final WifiManager wifiManager, @NonNull final ScanResult scanResult) {
+        if (wifiManager == null)
+            return false;
         //On Android 6.0 (API level 23) and above if my app did not create the configuration in the first place, it can not remove it either.
         final WifiConfiguration config = ConfigSecurities.getWifiConfiguration(wifiManager, scanResult);
         wifiLog("Attempting to remove previous network config...");
@@ -365,8 +389,10 @@ public final class ConnectorUtils {
         return false;
     }
 
-    static boolean cleanPreviousConfiguration(@NonNull final WifiManager wifiManager, @Nullable final WifiConfiguration config) {
+    static boolean cleanPreviousConfiguration(@Nullable final WifiManager wifiManager, @Nullable final WifiConfiguration config) {
         //On Android 6.0 (API level 23) and above if my app did not create the configuration in the first place, it can not remove it either.
+        if (wifiManager == null)
+            return false;
 
         wifiLog("Attempting to remove previous network config...");
         if (config == null)
@@ -379,7 +405,9 @@ public final class ConnectorUtils {
         return false;
     }
 
-    static void reenableAllHotspots(@NonNull WifiManager wifi) {
+    static void reenableAllHotspots(@Nullable WifiManager wifi) {
+        if (wifi == null)
+            return;
         final List<WifiConfiguration> configurations = wifi.getConfiguredNetworks();
         if (configurations != null && !configurations.isEmpty())
             for (final WifiConfiguration config : configurations)

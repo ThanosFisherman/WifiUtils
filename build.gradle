@@ -29,8 +29,8 @@ ext {
     buildToolsVersion = '28.0.3'
     minSdkVersion = 15
     targetSdkVersion = 28
-    publishVersionName = '1.4.1'
-    publishVersionCode = 13
+    publishVersionName = '1.4.2'
+    publishVersionCode = 14
 
     currentVersionDesc = 'WifiUtils current version'
     bintrayRepo = 'maven'
