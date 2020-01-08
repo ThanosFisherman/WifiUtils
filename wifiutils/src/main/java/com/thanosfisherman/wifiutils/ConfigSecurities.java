@@ -1,8 +1,12 @@
 package com.thanosfisherman.wifiutils;
 
+import android.annotation.TargetApi;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
+import android.net.wifi.WifiNetworkSpecifier;
+import android.os.Build;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -96,6 +100,28 @@ final class ConfigSecurities {
 
             default:
                 wifiLog("Invalid security type: " + security);
+                break;
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.Q)
+    static void setupWifiNetworkSpecifierSecurities(@NonNull WifiNetworkSpecifier.Builder wifiNetworkSpecifierBuilder, String security, @NonNull final String password) {
+        wifiLog("Setting up WifiNetworkSpecifier.Builder " + security);
+        switch (security) {
+            case SECURITY_NONE:
+                // nothing to do
+                break;
+            case SECURITY_WEP:
+                // no longer possible
+                break;
+            case SECURITY_PSK:
+            case SECURITY_EAP:
+                wifiNetworkSpecifierBuilder.setWpa2Passphrase(password);
+                break;
+
+            default:
+                wifiLog("Invalid security type: " + security);
+                break;
         }
     }
 
