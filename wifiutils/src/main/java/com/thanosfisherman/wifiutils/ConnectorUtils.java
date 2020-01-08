@@ -4,9 +4,15 @@ import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.IntentFilter;
+import android.net.ConnectivityManager;
+import android.net.MacAddress;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.NetworkRequest;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
+import android.net.wifi.WifiNetworkSpecifier;
 import android.net.wifi.WpsInfo;
 import android.os.Build;
 import android.provider.Settings;
@@ -166,6 +172,16 @@ public final class ConnectorUtils {
     static boolean connectToWifi(@NonNull Context context, @Nullable WifiManager wifiManager, @NonNull ScanResult scanResult, @NonNull String password) {
         if (wifiManager == null)
             return false;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            final ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            return connectAndroidQ(connectivityManager, scanResult, password);
+        }
+
+        return connectPreAndroidQ(context, wifiManager, scanResult, password);
+    }
+
+    private static boolean connectPreAndroidQ(@NonNull Context context, @Nullable WifiManager wifiManager, @NonNull ScanResult scanResult, @NonNull String password) {
         WifiConfiguration config = ConfigSecurities.getWifiConfiguration(wifiManager, scanResult);
         if (config != null && password.isEmpty()) {
             wifiLog("PASSWORD WAS EMPTY. TRYING TO CONNECT TO EXISTING NETWORK CONFIGURATION");
@@ -202,6 +218,7 @@ public final class ConnectorUtils {
             wifiLog("Error getting wifi config after save. (config == null)");
             return false;
         }
+
         return connectToConfiguredNetwork(wifiManager, config, true);
     }
 
@@ -239,7 +256,48 @@ public final class ConnectorUtils {
         // We have to retrieve the WifiConfiguration after save.
         config = ConfigSecurities.getWifiConfiguration(wifiManager, config);
         return config != null && disableAllButOne(wifiManager, config) && (reassociate ? wifiManager.reassociate() : wifiManager.reconnect());
+    }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private static boolean connectAndroidQ(@Nullable ConnectivityManager connectivityManager, @NonNull ScanResult scanResult, @NonNull String password) {
+        if (connectivityManager == null) {
+            return false;
+        }
+
+        WifiNetworkSpecifier.Builder wifiNetworkSpecifierBuilder = new WifiNetworkSpecifier.Builder()
+            .setSsid(scanResult.SSID)
+            .setBssid(MacAddress.fromString(scanResult.BSSID));
+
+        final String security = ConfigSecurities.getSecurity(scanResult);
+
+        ConfigSecurities.setupWifiNetworkSpecifierSecurities(wifiNetworkSpecifierBuilder, security , password);
+
+
+        NetworkRequest networkRequest = new NetworkRequest.Builder()
+            .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+            .setNetworkSpecifier(wifiNetworkSpecifierBuilder.build())
+            .build();
+
+        connectivityManager.requestNetwork(networkRequest, new ConnectivityManager.NetworkCallback() {
+            @Override
+            public void onAvailable(@NonNull Network network) {
+                super.onAvailable(network);
+
+                wifiLog("AndroidQ+ connected to wifi ");
+
+                // bind so all api calls are performed over this new network
+                connectivityManager.bindProcessToNetwork(network);
+            }
+
+            @Override
+            public void onUnavailable() {
+                super.onUnavailable();
+
+                wifiLog("AndroidQ+ could not connect to wifi");
+            }
+        });
+
+        return true;
     }
 
     private static boolean disableAllButOne(@Nullable final WifiManager wifiManager, @Nullable final WifiConfiguration config) {
