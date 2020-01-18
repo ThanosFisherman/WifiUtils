@@ -9,6 +9,7 @@ import android.os.Build;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresPermission;
 
 import com.thanosfisherman.elvis.Objects;
 
@@ -16,6 +17,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+import static android.Manifest.permission.ACCESS_WIFI_STATE;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.convertToQuotedString;
 import static com.thanosfisherman.wifiutils.WifiUtils.wifiLog;
 
@@ -34,6 +37,7 @@ final class ConfigSecurities {
      * @param password Password of the network if security is not OPEN.
      */
 
+    @RequiresPermission(allOf = {ACCESS_FINE_LOCATION, ACCESS_WIFI_STATE})
     static void setupSecurity(@NonNull WifiConfiguration config, String security, @NonNull final String password) {
         config.allowedAuthAlgorithms.clear();
         config.allowedGroupCiphers.clear();
@@ -125,6 +129,7 @@ final class ConfigSecurities {
         }
     }
 
+    @RequiresPermission(allOf = {ACCESS_FINE_LOCATION, ACCESS_WIFI_STATE})
     @Nullable
     static WifiConfiguration getWifiConfiguration(@NonNull final WifiManager wifiMgr, @NonNull final WifiConfiguration configToFind) {
         final String ssid = configToFind.SSID;
@@ -153,6 +158,7 @@ final class ConfigSecurities {
         return null;
     }
 
+    @RequiresPermission(allOf = {ACCESS_FINE_LOCATION, ACCESS_WIFI_STATE})
     @Nullable
     static WifiConfiguration getWifiConfiguration(@NonNull final WifiManager wifiMgr, @NonNull final ScanResult scanResult) {
         if (scanResult.BSSID == null || scanResult.SSID == null || scanResult.SSID.isEmpty() || scanResult.BSSID.isEmpty())

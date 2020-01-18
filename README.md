@@ -138,7 +138,7 @@ WifiUtils.withContext(getApplicationContext())
 If you want to receive some extra logging info comming from WiFi Utils you can enable its logging capabilities with `WifiUtils.enableLog(true);`
 
 ### Permissions
-Damn You are required to set a few permissions in order for this lib to work correctly :(
+Damn You are required to set a few permissions in order for this lib to work correctly :( Also please check [this](https://issuetracker.google.com/issues/37060483) issue
 
 ```xml
 <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
