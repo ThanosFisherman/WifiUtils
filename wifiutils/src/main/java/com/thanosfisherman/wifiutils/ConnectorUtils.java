@@ -292,9 +292,6 @@ public final class ConnectorUtils {
                 super.onAvailable(network);
 
                 wifiLog("AndroidQ+ connected to wifi ");
-
-                // bind so all api calls are performed over this new network
-                connectivityManager.bindProcessToNetwork(network);
             }
 
             @Override
