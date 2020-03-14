@@ -1,13 +1,14 @@
-package com.thanosfisherman.wifiutils.wifiScan;
+package com.thanosfisherman.wifiutils.scan;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+
 import androidx.annotation.NonNull;
 
 
 public class WifiScanReceiver extends BroadcastReceiver {
-    @NonNull
+
     private final WifiScanCallback callback;
 
     public WifiScanReceiver(@NonNull WifiScanCallback callback) {
@@ -18,4 +19,5 @@ public class WifiScanReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         callback.onScanResultsReady();
     }
+
 }

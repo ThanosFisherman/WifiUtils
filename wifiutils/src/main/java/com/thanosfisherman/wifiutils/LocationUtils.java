@@ -4,17 +4,19 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.os.Build;
-import androidx.annotation.NonNull;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
 
 import static com.thanosfisherman.elvis.Elvis.of;
 
 public class LocationUtils {
-    private static final String TAG = LocationUtils.class.getSimpleName();
 
     public static final int GOOD_TO_GO = 1000;
     public static final int NO_LOCATION_AVAILABLE = 1111;
     public static final int LOCATION_DISABLED = 1112;
+
+    private static final String TAG = LocationUtils.class.getSimpleName();
 
     public static int checkLocationAvailability(@NonNull final Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -35,7 +37,12 @@ public class LocationUtils {
 
     private static boolean isLocationEnabled(@NonNull Context context) {
         final LocationManager manager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-        return of(manager).next(locationManager -> locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)).getBoolean() ||
-                of(manager).next(locationManager -> locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)).getBoolean();
+        boolean isGpsProviderIsEnabled = of(manager)
+                .next(locationManager -> locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
+                .getBoolean();
+        boolean isNetworkProviderIsEnabled = of(manager)
+                .next(locationManager -> locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
+                .getBoolean();
+        return isGpsProviderIsEnabled || isNetworkProviderIsEnabled;
     }
 }

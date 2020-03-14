@@ -27,6 +27,7 @@ package com.thanosfisherman.wifiutils;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
@@ -52,12 +53,14 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 @SuppressWarnings("unused")
 public class WeakHandler {
-    private final Handler.Callback mCallback; // hard reference to Callback. We need to keep callback in memory
-    private final ExecHandler mExec;
-    private Lock mLock = new ReentrantLock();
+
+    private final Handler.Callback callback; // hard reference to Callback. We need to keep callback in memory
+    private final ExecHandler execHandler;
+    private Lock lock = new ReentrantLock();
+
     @SuppressWarnings("ConstantConditions")
     @VisibleForTesting
-    final ChainedRef mRunnables = new ChainedRef(mLock, null);
+    final ChainedRef runnables = new ChainedRef(lock, null);
 
     /**
      * Default constructor associates this handler with the {@link Looper} for the
@@ -67,8 +70,8 @@ public class WeakHandler {
      * so an exception is thrown.
      */
     public WeakHandler() {
-        mCallback = null;
-        mExec = new ExecHandler();
+        callback = null;
+        execHandler = new ExecHandler();
     }
 
     /**
@@ -82,8 +85,8 @@ public class WeakHandler {
      * @param callback The callback interface in which to handle messages, or null.
      */
     public WeakHandler(@Nullable Handler.Callback callback) {
-        mCallback = callback; // Hard referencing body
-        mExec = new ExecHandler(new WeakReference<>(callback)); // Weak referencing inside ExecHandler
+        this.callback = callback; // Hard referencing body
+        execHandler = new ExecHandler(new WeakReference<>(callback)); // Weak referencing inside ExecHandler
     }
 
     /**
@@ -92,8 +95,8 @@ public class WeakHandler {
      * @param looper The looper, must not be null.
      */
     public WeakHandler(@NonNull Looper looper) {
-        mCallback = null;
-        mExec = new ExecHandler(looper);
+        callback = null;
+        execHandler = new ExecHandler(looper);
     }
 
     /**
@@ -104,8 +107,8 @@ public class WeakHandler {
      * @param callback The callback interface in which to handle messages, or null.
      */
     public WeakHandler(@NonNull Looper looper, @NonNull Handler.Callback callback) {
-        mCallback = callback;
-        mExec = new ExecHandler(looper, new WeakReference<>(callback));
+        this.callback = callback;
+        execHandler = new ExecHandler(looper, new WeakReference<>(callback));
     }
 
     /**
@@ -120,7 +123,7 @@ public class WeakHandler {
      *         looper processing the message queue is exiting.
      */
     public final boolean post(@NonNull Runnable r) {
-        return mExec.post(wrapRunnable(r));
+        return execHandler.post(wrapRunnable(r));
     }
 
     /**
@@ -141,7 +144,7 @@ public class WeakHandler {
      *         occurs then the message will be dropped.
      */
     public final boolean postAtTime(@NonNull Runnable r, long uptimeMillis) {
-        return mExec.postAtTime(wrapRunnable(r), uptimeMillis);
+        return execHandler.postAtTime(wrapRunnable(r), uptimeMillis);
     }
 
     /**
@@ -164,7 +167,7 @@ public class WeakHandler {
      * @see android.os.SystemClock#uptimeMillis
      */
     public final boolean postAtTime(Runnable r, Object token, long uptimeMillis) {
-        return mExec.postAtTime(wrapRunnable(r), token, uptimeMillis);
+        return execHandler.postAtTime(wrapRunnable(r), token, uptimeMillis);
     }
 
     /**
@@ -185,7 +188,7 @@ public class WeakHandler {
      *         occurs then the message will be dropped.
      */
     public final boolean postDelayed(Runnable r, long delayMillis) {
-        return mExec.postDelayed(wrapRunnable(r), delayMillis);
+        return execHandler.postDelayed(wrapRunnable(r), delayMillis);
     }
 
     /**
@@ -204,16 +207,16 @@ public class WeakHandler {
      *         looper processing the message queue is exiting.
      */
     public final boolean postAtFrontOfQueue(Runnable r) {
-        return mExec.postAtFrontOfQueue(wrapRunnable(r));
+        return execHandler.postAtFrontOfQueue(wrapRunnable(r));
     }
 
     /**
      * Remove any pending posts of Runnable r that are in the message queue.
      */
     public final void removeCallbacks(Runnable r) {
-        final WeakRunnable runnable = mRunnables.remove(r);
+        final WeakRunnable runnable = runnables.remove(r);
         if (runnable != null) {
-            mExec.removeCallbacks(runnable);
+            execHandler.removeCallbacks(runnable);
         }
     }
 
@@ -223,9 +226,9 @@ public class WeakHandler {
      * all callbacks will be removed.
      */
     public final void removeCallbacks(Runnable r, Object token) {
-        final WeakRunnable runnable = mRunnables.remove(r);
+        final WeakRunnable runnable = runnables.remove(r);
         if (runnable != null) {
-            mExec.removeCallbacks(runnable, token);
+            execHandler.removeCallbacks(runnable, token);
         }
     }
 
@@ -239,7 +242,7 @@ public class WeakHandler {
      *         looper processing the message queue is exiting.
      */
     public final boolean sendMessage(Message msg) {
-        return mExec.sendMessage(msg);
+        return execHandler.sendMessage(msg);
     }
 
     /**
@@ -250,7 +253,7 @@ public class WeakHandler {
      *         looper processing the message queue is exiting.
      */
     public final boolean sendEmptyMessage(int what) {
-        return mExec.sendEmptyMessage(what);
+        return execHandler.sendEmptyMessage(what);
     }
 
     /**
@@ -263,7 +266,7 @@ public class WeakHandler {
      *         looper processing the message queue is exiting.
      */
     public final boolean sendEmptyMessageDelayed(int what, long delayMillis) {
-        return mExec.sendEmptyMessageDelayed(what, delayMillis);
+        return execHandler.sendEmptyMessageDelayed(what, delayMillis);
     }
 
     /**
@@ -276,7 +279,7 @@ public class WeakHandler {
      *         looper processing the message queue is exiting.
      */
     public final boolean sendEmptyMessageAtTime(int what, long uptimeMillis) {
-        return mExec.sendEmptyMessageAtTime(what, uptimeMillis);
+        return execHandler.sendEmptyMessageAtTime(what, uptimeMillis);
     }
 
     /**
@@ -292,7 +295,7 @@ public class WeakHandler {
      *         occurs then the message will be dropped.
      */
     public final boolean sendMessageDelayed(Message msg, long delayMillis) {
-        return mExec.sendMessageDelayed(msg, delayMillis);
+        return execHandler.sendMessageDelayed(msg, delayMillis);
     }
 
     /**
@@ -314,7 +317,7 @@ public class WeakHandler {
      *         occurs then the message will be dropped.
      */
     public boolean sendMessageAtTime(Message msg, long uptimeMillis) {
-        return mExec.sendMessageAtTime(msg, uptimeMillis);
+        return execHandler.sendMessageAtTime(msg, uptimeMillis);
     }
 
     /**
@@ -330,7 +333,7 @@ public class WeakHandler {
      *         looper processing the message queue is exiting.
      */
     public final boolean sendMessageAtFrontOfQueue(Message msg) {
-        return mExec.sendMessageAtFrontOfQueue(msg);
+        return execHandler.sendMessageAtFrontOfQueue(msg);
     }
 
     /**
@@ -338,7 +341,7 @@ public class WeakHandler {
      * message queue.
      */
     public final void removeMessages(int what) {
-        mExec.removeMessages(what);
+        execHandler.removeMessages(what);
     }
 
     /**
@@ -347,7 +350,7 @@ public class WeakHandler {
      * all messages will be removed.
      */
     public final void removeMessages(int what, Object object) {
-        mExec.removeMessages(what, object);
+        execHandler.removeMessages(what, object);
     }
 
     /**
@@ -356,7 +359,7 @@ public class WeakHandler {
      * all callbacks and messages will be removed.
      */
     public final void removeCallbacksAndMessages(Object token) {
-        mExec.removeCallbacksAndMessages(token);
+        execHandler.removeCallbacksAndMessages(token);
     }
 
     /**
@@ -364,7 +367,7 @@ public class WeakHandler {
      * the message queue.
      */
     public final boolean hasMessages(int what) {
-        return mExec.hasMessages(what);
+        return execHandler.hasMessages(what);
     }
 
     /**
@@ -372,11 +375,11 @@ public class WeakHandler {
      * whose obj is 'object' in the message queue.
      */
     public final boolean hasMessages(int what, Object object) {
-        return mExec.hasMessages(what, object);
+        return execHandler.hasMessages(what, object);
     }
 
     public final Looper getLooper() {
-        return mExec.getLooper();
+        return execHandler.getLooper();
     }
 
     private WeakRunnable wrapRunnable(@NonNull Runnable r) {
@@ -384,38 +387,38 @@ public class WeakHandler {
         if (r == null) {
             throw new NullPointerException("Runnable can't be null");
         }
-        final ChainedRef hardRef = new ChainedRef(mLock, r);
-        mRunnables.insertAfter(hardRef);
+        final ChainedRef hardRef = new ChainedRef(lock, r);
+        runnables.insertAfter(hardRef);
         return hardRef.wrapper;
     }
 
     private static class ExecHandler extends Handler {
-        private final WeakReference<Callback> mCallback;
+        private final WeakReference<Callback> weakReference;
 
         ExecHandler() {
-            mCallback = null;
+            weakReference = null;
         }
 
         ExecHandler(WeakReference<Callback> callback) {
-            mCallback = callback;
+            weakReference = callback;
         }
 
         ExecHandler(Looper looper) {
             super(looper);
-            mCallback = null;
+            weakReference = null;
         }
 
         ExecHandler(Looper looper, WeakReference<Callback> callback) {
             super(looper);
-            mCallback = callback;
+            weakReference = callback;
         }
 
         @Override
         public void handleMessage(@NonNull Message msg) {
-            if (mCallback == null) {
+            if (weakReference == null) {
                 return;
             }
-            final Callback callback = mCallback.get();
+            final Callback callback = weakReference.get();
             if (callback == null) { // Already disposed
                 return;
             }
@@ -424,18 +427,19 @@ public class WeakHandler {
     }
 
     static class WeakRunnable implements Runnable {
-        private final WeakReference<Runnable> mDelegate;
-        private final WeakReference<ChainedRef> mReference;
+        private final WeakReference<Runnable> delegate;
+        private final WeakReference<ChainedRef> reference;
 
-        WeakRunnable(WeakReference<Runnable> delegate, WeakReference<ChainedRef> reference) {
-            mDelegate = delegate;
-            mReference = reference;
+        WeakRunnable(WeakReference<Runnable> delegate,
+                     WeakReference<ChainedRef> reference) {
+            this.delegate = delegate;
+            this.reference = reference;
         }
 
         @Override
         public void run() {
-            final Runnable delegate = mDelegate.get();
-            final ChainedRef reference = mReference.get();
+            final Runnable delegate = this.delegate.get();
+            final ChainedRef reference = this.reference.get();
             if (reference != null) {
                 reference.remove();
             }
@@ -446,22 +450,34 @@ public class WeakHandler {
     }
 
     static class ChainedRef {
-        @Nullable
+
         ChainedRef next;
-        @Nullable
         ChainedRef prev;
-        @NonNull
+
         final Runnable runnable;
-        @NonNull
         final WeakRunnable wrapper;
 
-        @NonNull
         Lock lock;
 
         public ChainedRef(@NonNull Lock lock, @NonNull Runnable r) {
             this.runnable = r;
             this.lock = lock;
             this.wrapper = new WeakRunnable(new WeakReference<>(r), new WeakReference<>(this));
+        }
+
+        public void insertAfter(@NonNull ChainedRef candidate) {
+            lock.lock();
+            try {
+                if (this.next != null) {
+                    this.next.prev = candidate;
+                }
+
+                candidate.next = this.next;
+                this.next = candidate;
+                candidate.prev = this;
+            } finally {
+                lock.unlock();
+            }
         }
 
         public WeakRunnable remove() {
@@ -479,21 +495,6 @@ public class WeakHandler {
                 lock.unlock();
             }
             return wrapper;
-        }
-
-        public void insertAfter(@NonNull ChainedRef candidate) {
-            lock.lock();
-            try {
-                if (this.next != null) {
-                    this.next.prev = candidate;
-                }
-
-                candidate.next = this.next;
-                this.next = candidate;
-                candidate.prev = this;
-            } finally {
-                lock.unlock();
-            }
         }
 
         @Nullable
