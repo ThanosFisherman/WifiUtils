@@ -1,5 +1,6 @@
 package com.thanosfisherman.wifiutils;
 
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -21,6 +22,7 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.annotation.RequiresPermission;
 
 import com.thanosfisherman.elvis.Objects;
 import com.thanosfisherman.wifiutils.wifiWps.ConnectionWpsListener;
@@ -28,8 +30,11 @@ import com.thanosfisherman.wifiutils.wifiWps.ConnectionWpsListener;
 import java.util.Collections;
 import java.util.List;
 
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+import static android.Manifest.permission.ACCESS_WIFI_STATE;
 import static com.thanosfisherman.wifiutils.WifiUtils.wifiLog;
 
+@SuppressLint("MissingPermission")
 public final class ConnectorUtils {
     private static final int MAX_PRIORITY = 99999;
 
@@ -169,6 +174,7 @@ public final class ConnectorUtils {
         }
     }
 
+    @RequiresPermission(allOf = {ACCESS_FINE_LOCATION, ACCESS_WIFI_STATE})
     static boolean connectToWifi(@NonNull Context context, @Nullable WifiManager wifiManager, @NonNull ScanResult scanResult, @NonNull String password) {
         if (wifiManager == null)
             return false;
@@ -181,6 +187,7 @@ public final class ConnectorUtils {
         return connectPreAndroidQ(context, wifiManager, scanResult, password);
     }
 
+    @RequiresPermission(allOf = {ACCESS_FINE_LOCATION, ACCESS_WIFI_STATE})
     private static boolean connectPreAndroidQ(@NonNull Context context, @Nullable WifiManager wifiManager, @NonNull ScanResult scanResult, @NonNull String password) {
         WifiConfiguration config = ConfigSecurities.getWifiConfiguration(wifiManager, scanResult);
         if (config != null && password.isEmpty()) {
@@ -222,6 +229,7 @@ public final class ConnectorUtils {
         return connectToConfiguredNetwork(wifiManager, config, true);
     }
 
+    @RequiresPermission(allOf = {ACCESS_FINE_LOCATION, ACCESS_WIFI_STATE})
     private static boolean connectToConfiguredNetwork(@Nullable WifiManager wifiManager, @Nullable WifiConfiguration config, boolean reassociate) {
         if (config == null || wifiManager == null)
             return false;
@@ -265,18 +273,18 @@ public final class ConnectorUtils {
         }
 
         WifiNetworkSpecifier.Builder wifiNetworkSpecifierBuilder = new WifiNetworkSpecifier.Builder()
-            .setSsid(scanResult.SSID)
-            .setBssid(MacAddress.fromString(scanResult.BSSID));
+                .setSsid(scanResult.SSID)
+                .setBssid(MacAddress.fromString(scanResult.BSSID));
 
         final String security = ConfigSecurities.getSecurity(scanResult);
 
-        ConfigSecurities.setupWifiNetworkSpecifierSecurities(wifiNetworkSpecifierBuilder, security , password);
+        ConfigSecurities.setupWifiNetworkSpecifierSecurities(wifiNetworkSpecifierBuilder, security, password);
 
 
         NetworkRequest networkRequest = new NetworkRequest.Builder()
-            .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-            .setNetworkSpecifier(wifiNetworkSpecifierBuilder.build())
-            .build();
+                .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                .setNetworkSpecifier(wifiNetworkSpecifierBuilder.build())
+                .build();
 
         connectivityManager.requestNetwork(networkRequest, new ConnectivityManager.NetworkCallback() {
             @Override
@@ -284,9 +292,6 @@ public final class ConnectorUtils {
                 super.onAvailable(network);
 
                 wifiLog("AndroidQ+ connected to wifi ");
-
-                // bind so all api calls are performed over this new network
-                connectivityManager.bindProcessToNetwork(network);
             }
 
             @Override
@@ -357,6 +362,7 @@ public final class ConnectorUtils {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    @RequiresPermission(allOf = {ACCESS_FINE_LOCATION, ACCESS_WIFI_STATE})
     static void connectWps(@Nullable final WifiManager wifiManager, @NonNull final ScanResult scanResult, @NonNull String pin, long timeOutMillis,
                            @NonNull final ConnectionWpsListener connectionWpsListener) {
         if (wifiManager == null) {
@@ -431,6 +437,7 @@ public final class ConnectorUtils {
         wifiManager.startWps(wpsInfo, wpsCallback);
     }
 
+    @RequiresPermission(allOf = {ACCESS_FINE_LOCATION, ACCESS_WIFI_STATE})
     static boolean cleanPreviousConfiguration(@Nullable final WifiManager wifiManager, @NonNull final ScanResult scanResult) {
         if (wifiManager == null)
             return false;

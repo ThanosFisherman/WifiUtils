@@ -1,14 +1,16 @@
 package com.thanosfisherman.wifiutils;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.Build;
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
-import android.util.Log;
 
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionScanResultsListener;
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionSuccessListener;
@@ -36,6 +38,7 @@ import static com.thanosfisherman.wifiutils.ConnectorUtils.reenableAllHotspots;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.registerReceiver;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.unregisterReceiver;
 
+@SuppressLint("MissingPermission")
 public final class WifiUtils implements WifiConnectorBuilder,
         WifiConnectorBuilder.WifiUtilsBuilder,
         WifiConnectorBuilder.WifiSuccessListener,
