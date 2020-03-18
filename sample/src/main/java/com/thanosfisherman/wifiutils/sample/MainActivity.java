@@ -18,10 +18,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 555);
-        final Button button = findViewById(R.id.button);
         WifiUtils.enableLog(true);
         //TODO: CHECK IF LOCATION SERVICES ARE ON
-        button.setOnClickListener(v -> connectWithWpa());
+
+        final Button buttonConnect = findViewById(R.id.button_connect);
+        buttonConnect.setOnClickListener(v -> connectWithWpa());
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
