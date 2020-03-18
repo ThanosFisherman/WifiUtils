@@ -7,6 +7,7 @@ import androidx.annotation.RequiresApi;
 
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionScanResultsListener;
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionSuccessListener;
+import com.thanosfisherman.wifiutils.wifiDisconnect.DisconnectionSuccessListener;
 import com.thanosfisherman.wifiutils.wifiScan.ScanResultsListener;
 import com.thanosfisherman.wifiutils.wifiState.WifiStateListener;
 import com.thanosfisherman.wifiutils.wifiWps.ConnectionWpsListener;
@@ -29,6 +30,9 @@ public interface WifiConnectorBuilder {
 
         @NonNull
         WifiSuccessListener connectWith(@NonNull String ssid, @NonNull String bssid, @NonNull String password);
+
+        @NonNull
+        DisconnectSuccessListener disconnectFrom(@NonNull String ssid);
 
         @NonNull
         WifiSuccessListener connectWithScanResult(@NonNull String password, @Nullable ConnectionScanResultsListener connectionScanResultsListener);
@@ -55,5 +59,10 @@ public interface WifiConnectorBuilder {
         @NonNull
         @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
         WifiConnectorBuilder onConnectionWpsResult(@Nullable ConnectionWpsListener successListener);
+    }
+
+    interface DisconnectSuccessListener {
+        @NonNull
+        WifiConnectorBuilder onDisconnectionResult(@Nullable DisconnectionSuccessListener successListener);
     }
 }

@@ -1,17 +1,25 @@
 package com.thanosfisherman.wifiutils.sample;
 
 import android.Manifest;
+import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.appcompat.app.AppCompatActivity;
+
 import android.widget.Button;
 import android.widget.Toast;
 
 import com.thanosfisherman.wifiutils.WifiUtils;
+import com.thanosfisherman.wifiutils.wifiDisconnect.DisconnectionErrorCode;
+import com.thanosfisherman.wifiutils.wifiDisconnect.DisconnectionSuccessListener;
 
 public class MainActivity extends AppCompatActivity {
+    final static String SSID = "conn-x828678";
+    static final String PASSWORD = "146080828678";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,6 +31,9 @@ public class MainActivity extends AppCompatActivity {
 
         final Button buttonConnect = findViewById(R.id.button_connect);
         buttonConnect.setOnClickListener(v -> connectWithWpa());
+
+        final Button buttonDisconnect = findViewById(R.id.button_disconnect);
+        buttonDisconnect.setOnClickListener(v -> disconnect(v.getContext()));
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -31,13 +42,27 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void connectWithWpa() {
-        String ote = "conn-x828678";
-        String otePass = "146080828678";
-
         WifiUtils.withContext(getApplicationContext())
-                .connectWith(ote, otePass)
+                .connectWith(SSID, PASSWORD)
                 .setTimeout(40000)
                 .onConnectionResult(this::checkResult)
+                .start();
+    }
+
+    private void disconnect(final Context context) {
+        WifiUtils.withContext(context)
+                .disconnectFrom(SSID)
+                .onDisconnectionResult(new DisconnectionSuccessListener() {
+                    @Override
+                    public void success() {
+                        Toast.makeText(MainActivity.this, "Disconnect success!", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void failed(@NonNull DisconnectionErrorCode errorCode) {
+                        Toast.makeText(MainActivity.this, "Failed to disconnect: " + errorCode.toString(), Toast.LENGTH_SHORT).show();
+                    }
+                })
                 .start();
     }
 
