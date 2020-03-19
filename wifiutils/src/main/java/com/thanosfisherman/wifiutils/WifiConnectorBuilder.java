@@ -31,8 +31,7 @@ public interface WifiConnectorBuilder {
         @NonNull
         WifiSuccessListener connectWith(@NonNull String ssid, @NonNull String bssid, @NonNull String password);
 
-        @NonNull
-        DisconnectSuccessListener disconnectFrom(@NonNull String ssid);
+        void disconnectFrom(@NonNull String ssid, @NonNull DisconnectionSuccessListener disconnectionSuccessListener);
 
         @NonNull
         WifiSuccessListener connectWithScanResult(@NonNull String password, @Nullable ConnectionScanResultsListener connectionScanResultsListener);
@@ -59,10 +58,5 @@ public interface WifiConnectorBuilder {
         @NonNull
         @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
         WifiConnectorBuilder onConnectionWpsResult(@Nullable ConnectionWpsListener successListener);
-    }
-
-    interface DisconnectSuccessListener {
-        @NonNull
-        WifiConnectorBuilder onDisconnectionResult(@Nullable DisconnectionSuccessListener successListener);
     }
 }

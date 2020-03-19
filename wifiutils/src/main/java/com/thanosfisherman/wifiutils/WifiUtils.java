@@ -46,8 +46,7 @@ import static com.thanosfisherman.wifiutils.ConnectorUtils.unregisterReceiver;
 public final class WifiUtils implements WifiConnectorBuilder,
         WifiConnectorBuilder.WifiUtilsBuilder,
         WifiConnectorBuilder.WifiSuccessListener,
-        WifiConnectorBuilder.WifiWpsSuccessListener,
-        WifiConnectorBuilder.DisconnectSuccessListener {
+        WifiConnectorBuilder.WifiWpsSuccessListener {
     @Nullable
     private final WifiManager mWifiManager;
     @Nullable
@@ -67,8 +66,6 @@ public final class WifiUtils implements WifiConnectorBuilder,
     @NonNull
     private final WifiScanReceiver mWifiScanReceiver;
     @Nullable
-    private String mDisconnectSSID;
-    @Nullable
     private String mSsid;
     @Nullable
     private String mBssid;
@@ -83,8 +80,6 @@ public final class WifiUtils implements WifiConnectorBuilder,
     @Nullable
     private ConnectionSuccessListener mConnectionSuccessListener;
     @Nullable
-    private DisconnectionSuccessListener mDisconnectionSuccessListener;
-    @Nullable
     private WifiStateListener mWifiStateListener;
     @Nullable
     private ConnectionWpsListener mConnectionWpsListener;
@@ -97,14 +92,13 @@ public final class WifiUtils implements WifiConnectorBuilder,
             unregisterReceiver(mContext, mWifiStateReceiver);
             of(mWifiStateListener).ifPresent(stateListener -> stateListener.isSuccess(true));
 
-            if (mScanResultsListener != null || mPassword != null || mDisconnectionSuccessListener != null) {
+            if (mScanResultsListener != null || mPassword != null) {
                 wifiLog("START SCANNING....");
                 if (mWifiManager.startScan())
                     registerReceiver(mContext, mWifiScanReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
                 else {
                     of(mScanResultsListener).ifPresent(resultsListener -> resultsListener.onScanResults(new ArrayList<>()));
                     of(mConnectionWpsListener).ifPresent(wpsListener -> wpsListener.isSuccessful(false));
-                    of(mDisconnectionSuccessListener).ifPresent(disconnectionSuccessListener -> disconnectionSuccessListener.failed(DisconnectionErrorCode.COULD_NOT_PERFORM_WIFI_SCAN));
                     mWifiConnectionCallback.errorConnect();
                     wifiLog("ERROR COULDN'T SCAN");
                 }
@@ -122,18 +116,6 @@ public final class WifiUtils implements WifiConnectorBuilder,
             final List<ScanResult> scanResultList = mWifiManager.getScanResults();
             of(mScanResultsListener).ifPresent(resultsListener -> resultsListener.onScanResults(scanResultList));
             of(mConnectionScanResultsListener).ifPresent(connectionResultsListener -> mSingleScanResult = connectionResultsListener.onConnectWithScanResult(scanResultList));
-
-            if (mDisconnectionSuccessListener != null) {
-                final ScanResult disconnectSingleScanResult = matchScanResultSsid(mDisconnectSSID, scanResultList);
-                if (disconnectSingleScanResult != null) {
-                    if(disconnectFromWifi(mContext, mConnectivityManager, mWifiManager, disconnectSingleScanResult)) {
-                        mDisconnectionSuccessListener.success();
-                    } else {
-                        mDisconnectionSuccessListener.failed(DisconnectionErrorCode.COULD_NOT_DISCONNECT);
-                    }
-                    return;
-                }
-            }
 
             if (mConnectionWpsListener != null && mBssid != null && mPassword != null) {
                 mSingleScanResult = matchScanResultBssid(mBssid, scanResultList);
@@ -243,11 +225,23 @@ public final class WifiUtils implements WifiConnectorBuilder,
         return this;
     }
 
-    @NonNull
     @Override
-    public DisconnectSuccessListener disconnectFrom(@NonNull String ssid) {
-        mDisconnectSSID = ssid;
-        return this;
+    public void disconnectFrom(@NonNull final String ssid, @NonNull final DisconnectionSuccessListener disconnectionSuccessListener) {
+        if (mConnectivityManager == null) {
+            disconnectionSuccessListener.failed(DisconnectionErrorCode.COULD_NOT_GET_CONNECTIVITY_MANAGER);
+            return;
+        }
+
+        if (mWifiManager == null) {
+            disconnectionSuccessListener.failed(DisconnectionErrorCode.COULD_NOT_GET_WIFI_MANAGER);
+            return;
+        }
+
+        if (disconnectFromWifi(mContext, mConnectivityManager, mWifiManager, ssid)) {
+            disconnectionSuccessListener.success();
+        } else {
+            disconnectionSuccessListener.failed(DisconnectionErrorCode.COULD_NOT_DISCONNECT);
+        }
     }
 
     @NonNull
@@ -322,13 +316,6 @@ public final class WifiUtils implements WifiConnectorBuilder,
     @Override
     public WifiConnectorBuilder onConnectionResult(@Nullable final ConnectionSuccessListener successListener) {
         mConnectionSuccessListener = successListener;
-        return this;
-    }
-
-    @NonNull
-    @Override
-    public WifiConnectorBuilder onDisconnectionResult(@Nullable DisconnectionSuccessListener successListener) {
-        mDisconnectionSuccessListener = successListener;
         return this;
     }
 

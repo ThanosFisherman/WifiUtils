@@ -51,8 +51,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void disconnect(final Context context) {
         WifiUtils.withContext(context)
-                .disconnectFrom(SSID)
-                .onDisconnectionResult(new DisconnectionSuccessListener() {
+                .disconnectFrom(SSID, new DisconnectionSuccessListener() {
                     @Override
                     public void success() {
                         Toast.makeText(MainActivity.this, "Disconnect success!", Toast.LENGTH_SHORT).show();
@@ -62,8 +61,7 @@ public class MainActivity extends AppCompatActivity {
                     public void failed(@NonNull DisconnectionErrorCode errorCode) {
                         Toast.makeText(MainActivity.this, "Failed to disconnect: " + errorCode.toString(), Toast.LENGTH_SHORT).show();
                     }
-                })
-                .start();
+                });
     }
 
     private void enableWifi() {

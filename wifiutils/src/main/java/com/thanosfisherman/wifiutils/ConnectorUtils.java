@@ -34,6 +34,7 @@ import java.util.List;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static android.Manifest.permission.ACCESS_WIFI_STATE;
 import static com.thanosfisherman.wifiutils.WifiUtils.wifiLog;
+import static com.thanosfisherman.wifiutils.utils.SSIDUtils.convertToQuotedString;
 
 @SuppressLint("MissingPermission")
 public final class ConnectorUtils {
@@ -127,18 +128,6 @@ public final class ConnectorUtils {
         return i;
     }
 
-    @NonNull
-    static String convertToQuotedString(@NonNull String string) {
-        if (TextUtils.isEmpty(string))
-            return "";
-
-        final int lastPos = string.length() - 1;
-        if (lastPos < 0 || (string.charAt(0) == '"' && string.charAt(lastPos) == '"'))
-            return string;
-
-        return "\"" + string + "\"";
-    }
-
     static boolean isHexWepKey(@Nullable String wepKey) {
         final int passwordLen = wepKey == null ? 0 : wepKey.length();
         return (passwordLen == 10 || passwordLen == 26 || passwordLen == 58) && wepKey.matches("[0-9A-Fa-f]*");
@@ -178,11 +167,8 @@ public final class ConnectorUtils {
     }
 
     @RequiresPermission(ACCESS_WIFI_STATE)
-    static boolean disconnectFromWifi(@NonNull Context context, @Nullable ConnectivityManager connectivityManager, @Nullable WifiManager wifiManager, @NonNull ScanResult scanResult) {
+    static boolean disconnectFromWifi(@NonNull Context context, @NonNull ConnectivityManager connectivityManager, @NonNull WifiManager wifiManager, @NonNull String ssid) {
         if (isAndroidQOrLater()) {
-            if (connectivityManager == null)
-                return false;
-
             if (networkCallback != null) {
                 connectivityManager.unregisterNetworkCallback(networkCallback);
                 networkCallback = null;
@@ -191,7 +177,8 @@ public final class ConnectorUtils {
             return true;
         }
 
-        return cleanPreviousConfiguration(wifiManager, scanResult);
+        final WifiConfiguration wifiConfiguration = ConfigSecurities.getWifiConfiguration(wifiManager, ssid);
+        return cleanPreviousConfiguration(wifiManager, wifiConfiguration);
     }
 
     @RequiresPermission(allOf = {ACCESS_FINE_LOCATION, ACCESS_WIFI_STATE})
