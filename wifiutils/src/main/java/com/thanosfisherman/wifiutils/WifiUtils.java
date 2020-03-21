@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
+import com.thanosfisherman.wifiutils.wifiConnect.ConnectionErrorCode;
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionScanResultsListener;
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionSuccessListener;
 import com.thanosfisherman.wifiutils.wifiConnect.WifiConnectionCallback;
@@ -93,7 +94,7 @@ public final class WifiUtils implements WifiConnectorBuilder,
                 else {
                     of(mScanResultsListener).ifPresent(resultsListener -> resultsListener.onScanResults(new ArrayList<>()));
                     of(mConnectionWpsListener).ifPresent(wpsListener -> wpsListener.isSuccessful(false));
-                    mWifiConnectionCallback.errorConnect();
+                    mWifiConnectionCallback.errorConnect(ConnectionErrorCode.COULD_NOT_SCAN);
                     wifiLog("ERROR COULDN'T SCAN");
                 }
             }
@@ -135,10 +136,12 @@ public final class WifiUtils implements WifiConnectorBuilder,
                             new IntentFilter(WifiManager.SUPPLICANT_STATE_CHANGED_ACTION));
                     registerReceiver(mContext, mWifiConnectionReceiver,
                             new IntentFilter(WifiManager.NETWORK_STATE_CHANGED_ACTION));
-                } else
-                    mWifiConnectionCallback.errorConnect();
-            } else
-                mWifiConnectionCallback.errorConnect();
+                } else {
+                    mWifiConnectionCallback.errorConnect(ConnectionErrorCode.COULD_NOT_CONNECT);
+                }
+            } else {
+                mWifiConnectionCallback.errorConnect(ConnectionErrorCode.DID_NOT_FIND_NETWORK_BY_SCANNING);
+            }
         }
     };
 
@@ -149,17 +152,17 @@ public final class WifiUtils implements WifiConnectorBuilder,
             wifiLog("CONNECTED SUCCESSFULLY");
             unregisterReceiver(mContext, mWifiConnectionReceiver);
             //reenableAllHotspots(mWifiManager);
-            of(mConnectionSuccessListener).ifPresent(successListener -> successListener.isSuccessful(true));
+            of(mConnectionSuccessListener).ifPresent(ConnectionSuccessListener::success);
         }
 
         @Override
-        public void errorConnect() {
+        public void errorConnect(@NonNull ConnectionErrorCode connectionErrorCode) {
             unregisterReceiver(mContext, mWifiConnectionReceiver);
             reenableAllHotspots(mWifiManager);
             //if (mSingleScanResult != null)
             //cleanPreviousConfiguration(mWifiManager, mSingleScanResult);
             of(mConnectionSuccessListener).ifPresent(successListener -> {
-                successListener.isSuccessful(false);
+                successListener.failed(connectionErrorCode);
                 wifiLog("DIDN'T CONNECT TO WIFI");
             });
         }
@@ -200,7 +203,7 @@ public final class WifiUtils implements WifiConnectorBuilder,
                 of(wifiStateListener).ifPresent(stateListener -> stateListener.isSuccess(false));
                 of(mScanResultsListener).ifPresent(resultsListener -> resultsListener.onScanResults(new ArrayList<>()));
                 of(mConnectionWpsListener).ifPresent(wpsListener -> wpsListener.isSuccessful(false));
-                mWifiConnectionCallback.errorConnect();
+                mWifiConnectionCallback.errorConnect(ConnectionErrorCode.COULD_NOT_ENABLE_WIFI);
                 wifiLog("COULDN'T ENABLE WIFI");
             }
         }

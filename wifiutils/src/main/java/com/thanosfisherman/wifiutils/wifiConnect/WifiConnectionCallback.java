@@ -1,7 +1,9 @@
 package com.thanosfisherman.wifiutils.wifiConnect;
 
+import androidx.annotation.NonNull;
+
 public interface WifiConnectionCallback
 {
     void successfulConnect();
-    void errorConnect();
+    void errorConnect(@NonNull ConnectionErrorCode connectionErrorCode);
 }

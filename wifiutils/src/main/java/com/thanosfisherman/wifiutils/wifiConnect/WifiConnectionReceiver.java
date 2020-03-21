@@ -37,12 +37,12 @@ public final class WifiConnectionReceiver extends BroadcastReceiver {
             if (isAlreadyConnected(mWifiManager, of(mScanResult).next(scanResult -> scanResult.BSSID).get()))
                 mWifiConnectionCallback.successfulConnect();
             else
-                mWifiConnectionCallback.errorConnect();
+                mWifiConnectionCallback.errorConnect(ConnectionErrorCode.TIMEOUT_OCCURRED);
             handler.removeCallbacks(this);
         }
     };
 
-    public WifiConnectionReceiver(@NonNull WifiConnectionCallback callback, @NonNull WifiManager wifiManager, long delayMillis) {
+    public WifiConnectionReceiver(@NonNull final WifiConnectionCallback callback, @NonNull final WifiManager wifiManager, final long delayMillis) {
         this.mWifiConnectionCallback = callback;
         this.mWifiManager = wifiManager;
         this.mDelay = delayMillis;
@@ -50,7 +50,7 @@ public final class WifiConnectionReceiver extends BroadcastReceiver {
     }
 
     @Override
-    public void onReceive(Context context, @NonNull Intent intent) {
+    public void onReceive(final Context context, @NonNull final Intent intent) {
         final String action = intent.getAction();
         wifiLog("Connection Broadcast action: " + action);
         if (Objects.equals(WifiManager.NETWORK_STATE_CHANGED_ACTION, action)) {
@@ -68,7 +68,7 @@ public final class WifiConnectionReceiver extends BroadcastReceiver {
 
             if (state == null) {
                 handler.removeCallbacks(handlerCallback);
-                mWifiConnectionCallback.errorConnect();
+                mWifiConnectionCallback.errorConnect(ConnectionErrorCode.COULD_NOT_CONNECT);
                 return;
             }
 
@@ -86,7 +86,7 @@ public final class WifiConnectionReceiver extends BroadcastReceiver {
                     if (supl_error == WifiManager.ERROR_AUTHENTICATING) {
                         wifiLog("Authentication error...");
                         handler.removeCallbacks(handlerCallback);
-                        mWifiConnectionCallback.errorConnect();
+                        mWifiConnectionCallback.errorConnect(ConnectionErrorCode.AUTHENTICATION_ERROR_OCCURRED);
                     } else {
                         wifiLog("Disconnected. Re-attempting to connect...");
                         reEnableNetworkIfPossible(mWifiManager, mScanResult);
