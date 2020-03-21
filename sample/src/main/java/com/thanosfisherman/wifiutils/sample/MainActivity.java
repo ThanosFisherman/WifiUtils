@@ -3,6 +3,8 @@ package com.thanosfisherman.wifiutils.sample;
 import android.Manifest;
 import android.os.Build;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.appcompat.app.AppCompatActivity;
@@ -10,6 +12,8 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.thanosfisherman.wifiutils.WifiUtils;
+import com.thanosfisherman.wifiutils.wifiConnect.ConnectionErrorCode;
+import com.thanosfisherman.wifiutils.wifiConnect.ConnectionSuccessListener;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -36,7 +40,17 @@ public class MainActivity extends AppCompatActivity {
         WifiUtils.withContext(getApplicationContext())
                 .connectWith(ote, otePass)
                 .setTimeout(40000)
-                .onConnectionResult(this::checkResult)
+                .onConnectionResult(new ConnectionSuccessListener() {
+                    @Override
+                    public void success() {
+                        Toast.makeText(MainActivity.this, "SUCCESS!", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void failed(@NonNull ConnectionErrorCode errorCode) {
+                        Toast.makeText(MainActivity.this, "EPIC FAIL!" + errorCode.toString(), Toast.LENGTH_SHORT).show();
+                    }
+                })
                 .start();
     }
 
