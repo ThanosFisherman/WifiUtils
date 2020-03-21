@@ -157,7 +157,7 @@ public final class ConnectorUtils {
         }
     }
 
-    static void unregisterReceiver(@NonNull Context context, @Nullable BroadcastReceiver receiver) {
+    static void unregisterReceiver(@NonNull final Context context, @Nullable final BroadcastReceiver receiver) {
         if (receiver != null) {
             try {
                 context.unregisterReceiver(receiver);
@@ -167,7 +167,7 @@ public final class ConnectorUtils {
     }
 
     @RequiresPermission(ACCESS_WIFI_STATE)
-    static boolean disconnectFromWifi(@NonNull Context context, @NonNull ConnectivityManager connectivityManager, @NonNull WifiManager wifiManager, @NonNull String ssid) {
+    static boolean disconnectFromWifi(@NonNull final Context context, @NonNull final ConnectivityManager connectivityManager, @NonNull final WifiManager wifiManager, @NonNull final String ssid) {
         if (isAndroidQOrLater()) {
             if (networkCallback != null) {
                 connectivityManager.unregisterNetworkCallback(networkCallback);
@@ -191,7 +191,7 @@ public final class ConnectorUtils {
     }
 
     @RequiresPermission(allOf = {ACCESS_FINE_LOCATION, ACCESS_WIFI_STATE})
-    private static boolean connectPreAndroidQ(@NonNull Context context, @Nullable WifiManager wifiManager, @NonNull ScanResult scanResult, @NonNull String password) {
+    private static boolean connectPreAndroidQ(@NonNull final Context context, @Nullable final WifiManager wifiManager, @NonNull final ScanResult scanResult, @NonNull final String password) {
         if (wifiManager == null)
             return false;
 
