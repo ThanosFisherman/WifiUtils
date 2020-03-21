@@ -156,7 +156,7 @@ public final class ConnectorUtils {
             return -1;
     }
 
-    static void registerReceiver(@NonNull Context context, @Nullable BroadcastReceiver receiver, @NonNull IntentFilter filter) {
+    static void registerReceiver(@NonNull final Context context, @Nullable final BroadcastReceiver receiver, @NonNull final IntentFilter filter) {
         if (receiver != null) {
             try {
                 context.registerReceiver(receiver, filter);
@@ -165,7 +165,7 @@ public final class ConnectorUtils {
         }
     }
 
-    static void unregisterReceiver(@NonNull Context context, @Nullable BroadcastReceiver receiver) {
+    static void unregisterReceiver(@NonNull final Context context, @Nullable final BroadcastReceiver receiver) {
         if (receiver != null) {
             try {
                 context.unregisterReceiver(receiver);
@@ -175,7 +175,7 @@ public final class ConnectorUtils {
     }
 
     @RequiresPermission(allOf = {ACCESS_FINE_LOCATION, ACCESS_WIFI_STATE})
-    static boolean connectToWifi(@NonNull Context context, @Nullable WifiManager wifiManager, @NonNull ScanResult scanResult, @NonNull String password) {
+    static boolean connectToWifi(@NonNull final Context context, @Nullable final WifiManager wifiManager, @NonNull final ScanResult scanResult, @NonNull final String password) {
         if (wifiManager == null)
             return false;
 
@@ -188,7 +188,7 @@ public final class ConnectorUtils {
     }
 
     @RequiresPermission(allOf = {ACCESS_FINE_LOCATION, ACCESS_WIFI_STATE})
-    private static boolean connectPreAndroidQ(@NonNull Context context, @Nullable WifiManager wifiManager, @NonNull ScanResult scanResult, @NonNull String password) {
+    private static boolean connectPreAndroidQ(@NonNull final Context context, @Nullable final WifiManager wifiManager, @NonNull final ScanResult scanResult, @NonNull final String password) {
         WifiConfiguration config = ConfigSecurities.getWifiConfiguration(wifiManager, scanResult);
         if (config != null && password.isEmpty()) {
             wifiLog("PASSWORD WAS EMPTY. TRYING TO CONNECT TO EXISTING NETWORK CONFIGURATION");
