@@ -38,7 +38,8 @@ import static com.thanosfisherman.wifiutils.utils.SSIDUtils.convertToQuotedStrin
 public final class ConnectorUtils {
     private static final int MAX_PRIORITY = 99999;
 
-    private static ConnectivityManager.NetworkCallback networkCallback;
+   @Nullable
+   private static ConnectivityManager.NetworkCallback networkCallback;
 
     public static boolean isAlreadyConnected(@Nullable WifiManager wifiManager, @Nullable String bssid) {
         if (bssid != null && wifiManager != null) {
@@ -293,7 +294,12 @@ public final class ConnectorUtils {
                 .setNetworkSpecifier(wifiNetworkSpecifierBuilder.build())
                 .build();
 
-        connectivityManager.requestNetwork(networkRequest, new ConnectivityManager.NetworkCallback() {
+        // not sure, if this is needed
+        if (networkCallback != null) {
+            connectivityManager.unregisterNetworkCallback(networkCallback);
+        }
+
+        networkCallback = new ConnectivityManager.NetworkCallback() {
             @Override
             public void onAvailable(@NonNull Network network) {
                 super.onAvailable(network);
@@ -307,7 +313,9 @@ public final class ConnectorUtils {
 
                 wifiLog("AndroidQ+ could not connect to wifi");
             }
-        });
+        };
+
+        connectivityManager.requestNetwork(networkRequest, networkCallback);
 
         return true;
     }
