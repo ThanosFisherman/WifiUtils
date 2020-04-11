@@ -16,9 +16,7 @@ import android.net.wifi.WifiManager;
 import android.net.wifi.WifiNetworkSpecifier;
 import android.net.wifi.WpsInfo;
 import android.os.Build;
-import android.os.Handler;
 import android.provider.Settings;
-import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -186,7 +184,7 @@ public final class ConnectorUtils {
         if (wifiManager == null)
             return false;
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        if (isAndroidQOrLater()) {
             final ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
             return connectAndroidQ(connectivityManager, scanResult, password);
         }
