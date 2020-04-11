@@ -16,10 +16,10 @@ import androidx.annotation.RequiresApi;
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionErrorCode;
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionScanResultsListener;
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionSuccessListener;
-import com.thanosfisherman.wifiutils.wifiDisconnect.DisconnectionErrorCode;
-import com.thanosfisherman.wifiutils.wifiDisconnect.DisconnectionSuccessListener;
 import com.thanosfisherman.wifiutils.wifiConnect.WifiConnectionCallback;
 import com.thanosfisherman.wifiutils.wifiConnect.WifiConnectionReceiver;
+import com.thanosfisherman.wifiutils.wifiDisconnect.DisconnectionErrorCode;
+import com.thanosfisherman.wifiutils.wifiDisconnect.DisconnectionSuccessListener;
 import com.thanosfisherman.wifiutils.wifiScan.ScanResultsListener;
 import com.thanosfisherman.wifiutils.wifiScan.WifiScanCallback;
 import com.thanosfisherman.wifiutils.wifiScan.WifiScanReceiver;
@@ -34,8 +34,8 @@ import java.util.List;
 import static com.thanosfisherman.elvis.Elvis.of;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.cleanPreviousConfiguration;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.connectToWifi;
-import static com.thanosfisherman.wifiutils.ConnectorUtils.disconnectFromWifi;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.connectWps;
+import static com.thanosfisherman.wifiutils.ConnectorUtils.disconnectFromWifi;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.matchScanResult;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.matchScanResultBssid;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.matchScanResultSsid;
@@ -137,7 +137,7 @@ public final class WifiUtils implements WifiConnectorBuilder,
                     mSingleScanResult = matchScanResultSsid(mSsid, scanResultList);
             }
             if (mSingleScanResult != null && mPassword != null) {
-                if (connectToWifi(mContext, mConnectivityManager, mWifiManager, mSingleScanResult, mPassword)) {
+                if (connectToWifi(mContext, mWifiManager, mSingleScanResult, mPassword)) {
                     registerReceiver(mContext, mWifiConnectionReceiver.activateTimeoutHandler(mSingleScanResult),
                             new IntentFilter(WifiManager.SUPPLICANT_STATE_CHANGED_ACTION));
                     registerReceiver(mContext, mWifiConnectionReceiver,
