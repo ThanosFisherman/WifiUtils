@@ -1,0 +1,22 @@
+apply plugin: 'checkstyle'
+
+checkstyle {
+    toolVersion '8.29'
+    ignoreFailures false
+    showViolations true
+}
+
+task checkstyle(type: Checkstyle) {
+    group 'verification'
+
+    configFile file("$projectDir/checkstyle/checkstyle_rules.xml")
+    source file("$projectDir/src/main/java")
+    classpath = files()
+
+    reports {
+        xml.enabled true
+        xml.destination rootProject.file('checkstyle-result.xml')
+    }
+}
+
+build.dependsOn 'checkstyle'
