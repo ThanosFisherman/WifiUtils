@@ -34,10 +34,11 @@ public final class WifiConnectionReceiver extends BroadcastReceiver {
         public void run() {
             wifiLog("Connection Timed out...");
             reEnableNetworkIfPossible(mWifiManager, mScanResult);
-            if (isAlreadyConnected(mWifiManager, of(mScanResult).next(scanResult -> scanResult.BSSID).get()))
+            if (isAlreadyConnected(mWifiManager, of(mScanResult).next(scanResult -> scanResult.BSSID).get())) {
                 mWifiConnectionCallback.successfulConnect();
-            else
+            } else {
                 mWifiConnectionCallback.errorConnect(ConnectionErrorCode.TIMEOUT_OCCURRED);
+            }
             handler.removeCallbacks(this);
         }
     };

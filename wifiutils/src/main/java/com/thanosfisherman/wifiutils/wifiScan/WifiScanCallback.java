@@ -1,6 +1,5 @@
 package com.thanosfisherman.wifiutils.wifiScan;
 
-public interface WifiScanCallback
-{
+public interface WifiScanCallback {
     void onScanResultsReady();
 }

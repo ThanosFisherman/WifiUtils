@@ -68,10 +68,11 @@ final class ConfigSecurities {
                 config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP40);
                 config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP104);
                 // WEP-40, WEP-104, and 256-bit WEP (WEP-232?)
-                if (ConnectorUtils.isHexWepKey(password))
+                if (ConnectorUtils.isHexWepKey(password)) {
                     config.wepKeys[0] = password;
-                else
+                } else {
                     config.wepKeys[0] = convertToQuotedString(password);
+                }
                 break;
             case SECURITY_PSK:
                 config.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
@@ -83,10 +84,11 @@ final class ConfigSecurities {
                 config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP104);
                 config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
                 config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
-                if (password.matches("[0-9A-Fa-f]{64}"))
+                if (password.matches("[0-9A-Fa-f]{64}")) {
                     config.preSharedKey = password;
-                else
+                } else {
                     config.preSharedKey = convertToQuotedString(password);
+                }
                 break;
             case SECURITY_EAP:
                 config.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
@@ -133,8 +135,9 @@ final class ConfigSecurities {
     @Nullable
     static WifiConfiguration getWifiConfiguration(@NonNull final WifiManager wifiMgr, @NonNull final WifiConfiguration configToFind) {
         final String ssid = configToFind.SSID;
-        if (ssid == null || ssid.isEmpty())
+        if (ssid == null || ssid.isEmpty()) {
             return null;
+        }
 
         final String bssid = configToFind.BSSID != null ? configToFind.BSSID : "";
 
@@ -150,8 +153,9 @@ final class ConfigSecurities {
         for (final WifiConfiguration config : configurations) {
             if (bssid.equals(config.BSSID) || ssid.equals(config.SSID)) {
                 final String configSecurity = getSecurity(config);
-                if (Objects.equals(security, configSecurity))
+                if (Objects.equals(security, configSecurity)) {
                     return config;
+                }
             }
         }
         wifiLog("Couldn't find " + ssid);
@@ -175,21 +179,24 @@ final class ConfigSecurities {
     @RequiresPermission(allOf = {ACCESS_FINE_LOCATION, ACCESS_WIFI_STATE})
     @Nullable
     static WifiConfiguration getWifiConfiguration(@NonNull final WifiManager wifiManager, @NonNull final ScanResult scanResult) {
-        if (scanResult.BSSID == null || scanResult.SSID == null || scanResult.SSID.isEmpty() || scanResult.BSSID.isEmpty())
+        if (scanResult.BSSID == null || scanResult.SSID == null || scanResult.SSID.isEmpty() || scanResult.BSSID.isEmpty()) {
             return null;
+        }
         final String ssid = convertToQuotedString(scanResult.SSID);
         final String bssid = scanResult.BSSID;
         final String security = getSecurity(scanResult);
 
         final List<WifiConfiguration> configurations = wifiManager.getConfiguredNetworks();
-        if (configurations == null)
+        if (configurations == null) {
             return null;
+        }
 
         for (final WifiConfiguration config : configurations) {
             if (bssid.equals(config.BSSID) || ssid.equals(config.SSID)) {
                 final String configSecurity = getSecurity(config);
-                if (Objects.equals(security, configSecurity))
+                if (Objects.equals(security, configSecurity)) {
                     return config;
+                }
             }
         }
         return null;
@@ -203,10 +210,11 @@ final class ConfigSecurities {
             // For open, we don't set group ciphers.
             // For WEP, we specifically only set WEP40 and WEP104, so CCMP
             // and TKIP should not be there.
-            if (config.wepKeys[0] != null)
+            if (config.wepKeys[0] != null) {
                 security = SECURITY_WEP;
-            else
+            } else {
                 security = SECURITY_NONE;
+            }
             securities.add(security);
         }
         if (config.allowedKeyManagement.get(WifiConfiguration.KeyMgmt.WPA_EAP) ||
@@ -225,12 +233,15 @@ final class ConfigSecurities {
 
     static String getSecurity(@NonNull ScanResult result) {
         String security = SECURITY_NONE;
-        if (result.capabilities.contains(SECURITY_WEP))
+        if (result.capabilities.contains(SECURITY_WEP)) {
             security = SECURITY_WEP;
-        if (result.capabilities.contains(SECURITY_PSK))
+        }
+        if (result.capabilities.contains(SECURITY_PSK)) {
             security = SECURITY_PSK;
-        if (result.capabilities.contains(SECURITY_EAP))
+        }
+        if (result.capabilities.contains(SECURITY_EAP)) {
             security = SECURITY_EAP;
+        }
 
         wifiLog("ScanResult capabilities " + result.capabilities);
         wifiLog("Got security via ScanResult " + security);
@@ -241,12 +252,14 @@ final class ConfigSecurities {
      * @return The security of a given {@link ScanResult}.
      */
     public static String getSecurityPrettyPlusWps(@Nullable ScanResult scanResult) {
-        if (scanResult == null)
+        if (scanResult == null) {
             return "";
+        }
         String result = getSecurity(scanResult);
 
-        if (scanResult.capabilities.contains("WPS"))
+        if (scanResult.capabilities.contains("WPS")) {
             result = result + ", WPS";
+        }
         return result;
     }
 }

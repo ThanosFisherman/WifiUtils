@@ -95,9 +95,9 @@ public final class WifiUtils implements WifiConnectorBuilder,
 
             if (mScanResultsListener != null || mPassword != null) {
                 wifiLog("START SCANNING....");
-                if (mWifiManager.startScan())
+                if (mWifiManager.startScan()) {
                     registerReceiver(mContext, mWifiScanReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
-                else {
+                } else {
                     of(mScanResultsListener).ifPresent(resultsListener -> resultsListener.onScanResults(new ArrayList<>()));
                     of(mConnectionWpsListener).ifPresent(wpsListener -> wpsListener.isSuccessful(false));
                     mWifiConnectionCallback.errorConnect(ConnectionErrorCode.COULD_NOT_SCAN);
@@ -120,28 +120,30 @@ public final class WifiUtils implements WifiConnectorBuilder,
 
             if (mConnectionWpsListener != null && mBssid != null && mPassword != null) {
                 mSingleScanResult = matchScanResultBssid(mBssid, scanResultList);
-                if (mSingleScanResult != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+                if (mSingleScanResult != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     connectWps(mWifiManager, mSingleScanResult, mPassword, mWpsTimeoutMillis, mConnectionWpsListener);
-                else {
-                    if (mSingleScanResult == null)
+                } else {
+                    if (mSingleScanResult == null) {
                         wifiLog("Couldn't find network. Possibly out of range");
+                    }
                     mConnectionWpsListener.isSuccessful(false);
                 }
                 return;
             }
 
             if (mSsid != null) {
-                if (mBssid != null)
+                if (mBssid != null) {
                     mSingleScanResult = matchScanResult(mSsid, mBssid, scanResultList);
-                else
+                } else {
                     mSingleScanResult = matchScanResultSsid(mSsid, scanResultList);
+                }
             }
             if (mSingleScanResult != null && mPassword != null) {
                 if (connectToWifi(mContext, mWifiManager, mSingleScanResult, mPassword)) {
                     registerReceiver(mContext, mWifiConnectionReceiver.activateTimeoutHandler(mSingleScanResult),
-                            new IntentFilter(WifiManager.SUPPLICANT_STATE_CHANGED_ACTION));
+                                     new IntentFilter(WifiManager.SUPPLICANT_STATE_CHANGED_ACTION));
                     registerReceiver(mContext, mWifiConnectionReceiver,
-                            new IntentFilter(WifiManager.NETWORK_STATE_CHANGED_ACTION));
+                                     new IntentFilter(WifiManager.NETWORK_STATE_CHANGED_ACTION));
                 } else {
                     mWifiConnectionCallback.errorConnect(ConnectionErrorCode.COULD_NOT_CONNECT);
                 }
@@ -177,8 +179,9 @@ public final class WifiUtils implements WifiConnectorBuilder,
     private WifiUtils(@NonNull Context context) {
         mContext = context;
         mWifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        if (mWifiManager == null)
+        if (mWifiManager == null) {
             throw new RuntimeException("WifiManager is not supposed to be null");
+        }
         mConnectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         mWifiStateReceiver = new WifiStateReceiver(mWifiStateCallback);
         mWifiScanReceiver = new WifiScanReceiver(mWifiScanResultsCallback);
@@ -190,8 +193,9 @@ public final class WifiUtils implements WifiConnectorBuilder,
     }
 
     public static void wifiLog(final String text) {
-        if (mEnableLog)
+        if (mEnableLog) {
             Log.d(TAG, "WifiUtils: " + text);
+        }
     }
 
     public static void enableLog(final boolean enabled) {
@@ -201,12 +205,12 @@ public final class WifiUtils implements WifiConnectorBuilder,
     @Override
     public void enableWifi(@Nullable final WifiStateListener wifiStateListener) {
         mWifiStateListener = wifiStateListener;
-        if (mWifiManager.isWifiEnabled())
+        if (mWifiManager.isWifiEnabled()) {
             mWifiStateCallback.onWifiEnabled();
-        else {
-            if (mWifiManager.setWifiEnabled(true))
+        } else {
+            if (mWifiManager.setWifiEnabled(true)) {
                 registerReceiver(mContext, mWifiStateReceiver, new IntentFilter(WifiManager.WIFI_STATE_CHANGED_ACTION));
-            else {
+            } else {
                 of(wifiStateListener).ifPresent(stateListener -> stateListener.isSuccess(false));
                 of(mScanResultsListener).ifPresent(resultsListener -> resultsListener.onScanResults(new ArrayList<>()));
                 of(mConnectionWpsListener).ifPresent(wpsListener -> wpsListener.isSuccessful(false));
