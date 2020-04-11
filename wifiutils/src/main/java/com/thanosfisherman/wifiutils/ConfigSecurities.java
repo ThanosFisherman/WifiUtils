@@ -19,8 +19,8 @@ import java.util.List;
 
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static android.Manifest.permission.ACCESS_WIFI_STATE;
-import static com.thanosfisherman.wifiutils.ConnectorUtils.convertToQuotedString;
 import static com.thanosfisherman.wifiutils.WifiUtils.wifiLog;
+import static com.thanosfisherman.wifiutils.utils.SSIDUtils.convertToQuotedString;
 
 final class ConfigSecurities {
     static final String SECURITY_NONE = "OPEN";
@@ -158,16 +158,30 @@ final class ConfigSecurities {
         return null;
     }
 
+    @Nullable
+    static WifiConfiguration getWifiConfiguration(@NonNull final WifiManager wifiManager, @NonNull final String ssid) {
+        final List<WifiConfiguration> configuredNetworks = wifiManager.getConfiguredNetworks();
+        final String findSSID = ('"' + ssid + '"');
+
+        for (final WifiConfiguration wifiConfiguration : configuredNetworks) {
+            if (wifiConfiguration.SSID.equals(findSSID)) {
+                return wifiConfiguration;
+            }
+        }
+
+        return null;
+    }
+
     @RequiresPermission(allOf = {ACCESS_FINE_LOCATION, ACCESS_WIFI_STATE})
     @Nullable
-    static WifiConfiguration getWifiConfiguration(@NonNull final WifiManager wifiMgr, @NonNull final ScanResult scanResult) {
+    static WifiConfiguration getWifiConfiguration(@NonNull final WifiManager wifiManager, @NonNull final ScanResult scanResult) {
         if (scanResult.BSSID == null || scanResult.SSID == null || scanResult.SSID.isEmpty() || scanResult.BSSID.isEmpty())
             return null;
         final String ssid = convertToQuotedString(scanResult.SSID);
         final String bssid = scanResult.BSSID;
         final String security = getSecurity(scanResult);
 
-        final List<WifiConfiguration> configurations = wifiMgr.getConfiguredNetworks();
+        final List<WifiConfiguration> configurations = wifiManager.getConfiguredNetworks();
         if (configurations == null)
             return null;
 

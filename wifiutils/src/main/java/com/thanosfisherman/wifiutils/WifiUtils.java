@@ -3,6 +3,7 @@ package com.thanosfisherman.wifiutils;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.IntentFilter;
+import android.net.ConnectivityManager;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.Build;
@@ -15,6 +16,8 @@ import androidx.annotation.RequiresApi;
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionErrorCode;
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionScanResultsListener;
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionSuccessListener;
+import com.thanosfisherman.wifiutils.wifiDisconnect.DisconnectionErrorCode;
+import com.thanosfisherman.wifiutils.wifiDisconnect.DisconnectionSuccessListener;
 import com.thanosfisherman.wifiutils.wifiConnect.WifiConnectionCallback;
 import com.thanosfisherman.wifiutils.wifiConnect.WifiConnectionReceiver;
 import com.thanosfisherman.wifiutils.wifiScan.ScanResultsListener;
@@ -31,6 +34,7 @@ import java.util.List;
 import static com.thanosfisherman.elvis.Elvis.of;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.cleanPreviousConfiguration;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.connectToWifi;
+import static com.thanosfisherman.wifiutils.ConnectorUtils.disconnectFromWifi;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.connectWps;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.matchScanResult;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.matchScanResultBssid;
@@ -44,8 +48,10 @@ public final class WifiUtils implements WifiConnectorBuilder,
         WifiConnectorBuilder.WifiUtilsBuilder,
         WifiConnectorBuilder.WifiSuccessListener,
         WifiConnectorBuilder.WifiWpsSuccessListener {
-    @NonNull
+    @Nullable
     private final WifiManager mWifiManager;
+    @Nullable
+    private final ConnectivityManager mConnectivityManager;
     @NonNull
     private final Context mContext;
     private static boolean mEnableLog;
@@ -131,7 +137,7 @@ public final class WifiUtils implements WifiConnectorBuilder,
                     mSingleScanResult = matchScanResultSsid(mSsid, scanResultList);
             }
             if (mSingleScanResult != null && mPassword != null) {
-                if (connectToWifi(mContext, mWifiManager, mSingleScanResult, mPassword)) {
+                if (connectToWifi(mContext, mConnectivityManager, mWifiManager, mSingleScanResult, mPassword)) {
                     registerReceiver(mContext, mWifiConnectionReceiver.activateTimeoutHandler(mSingleScanResult),
                             new IntentFilter(WifiManager.SUPPLICANT_STATE_CHANGED_ACTION));
                     registerReceiver(mContext, mWifiConnectionReceiver,
@@ -173,6 +179,7 @@ public final class WifiUtils implements WifiConnectorBuilder,
         mWifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         if (mWifiManager == null)
             throw new RuntimeException("WifiManager is not supposed to be null");
+        mConnectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         mWifiStateReceiver = new WifiStateReceiver(mWifiStateCallback);
         mWifiScanReceiver = new WifiScanReceiver(mWifiScanResultsCallback);
         mWifiConnectionReceiver = new WifiConnectionReceiver(mWifiConnectionCallback, mWifiManager, mTimeoutMillis);
@@ -219,6 +226,25 @@ public final class WifiUtils implements WifiConnectorBuilder,
     public WifiConnectorBuilder scanWifi(final ScanResultsListener scanResultsListener) {
         mScanResultsListener = scanResultsListener;
         return this;
+    }
+
+    @Override
+    public void disconnectFrom(@NonNull final String ssid, @NonNull final DisconnectionSuccessListener disconnectionSuccessListener) {
+        if (mConnectivityManager == null) {
+            disconnectionSuccessListener.failed(DisconnectionErrorCode.COULD_NOT_GET_CONNECTIVITY_MANAGER);
+            return;
+        }
+
+        if (mWifiManager == null) {
+            disconnectionSuccessListener.failed(DisconnectionErrorCode.COULD_NOT_GET_WIFI_MANAGER);
+            return;
+        }
+
+        if (disconnectFromWifi(mContext, mConnectivityManager, mWifiManager, ssid)) {
+            disconnectionSuccessListener.success();
+        } else {
+            disconnectionSuccessListener.failed(DisconnectionErrorCode.COULD_NOT_DISCONNECT);
+        }
     }
 
     @NonNull

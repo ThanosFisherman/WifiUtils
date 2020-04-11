@@ -16,6 +16,7 @@ import android.net.wifi.WifiManager;
 import android.net.wifi.WifiNetworkSpecifier;
 import android.net.wifi.WpsInfo;
 import android.os.Build;
+import android.os.Handler;
 import android.provider.Settings;
 import android.text.TextUtils;
 
@@ -33,10 +34,13 @@ import java.util.List;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static android.Manifest.permission.ACCESS_WIFI_STATE;
 import static com.thanosfisherman.wifiutils.WifiUtils.wifiLog;
+import static com.thanosfisherman.wifiutils.utils.SSIDUtils.convertToQuotedString;
 
 @SuppressLint("MissingPermission")
 public final class ConnectorUtils {
     private static final int MAX_PRIORITY = 99999;
+
+    private static ConnectivityManager.NetworkCallback networkCallback;
 
     public static boolean isAlreadyConnected(@Nullable WifiManager wifiManager, @Nullable String bssid) {
         if (bssid != null && wifiManager != null) {
@@ -58,7 +62,7 @@ public final class ConnectorUtils {
 
         boolean modified = false;
         int tempCount = 0;
-        final int numOpenNetworksKept = Build.VERSION.SDK_INT >= 17
+        final int numOpenNetworksKept = Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1
                 ? Settings.Secure.getInt(resolver, Settings.Global.WIFI_NUM_OPEN_NETWORKS_KEPT, 10)
                 : Settings.Secure.getInt(resolver, Settings.Secure.WIFI_NUM_OPEN_NETWORKS_KEPT, 10);
 
@@ -124,18 +128,6 @@ public final class ConnectorUtils {
         return i;
     }
 
-    @NonNull
-    static String convertToQuotedString(@NonNull String string) {
-        if (TextUtils.isEmpty(string))
-            return "";
-
-        final int lastPos = string.length() - 1;
-        if (lastPos < 0 || (string.charAt(0) == '"' && string.charAt(lastPos) == '"'))
-            return string;
-
-        return "\"" + string + "\"";
-    }
-
     static boolean isHexWepKey(@Nullable String wepKey) {
         final int passwordLen = wepKey == null ? 0 : wepKey.length();
         return (passwordLen == 10 || passwordLen == 26 || passwordLen == 58) && wepKey.matches("[0-9A-Fa-f]*");
@@ -174,6 +166,21 @@ public final class ConnectorUtils {
         }
     }
 
+    @RequiresPermission(ACCESS_WIFI_STATE)
+    static boolean disconnectFromWifi(@NonNull final Context context, @NonNull final ConnectivityManager connectivityManager, @NonNull final WifiManager wifiManager, @NonNull final String ssid) {
+        if (isAndroidQOrLater()) {
+            if (networkCallback != null) {
+                connectivityManager.unregisterNetworkCallback(networkCallback);
+                networkCallback = null;
+            }
+
+            return true;
+        }
+
+        final WifiConfiguration wifiConfiguration = ConfigSecurities.getWifiConfiguration(wifiManager, ssid);
+        return cleanPreviousConfiguration(wifiManager, wifiConfiguration);
+    }
+
     @RequiresPermission(allOf = {ACCESS_FINE_LOCATION, ACCESS_WIFI_STATE})
     static boolean connectToWifi(@NonNull final Context context, @Nullable final WifiManager wifiManager, @NonNull final ScanResult scanResult, @NonNull final String password) {
         if (wifiManager == null)
@@ -189,6 +196,9 @@ public final class ConnectorUtils {
 
     @RequiresPermission(allOf = {ACCESS_FINE_LOCATION, ACCESS_WIFI_STATE})
     private static boolean connectPreAndroidQ(@NonNull final Context context, @Nullable final WifiManager wifiManager, @NonNull final ScanResult scanResult, @NonNull final String password) {
+        if (wifiManager == null)
+            return false;
+
         WifiConfiguration config = ConfigSecurities.getWifiConfiguration(wifiManager, scanResult);
         if (config != null && password.isEmpty()) {
             wifiLog("PASSWORD WAS EMPTY. TRYING TO CONNECT TO EXISTING NETWORK CONFIGURATION");
@@ -234,7 +244,7 @@ public final class ConnectorUtils {
         if (config == null || wifiManager == null)
             return false;
 
-        if (Build.VERSION.SDK_INT >= 23)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
             return disableAllButOne(wifiManager, config) && (reassociate ? wifiManager.reassociate() : wifiManager.reconnect());
 
         // Make it the highest priority.
@@ -268,9 +278,8 @@ public final class ConnectorUtils {
 
     @RequiresApi(Build.VERSION_CODES.Q)
     private static boolean connectAndroidQ(@Nullable ConnectivityManager connectivityManager, @NonNull ScanResult scanResult, @NonNull String password) {
-        if (connectivityManager == null) {
+        if (connectivityManager == null)
             return false;
-        }
 
         WifiNetworkSpecifier.Builder wifiNetworkSpecifierBuilder = new WifiNetworkSpecifier.Builder()
                 .setSsid(scanResult.SSID)
@@ -501,5 +510,9 @@ public final class ConnectorUtils {
             if (Objects.equals(result.BSSID, bssid))
                 return result;
         return null;
+    }
+
+    private static boolean isAndroidQOrLater() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q;
     }
 }
