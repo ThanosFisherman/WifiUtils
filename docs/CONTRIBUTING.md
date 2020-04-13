@@ -5,7 +5,7 @@ There are a few ways of contributing into the project:
 1. Bug fixes
 2. Check the [Issues page](https://github.com/ThanosFisherman/WifiUtils/issues) and resolve any issues you can find
 3. Code refactor. There is huge room for improvement :)
-4. Introduce any interesting functionality you might need. Please do let me know before doing this first. There might be a chance that a feature you might want to include be really specific to your needs and not fit the overall philosophy of the lib. For any questions on features PR, email me at **psaridis @ gmail . com**
+4. Introduce any interesting functionality you might need. Please do let me know before doing this first. There might be a chance that a feature you might want to include be really specific to your needs and not fit the overall philosophy of the lib.
 
 ## Creating Pull Requests (PR)
 In order to create a Pull Request
