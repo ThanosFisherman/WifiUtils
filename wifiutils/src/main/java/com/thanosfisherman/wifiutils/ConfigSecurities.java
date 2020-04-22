@@ -162,6 +162,7 @@ final class ConfigSecurities {
         return null;
     }
 
+    @RequiresPermission(allOf = {ACCESS_FINE_LOCATION, ACCESS_WIFI_STATE})
     @Nullable
     static WifiConfiguration getWifiConfiguration(@NonNull final WifiManager wifiManager, @NonNull final String ssid) {
         final List<WifiConfiguration> configuredNetworks = wifiManager.getConfiguredNetworks();

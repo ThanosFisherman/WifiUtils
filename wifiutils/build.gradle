@@ -35,8 +35,8 @@ dependencies {
     })
     implementation "androidx.annotation:annotation:1.1.0"
     implementation 'com.thanosfisherman.elvis:elvis:2.0'
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.2-alpha05'
+    testImplementation 'junit:junit:4.13'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.2-beta01'
 }
 //apply from: 'install.gradle'
 //apply from: 'bintray.gradle'
