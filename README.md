@@ -58,30 +58,48 @@ private void getScanResults(@NonNull final List<ScanResult> results)
 Now lets get to the interesting stuff. You can connect to any WiFi network programmatically knowing only SSID and WPA/WPA2 key: 
 
 ```java
-   WifiUtils.withContext(getApplicationContext())
-                        .connectWith("MitsarasWiFi", "MitsarasPassword123")
-                        .onConnectionResult(this::checkResult)
-                        .start();
-```
+  WifiUtils.withContext(getApplicationContext())
+          .connectWith("JohnDoeWiFi", "JohnDoePassword")
+          .setTimeout(40000)
+          .onConnectionResult(new ConnectionSuccessListener() {
+              @Override
+              public void success() {
+                  Toast.makeText(MainActivity.this, "SUCCESS!", Toast.LENGTH_SHORT).show();
+              }
 
-Again checkResult could be something like:
-
-```java
-  private void checkResult(boolean isSuccess)
-  {
-        if (isSuccess)
-            Toast.makeText(MainActivity.this, "CONNECTED YAY", Toast.LENGTH_SHORT).show();
-        else
-            Toast.makeText(MainActivity.this, "COULDN'T CONNECT", Toast.LENGTH_SHORT).show();
-  }
+              @Override
+              public void failed(@NonNull ConnectionErrorCode errorCode) {
+                  Toast.makeText(MainActivity.this, "EPIC FAIL!" + errorCode.toString(), Toast.LENGTH_SHORT).show();
+              }
+          })
+          .start();
 ```
 
 There are also a few other options that would allow you to do the same job: For example you can connect using SSID, BSSID and WPA/WPA2 Key:
 
+Let's move the `ConnectionSuccessListener` from above into its own separate field named `successListener` so that we can save some space
+
+
+```java
+    private ConnectionSuccessListener successListener = new ConnectionSuccessListener() {
+        @Override
+        public void success() {
+            Toast.makeText(MainActivity.this, "SUCCESS!", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void failed(@NonNull ConnectionErrorCode errorCode) {
+            Toast.makeText(MainActivity.this, "EPIC FAIL!" + errorCode.toString(), Toast.LENGTH_SHORT).show();
+        }
+    };
+```
+
+Connection with both SSID and BSSID specified
+
 ```java
  WifiUtils.withContext(getApplicationContext())
                       .connectWith("MitsarasWiFi", "AB:CD:EF:12:34:56", "MitsarasPassword123")
-                      .onConnectionResult(this::checkResult)
+                      .onConnectionResult(successListener)
                       .start();
 ```
 
@@ -90,7 +108,7 @@ Lastly WifiUtils can also connect using a specified `scanResult` after a WiFi Sc
 ```java
 WifiUtils.withContext(getApplicationContext())
                      .connectWithScanResult("MitsarasPasword123", scanResults -> scanResults.get(0))
-                     .onConnectionResult(this::checkResult)
+                     .onConnectionResult(successListener)
                      .start();
 ```
 
