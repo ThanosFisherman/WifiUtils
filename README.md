@@ -75,10 +75,8 @@ Now lets get to the interesting stuff. You can connect to any WiFi network progr
           .start();
 ```
 
-There are also a few other options that would allow you to do the same job: For example you can connect using SSID, BSSID and WPA/WPA2 Key:
-
-Let's move the `ConnectionSuccessListener` from above into its own separate field named `successListener` so that we can save some space
-
+There are also a few other options that would allow you to do the same job but first 
+let's move the `ConnectionSuccessListener` from above into its own separate field named `successListener` so that we can save some space
 
 ```java
     private ConnectionSuccessListener successListener = new ConnectionSuccessListener() {
@@ -94,7 +92,7 @@ Let's move the `ConnectionSuccessListener` from above into its own separate fiel
     };
 ```
 
-Connection with both SSID and BSSID specified
+Connecting with SSID, BSSID and WPA/WPA2 key: 
 
 ```java
  WifiUtils.withContext(getApplicationContext())
