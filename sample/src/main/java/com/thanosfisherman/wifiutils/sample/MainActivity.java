@@ -19,8 +19,8 @@ import com.thanosfisherman.wifiutils.wifiDisconnect.DisconnectionErrorCode;
 import com.thanosfisherman.wifiutils.wifiDisconnect.DisconnectionSuccessListener;
 
 public class MainActivity extends AppCompatActivity {
-    final static String SSID = "conn-x828678";
-    static final String PASSWORD = "146080828678";
+    private static final String SSID = "conn-x828678";
+    private static final String PASSWORD = "146080828678";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
