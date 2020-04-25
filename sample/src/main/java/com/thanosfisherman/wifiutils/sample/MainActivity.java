@@ -21,6 +21,17 @@ import com.thanosfisherman.wifiutils.wifiDisconnect.DisconnectionSuccessListener
 public class MainActivity extends AppCompatActivity {
     private static final String SSID = "conn-x828678";
     private static final String PASSWORD = "146080828678";
+    private ConnectionSuccessListener successListener = new ConnectionSuccessListener() {
+        @Override
+        public void success() {
+            Toast.makeText(MainActivity.this, "SUCCESS!", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void failed(@NonNull ConnectionErrorCode errorCode) {
+            Toast.makeText(MainActivity.this, "EPIC FAIL!" + errorCode.toString(), Toast.LENGTH_SHORT).show();
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,17 +57,7 @@ public class MainActivity extends AppCompatActivity {
         WifiUtils.withContext(getApplicationContext())
                 .connectWith(SSID, PASSWORD)
                 .setTimeout(40000)
-                .onConnectionResult(new ConnectionSuccessListener() {
-                    @Override
-                    public void success() {
-                        Toast.makeText(MainActivity.this, "SUCCESS!", Toast.LENGTH_SHORT).show();
-                    }
-
-                    @Override
-                    public void failed(@NonNull ConnectionErrorCode errorCode) {
-                        Toast.makeText(MainActivity.this, "EPIC FAIL!" + errorCode.toString(), Toast.LENGTH_SHORT).show();
-                    }
-                })
+                .onConnectionResult(successListener)
                 .start();
     }
 
