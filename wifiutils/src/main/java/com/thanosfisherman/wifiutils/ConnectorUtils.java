@@ -18,16 +18,16 @@ import android.net.wifi.WpsInfo;
 import android.os.Build;
 import android.provider.Settings;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
-import androidx.annotation.RequiresPermission;
-
 import com.thanosfisherman.elvis.Objects;
 import com.thanosfisherman.wifiutils.wifiWps.ConnectionWpsListener;
 
 import java.util.Collections;
 import java.util.List;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+import androidx.annotation.RequiresPermission;
 
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static android.Manifest.permission.ACCESS_WIFI_STATE;
@@ -171,9 +171,10 @@ public final class ConnectorUtils {
     }
 
     @RequiresPermission(ACCESS_WIFI_STATE)
-    static boolean disconnectFromWifi(@NonNull final Context context, @NonNull final ConnectivityManager connectivityManager, @NonNull final WifiManager wifiManager, @NonNull final String ssid) {
+    static boolean disconnectFromWifi(@NonNull final Context context, @NonNull final ConnectivityManager connectivityManager, @NonNull final WifiManager wifiManager, @NonNull final String ssid, final boolean alsoRemove) {
         if (isAndroidQOrLater()) {
-            if (networkCallback != null) {
+            if (networkCallback != null)
+            {
                 connectivityManager.unregisterNetworkCallback(networkCallback);
                 networkCallback = null;
             }
@@ -181,8 +182,12 @@ public final class ConnectorUtils {
             return true;
         }
 
-        final WifiConfiguration wifiConfiguration = ConfigSecurities.getWifiConfiguration(wifiManager, ssid);
-        return cleanPreviousConfiguration(wifiManager, wifiConfiguration);
+        if (alsoRemove) {
+            final WifiConfiguration wifiConfiguration = ConfigSecurities.getWifiConfiguration(wifiManager, ssid);
+            return cleanPreviousConfiguration(wifiManager, wifiConfiguration);
+        } else {
+            return wifiManager.disconnect();
+        }
     }
 
     @RequiresPermission(allOf = {ACCESS_FINE_LOCATION, ACCESS_WIFI_STATE})

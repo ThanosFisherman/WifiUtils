@@ -9,10 +9,6 @@ import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.util.Log;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
-
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionErrorCode;
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionScanResultsListener;
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionSuccessListener;
@@ -30,6 +26,10 @@ import com.thanosfisherman.wifiutils.wifiWps.ConnectionWpsListener;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 
 import static com.thanosfisherman.elvis.Elvis.of;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.cleanPreviousConfiguration;
@@ -234,6 +234,11 @@ public final class WifiUtils implements WifiConnectorBuilder,
 
     @Override
     public void disconnectFrom(@NonNull final String ssid, @NonNull final DisconnectionSuccessListener disconnectionSuccessListener) {
+        this.disconnectFrom(ssid, false, disconnectionSuccessListener);
+    }
+
+    @Override
+    public void disconnectFrom(@NonNull final String ssid, final boolean alsoRemove, @NonNull final DisconnectionSuccessListener disconnectionSuccessListener) {
         if (mConnectivityManager == null) {
             disconnectionSuccessListener.failed(DisconnectionErrorCode.COULD_NOT_GET_CONNECTIVITY_MANAGER);
             return;
@@ -244,7 +249,7 @@ public final class WifiUtils implements WifiConnectorBuilder,
             return;
         }
 
-        if (disconnectFromWifi(mContext, mConnectivityManager, mWifiManager, ssid)) {
+        if (disconnectFromWifi(mContext, mConnectivityManager, mWifiManager, ssid, alsoRemove)) {
             disconnectionSuccessListener.success();
         } else {
             disconnectionSuccessListener.failed(DisconnectionErrorCode.COULD_NOT_DISCONNECT);
