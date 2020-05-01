@@ -150,6 +150,43 @@ WifiUtils.withContext(getApplicationContext())
                      .start();
 ```
 
+### Disconnect
+
+You can disconnect from the currently connected network.
+
+```java
+WifiUtils.withContext(context)
+                .disconnect(new DisconnectionSuccessListener() {
+                    @Override
+                    public void success() {
+                        Toast.makeText(MainActivity.this, "Disconnect success!", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void failed(@NonNull DisconnectionErrorCode errorCode) {
+                        Toast.makeText(MainActivity.this, "Failed to disconnect: " + errorCode.toString(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+```
+
+### Disconnect and remove saved network configuration
+
+You can also remove the saved wifi network configuration. On Android 10, this will just simply disconnect (as wifi configuration's made by WifiUtils are no longer saved).
+Notice: WifiUtils can't remove network configurations created by the user or by another app.
+
+```kotlin
+WifiUtils.withContext(context)
+                .remove(SSID, object : RemoveSuccessListener {
+                    override fun success() {
+                        Toast.makeText(context, "Remove success!", Toast.LENGTH_SHORT).show()
+                    }
+
+                    override fun failed(errorCode: RemoveErrorCode) {
+                        Toast.makeText(context, "Failed to disconnect and remove: $errorCode", Toast.LENGTH_SHORT).show()
+                    }
+                })
+```
+
 ### Enable Logging
 If you want to receive some extra logging info comming from WiFi Utils you can enable its logging capabilities with `WifiUtils.enableLog(true);`
 

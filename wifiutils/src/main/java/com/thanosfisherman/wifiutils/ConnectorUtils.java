@@ -170,26 +170,6 @@ public final class ConnectorUtils {
         }
     }
 
-    @RequiresPermission(ACCESS_WIFI_STATE)
-    static boolean disconnectFromWifi(@NonNull final Context context, @NonNull final ConnectivityManager connectivityManager, @NonNull final WifiManager wifiManager, @NonNull final String ssid, final boolean alsoRemove) {
-        if (isAndroidQOrLater()) {
-            if (networkCallback != null)
-            {
-                connectivityManager.unregisterNetworkCallback(networkCallback);
-                networkCallback = null;
-            }
-
-            return true;
-        }
-
-        if (alsoRemove) {
-            final WifiConfiguration wifiConfiguration = ConfigSecurities.getWifiConfiguration(wifiManager, ssid);
-            return cleanPreviousConfiguration(wifiManager, wifiConfiguration);
-        } else {
-            return wifiManager.disconnect();
-        }
-    }
-
     @RequiresPermission(allOf = {ACCESS_FINE_LOCATION, ACCESS_WIFI_STATE})
     static boolean connectToWifi(@NonNull final Context context, @Nullable final WifiManager wifiManager, @NonNull final ScanResult scanResult, @NonNull final String password) {
         if (wifiManager == null) {
@@ -486,6 +466,35 @@ public final class ConnectorUtils {
 
         handler.postDelayed(handlerTimeoutRunnable, timeOutMillis);
         wifiManager.startWps(wpsInfo, wpsCallback);
+    }
+
+    @RequiresPermission(ACCESS_WIFI_STATE)
+    static boolean disconnectFromWifi(@NonNull final Context context, @NonNull final ConnectivityManager connectivityManager, @NonNull final WifiManager wifiManager) {
+        if (isAndroidQOrLater()) {
+            return disconnectAndroidQ(connectivityManager);
+        }
+
+        return wifiManager.disconnect();
+    }
+
+    static boolean removeWifi(@NonNull final Context context, @NonNull final ConnectivityManager connectivityManager, @NonNull final WifiManager wifiManager, @NonNull final String ssid) {
+        if (isAndroidQOrLater()) {
+            return disconnectAndroidQ(connectivityManager);
+        }
+
+        final WifiConfiguration wifiConfiguration = ConfigSecurities.getWifiConfiguration(wifiManager, ssid);
+        return cleanPreviousConfiguration(wifiManager, wifiConfiguration);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.Q)
+    static boolean disconnectAndroidQ(@NonNull final ConnectivityManager connectivityManager) {
+        if (networkCallback != null)
+        {
+            connectivityManager.unregisterNetworkCallback(networkCallback);
+            networkCallback = null;
+        }
+
+        return true;
     }
 
     @RequiresPermission(allOf = {ACCESS_FINE_LOCATION, ACCESS_WIFI_STATE})
