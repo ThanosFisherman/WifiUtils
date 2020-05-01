@@ -159,7 +159,6 @@ Damn You are required to set a few permissions in order for this lib to work cor
 ```xml
 <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
 <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
-<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/> <!-- for Android 6 and above -->
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/> <!-- for Android 6 and above -->
 ```
 ### Add it to your project
