@@ -253,7 +253,7 @@ public final class WifiUtils implements WifiConnectorBuilder,
             return;
         }
 
-        if (disconnectFromWifi(mContext, mConnectivityManager, mWifiManager)) {
+        if (disconnectFromWifi(mConnectivityManager, mWifiManager)) {
             disconnectionSuccessListener.success();
         } else {
             disconnectionSuccessListener.failed(DisconnectionErrorCode.COULD_NOT_DISCONNECT);
@@ -274,7 +274,7 @@ public final class WifiUtils implements WifiConnectorBuilder,
             return;
         }
 
-        if(removeWifi(mContext, mConnectivityManager, mWifiManager, ssid)) {
+        if(removeWifi(mConnectivityManager, mWifiManager, ssid)) {
             removeSuccessListener.success();
         } else {
             removeSuccessListener.failed(RemoveErrorCode.COULD_NOT_REMOVE);

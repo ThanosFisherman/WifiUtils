@@ -469,7 +469,7 @@ public final class ConnectorUtils {
     }
 
     @RequiresPermission(ACCESS_WIFI_STATE)
-    static boolean disconnectFromWifi(@NonNull final Context context, @NonNull final ConnectivityManager connectivityManager, @NonNull final WifiManager wifiManager) {
+    static boolean disconnectFromWifi(@NonNull final ConnectivityManager connectivityManager, @NonNull final WifiManager wifiManager) {
         if (isAndroidQOrLater()) {
             return disconnectAndroidQ(connectivityManager);
         }
@@ -477,7 +477,8 @@ public final class ConnectorUtils {
         return wifiManager.disconnect();
     }
 
-    static boolean removeWifi(@NonNull final Context context, @NonNull final ConnectivityManager connectivityManager, @NonNull final WifiManager wifiManager, @NonNull final String ssid) {
+    @RequiresPermission(ACCESS_WIFI_STATE)
+    static boolean removeWifi(@NonNull final ConnectivityManager connectivityManager, @NonNull final WifiManager wifiManager, @NonNull final String ssid) {
         if (isAndroidQOrLater()) {
             return disconnectAndroidQ(connectivityManager);
         }
@@ -487,9 +488,8 @@ public final class ConnectorUtils {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.Q)
-    static boolean disconnectAndroidQ(@NonNull final ConnectivityManager connectivityManager) {
-        if (networkCallback != null)
-        {
+    private static boolean disconnectAndroidQ(@NonNull final ConnectivityManager connectivityManager) {
+        if (networkCallback != null) {
             connectivityManager.unregisterNetworkCallback(networkCallback);
             networkCallback = null;
         }
