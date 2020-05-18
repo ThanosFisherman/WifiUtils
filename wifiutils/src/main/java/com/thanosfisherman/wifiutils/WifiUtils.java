@@ -9,10 +9,6 @@ import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.util.Log;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
-
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionErrorCode;
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionScanResultsListener;
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionSuccessListener;
@@ -20,6 +16,8 @@ import com.thanosfisherman.wifiutils.wifiConnect.WifiConnectionCallback;
 import com.thanosfisherman.wifiutils.wifiConnect.WifiConnectionReceiver;
 import com.thanosfisherman.wifiutils.wifiDisconnect.DisconnectionErrorCode;
 import com.thanosfisherman.wifiutils.wifiDisconnect.DisconnectionSuccessListener;
+import com.thanosfisherman.wifiutils.wifiRemove.RemoveErrorCode;
+import com.thanosfisherman.wifiutils.wifiRemove.RemoveSuccessListener;
 import com.thanosfisherman.wifiutils.wifiScan.ScanResultsListener;
 import com.thanosfisherman.wifiutils.wifiScan.WifiScanCallback;
 import com.thanosfisherman.wifiutils.wifiScan.WifiScanReceiver;
@@ -31,6 +29,10 @@ import com.thanosfisherman.wifiutils.wifiWps.ConnectionWpsListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+
 import static com.thanosfisherman.elvis.Elvis.of;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.cleanPreviousConfiguration;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.connectToWifi;
@@ -41,6 +43,7 @@ import static com.thanosfisherman.wifiutils.ConnectorUtils.matchScanResultBssid;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.matchScanResultSsid;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.reenableAllHotspots;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.registerReceiver;
+import static com.thanosfisherman.wifiutils.ConnectorUtils.removeWifi;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.unregisterReceiver;
 
 @SuppressLint("MissingPermission")
@@ -232,8 +235,14 @@ public final class WifiUtils implements WifiConnectorBuilder,
         return this;
     }
 
+    @Deprecated
     @Override
     public void disconnectFrom(@NonNull final String ssid, @NonNull final DisconnectionSuccessListener disconnectionSuccessListener) {
+        this.disconnect(disconnectionSuccessListener);
+    }
+
+    @Override
+    public void disconnect(@NonNull DisconnectionSuccessListener disconnectionSuccessListener) {
         if (mConnectivityManager == null) {
             disconnectionSuccessListener.failed(DisconnectionErrorCode.COULD_NOT_GET_CONNECTIVITY_MANAGER);
             return;
@@ -244,10 +253,31 @@ public final class WifiUtils implements WifiConnectorBuilder,
             return;
         }
 
-        if (disconnectFromWifi(mContext, mConnectivityManager, mWifiManager, ssid)) {
+        if (disconnectFromWifi(mConnectivityManager, mWifiManager)) {
             disconnectionSuccessListener.success();
         } else {
             disconnectionSuccessListener.failed(DisconnectionErrorCode.COULD_NOT_DISCONNECT);
+        }
+    }
+
+
+
+    @Override
+    public void remove(@NonNull String ssid, @NonNull RemoveSuccessListener removeSuccessListener) {
+        if (mConnectivityManager == null) {
+            removeSuccessListener.failed(RemoveErrorCode.COULD_NOT_GET_CONNECTIVITY_MANAGER);
+            return;
+        }
+
+        if (mWifiManager == null) {
+            removeSuccessListener.failed(RemoveErrorCode.COULD_NOT_GET_WIFI_MANAGER);
+            return;
+        }
+
+        if(removeWifi(mConnectivityManager, mWifiManager, ssid)) {
+            removeSuccessListener.success();
+        } else {
+            removeSuccessListener.failed(RemoveErrorCode.COULD_NOT_REMOVE);
         }
     }
 

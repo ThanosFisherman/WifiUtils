@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void disconnect(final Context context) {
         WifiUtils.withContext(context)
-                .disconnectFrom(SSID, new DisconnectionSuccessListener() {
+                .disconnect(new DisconnectionSuccessListener() {
                     @Override
                     public void success() {
                         Toast.makeText(MainActivity.this, "Disconnect success!", Toast.LENGTH_SHORT).show();

@@ -2,4 +2,5 @@
     <string name="app_name">WifiUtils</string>
     <string name="connect">Connect</string>
     <string name="disconnect">Disconnect</string>
+    <string name="remove">Remove</string>
 </resources>

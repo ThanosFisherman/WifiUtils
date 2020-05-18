@@ -18,16 +18,16 @@ import android.net.wifi.WpsInfo;
 import android.os.Build;
 import android.provider.Settings;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
-import androidx.annotation.RequiresPermission;
-
 import com.thanosfisherman.elvis.Objects;
 import com.thanosfisherman.wifiutils.wifiWps.ConnectionWpsListener;
 
 import java.util.Collections;
 import java.util.List;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+import androidx.annotation.RequiresPermission;
 
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static android.Manifest.permission.ACCESS_WIFI_STATE;
@@ -170,21 +170,6 @@ public final class ConnectorUtils {
         }
     }
 
-    @RequiresPermission(ACCESS_WIFI_STATE)
-    static boolean disconnectFromWifi(@NonNull final Context context, @NonNull final ConnectivityManager connectivityManager, @NonNull final WifiManager wifiManager, @NonNull final String ssid) {
-        if (isAndroidQOrLater()) {
-            if (networkCallback != null) {
-                connectivityManager.unregisterNetworkCallback(networkCallback);
-                networkCallback = null;
-            }
-
-            return true;
-        }
-
-        final WifiConfiguration wifiConfiguration = ConfigSecurities.getWifiConfiguration(wifiManager, ssid);
-        return cleanPreviousConfiguration(wifiManager, wifiConfiguration);
-    }
-
     @RequiresPermission(allOf = {ACCESS_FINE_LOCATION, ACCESS_WIFI_STATE})
     static boolean connectToWifi(@NonNull final Context context, @Nullable final WifiManager wifiManager, @NonNull final ScanResult scanResult, @NonNull final String password) {
         if (wifiManager == null) {
@@ -319,6 +304,9 @@ public final class ConnectorUtils {
                 super.onAvailable(network);
 
                 wifiLog("AndroidQ+ connected to wifi ");
+
+                // bind so all api calls are performed over this new network
+                connectivityManager.bindProcessToNetwork(network);
             }
 
             @Override
@@ -478,6 +466,35 @@ public final class ConnectorUtils {
 
         handler.postDelayed(handlerTimeoutRunnable, timeOutMillis);
         wifiManager.startWps(wpsInfo, wpsCallback);
+    }
+
+    @RequiresPermission(ACCESS_WIFI_STATE)
+    static boolean disconnectFromWifi(@NonNull final ConnectivityManager connectivityManager, @NonNull final WifiManager wifiManager) {
+        if (isAndroidQOrLater()) {
+            return disconnectAndroidQ(connectivityManager);
+        }
+
+        return wifiManager.disconnect();
+    }
+
+    @RequiresPermission(ACCESS_WIFI_STATE)
+    static boolean removeWifi(@NonNull final ConnectivityManager connectivityManager, @NonNull final WifiManager wifiManager, @NonNull final String ssid) {
+        if (isAndroidQOrLater()) {
+            return disconnectAndroidQ(connectivityManager);
+        }
+
+        final WifiConfiguration wifiConfiguration = ConfigSecurities.getWifiConfiguration(wifiManager, ssid);
+        return cleanPreviousConfiguration(wifiManager, wifiConfiguration);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.Q)
+    private static boolean disconnectAndroidQ(@NonNull final ConnectivityManager connectivityManager) {
+        if (networkCallback != null) {
+            connectivityManager.unregisterNetworkCallback(networkCallback);
+            networkCallback = null;
+        }
+
+        return true;
     }
 
     @RequiresPermission(allOf = {ACCESS_FINE_LOCATION, ACCESS_WIFI_STATE})
