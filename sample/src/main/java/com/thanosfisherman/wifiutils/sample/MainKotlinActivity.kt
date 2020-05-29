@@ -30,6 +30,7 @@ class MainKotlinActivity : AppCompatActivity() {
         button_connect.setOnClickListener { connectWithWpa(applicationContext) }
         button_disconnect.setOnClickListener { disconnect(applicationContext) }
         button_remove.setOnClickListener{ remove(applicationContext) }
+        button_check.setOnClickListener{ check(applicationContext) }
     }
 
     private fun connectWithWpa(context: Context) {
@@ -72,5 +73,10 @@ class MainKotlinActivity : AppCompatActivity() {
                         Toast.makeText(context, "Failed to disconnect and remove: $errorCode", Toast.LENGTH_SHORT).show()
                     }
                 })
+    }
+
+    private fun check(context: Context) {
+        val result = WifiUtils.withContext(context).isWifiConnected(null)
+        Toast.makeText(context, "Wifi Connect State: $result", Toast.LENGTH_SHORT).show()
     }
 }

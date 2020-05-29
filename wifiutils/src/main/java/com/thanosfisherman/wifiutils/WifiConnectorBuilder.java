@@ -48,6 +48,8 @@ public interface WifiConnectorBuilder {
         WifiWpsSuccessListener connectWithWps(@NonNull String bssid, @NonNull String password);
 
         void cancelAutoConnect();
+
+        boolean isWifiConnected(@Nullable String ssid);
     }
 
     interface WifiSuccessListener {
