@@ -6,6 +6,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
+import android.net.LinkProperties;
 import android.net.MacAddress;
 import android.net.Network;
 import android.net.NetworkCapabilities;
@@ -19,6 +20,8 @@ import android.os.Build;
 import android.provider.Settings;
 
 import com.thanosfisherman.elvis.Objects;
+import com.thanosfisherman.wifiutils.wifiConnect.ConnectionErrorCode;
+import com.thanosfisherman.wifiutils.wifiConnect.WifiConnectionCallback;
 import com.thanosfisherman.wifiutils.wifiWps.ConnectionWpsListener;
 
 import java.util.Collections;
@@ -161,7 +164,7 @@ public final class ConnectorUtils {
         }
     }
 
-    static void unregisterReceiver(@NonNull final Context context, @Nullable final BroadcastReceiver receiver) {
+    public static void unregisterReceiver(@NonNull final Context context, @Nullable final BroadcastReceiver receiver) {
         if (receiver != null) {
             try {
                 context.unregisterReceiver(receiver);
@@ -171,14 +174,15 @@ public final class ConnectorUtils {
     }
 
     @RequiresPermission(allOf = {ACCESS_FINE_LOCATION, ACCESS_WIFI_STATE})
-    static boolean connectToWifi(@NonNull final Context context, @Nullable final WifiManager wifiManager, @NonNull final ScanResult scanResult, @NonNull final String password) {
-        if (wifiManager == null) {
-            return false;
+    static boolean connectToWifi(@NonNull final Context context, @Nullable final WifiManager wifiManager, @Nullable final ConnectivityManager connectivityManager, @NonNull final ScanResult scanResult, @NonNull final String password, WifiConnectionCallback mWifiConnectionCallback) {
+        if (isAndroidQOrLater()) {
+            // Only validate if connectivityManager is not null
+            // connecting is part of AppWifiConnectionReceiver
+            return connectivityManager != null;
         }
 
-        if (isAndroidQOrLater()) {
-            final ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-            return connectAndroidQ(connectivityManager, scanResult, password);
+        if (wifiManager == null) {
+            return false;
         }
 
         return connectPreAndroidQ(context, wifiManager, scanResult, password);
@@ -271,55 +275,6 @@ public final class ConnectorUtils {
         // We have to retrieve the WifiConfiguration after save.
         config = ConfigSecurities.getWifiConfiguration(wifiManager, config);
         return config != null && disableAllButOne(wifiManager, config) && (reassociate ? wifiManager.reassociate() : wifiManager.reconnect());
-    }
-
-    @RequiresApi(Build.VERSION_CODES.Q)
-    private static boolean connectAndroidQ(@Nullable ConnectivityManager connectivityManager, @NonNull ScanResult scanResult, @NonNull String password) {
-        if (connectivityManager == null) {
-            return false;
-        }
-
-        WifiNetworkSpecifier.Builder wifiNetworkSpecifierBuilder = new WifiNetworkSpecifier.Builder()
-                .setSsid(scanResult.SSID)
-                .setBssid(MacAddress.fromString(scanResult.BSSID));
-
-        final String security = ConfigSecurities.getSecurity(scanResult);
-
-        ConfigSecurities.setupWifiNetworkSpecifierSecurities(wifiNetworkSpecifierBuilder, security, password);
-
-
-        NetworkRequest networkRequest = new NetworkRequest.Builder()
-                .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-                .setNetworkSpecifier(wifiNetworkSpecifierBuilder.build())
-                .build();
-
-        // not sure, if this is needed
-        if (networkCallback != null) {
-            connectivityManager.unregisterNetworkCallback(networkCallback);
-        }
-
-        networkCallback = new ConnectivityManager.NetworkCallback() {
-            @Override
-            public void onAvailable(@NonNull Network network) {
-                super.onAvailable(network);
-
-                wifiLog("AndroidQ+ connected to wifi ");
-
-                // bind so all api calls are performed over this new network
-                connectivityManager.bindProcessToNetwork(network);
-            }
-
-            @Override
-            public void onUnavailable() {
-                super.onUnavailable();
-
-                wifiLog("AndroidQ+ could not connect to wifi");
-            }
-        };
-
-        connectivityManager.requestNetwork(networkRequest, networkCallback);
-
-        return true;
     }
 
     private static boolean disableAllButOne(@Nullable final WifiManager wifiManager, @Nullable final WifiConfiguration config) {
@@ -469,32 +424,14 @@ public final class ConnectorUtils {
     }
 
     @RequiresPermission(ACCESS_WIFI_STATE)
-    static boolean disconnectFromWifi(@NonNull final ConnectivityManager connectivityManager, @NonNull final WifiManager wifiManager) {
-        if (isAndroidQOrLater()) {
-            return disconnectAndroidQ(connectivityManager);
-        }
-
+    static boolean disconnectFromWifi(@NonNull final WifiManager wifiManager) {
         return wifiManager.disconnect();
     }
 
     @RequiresPermission(ACCESS_WIFI_STATE)
-    static boolean removeWifi(@NonNull final ConnectivityManager connectivityManager, @NonNull final WifiManager wifiManager, @NonNull final String ssid) {
-        if (isAndroidQOrLater()) {
-            return disconnectAndroidQ(connectivityManager);
-        }
-
+    static boolean removeWifi(@NonNull final WifiManager wifiManager, @NonNull final String ssid) {
         final WifiConfiguration wifiConfiguration = ConfigSecurities.getWifiConfiguration(wifiManager, ssid);
         return cleanPreviousConfiguration(wifiManager, wifiConfiguration);
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.Q)
-    private static boolean disconnectAndroidQ(@NonNull final ConnectivityManager connectivityManager) {
-        if (networkCallback != null) {
-            connectivityManager.unregisterNetworkCallback(networkCallback);
-            networkCallback = null;
-        }
-
-        return true;
     }
 
     @RequiresPermission(allOf = {ACCESS_FINE_LOCATION, ACCESS_WIFI_STATE})

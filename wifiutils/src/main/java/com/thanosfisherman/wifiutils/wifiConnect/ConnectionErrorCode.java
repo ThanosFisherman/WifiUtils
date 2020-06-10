@@ -29,5 +29,9 @@ public enum ConnectionErrorCode {
      * Could not connect in the timeout window.
      */
     TIMEOUT_OCCURRED,
+    /**
+     * Starting Android 10, the user has to confirm connecting, but can also cancel.
+     */
+    USER_CANCELLED,
     COULD_NOT_CONNECT,
 }
