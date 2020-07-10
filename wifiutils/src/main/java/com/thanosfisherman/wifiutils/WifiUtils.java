@@ -58,6 +58,8 @@ public final class WifiUtils implements WifiConnectorBuilder,
     @NonNull
     private final Context mContext;
     private static boolean mEnableLog;
+    @Nullable
+    private static Logger customLogger;
     private long mWpsTimeoutMillis = 30000;
     private long mTimeoutMillis = 30000;
     @NonNull
@@ -197,12 +199,24 @@ public final class WifiUtils implements WifiConnectorBuilder,
 
     public static void wifiLog(final String text) {
         if (mEnableLog) {
-            Log.d(TAG, "WifiUtils: " + text);
+            Logger logger = of(customLogger).orElse((priority, tag, message) -> {
+                Log.println(priority, TAG, message);
+            });
+            logger.log(Log.VERBOSE, TAG, text);
         }
     }
 
     public static void enableLog(final boolean enabled) {
         mEnableLog = enabled;
+    }
+
+    /**
+     * Send logs to a custom logging implementation. If none specified, defaults to logcat.
+     *
+     * @param logger custom logger
+     */
+    public static void forwardLog(Logger logger) {
+        WifiUtils.customLogger = logger;
     }
 
     @Override
