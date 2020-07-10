@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -12,6 +13,7 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
+import com.thanosfisherman.wifiutils.Logger;
 import com.thanosfisherman.wifiutils.WifiUtils;
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionErrorCode;
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionSuccessListener;
@@ -46,6 +48,11 @@ public class MainActivity extends AppCompatActivity {
 
         final Button buttonDisconnect = findViewById(R.id.button_disconnect);
         buttonDisconnect.setOnClickListener(v -> disconnect(v.getContext()));
+
+        WifiUtils.forwardLog((priority, tag, message) ->  {
+            String customTag = tag + "_" + MainActivity.class.getSimpleName();
+            Log.i(customTag, message);
+        });
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)

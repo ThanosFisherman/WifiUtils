@@ -3,6 +3,7 @@ package com.thanosfisherman.wifiutils.sample
 import android.Manifest
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -24,6 +25,10 @@ class MainKotlinActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 555)
+        WifiUtils.forwardLog{ _, tag, message ->
+            val customTag = "${tag}.${this::class.simpleName}"
+            Log.i(customTag, message)
+        }
         WifiUtils.enableLog(true)
         textview_ssid.text = SSID
         textview_password.text = PASSWORD

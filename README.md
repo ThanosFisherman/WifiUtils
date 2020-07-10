@@ -188,7 +188,18 @@ WifiUtils.withContext(context)
 ```
 
 ### Enable Logging
-If you want to receive some extra logging info comming from WiFi Utils you can enable its logging capabilities with `WifiUtils.enableLog(true);`
+If you want to receive some extra logging info coming from WiFi Utils you can enable its logging capabilities with `WifiUtils.enableLog(true);`
+
+You can also choose to send the logs to your own custom logger.
+
+```java
+WifiUtils.forwardLog(new Logger() {
+            @Override
+            public void log(int priority, String tag, String message) {
+                
+            }
+        });
+ ```
 
 ### Permissions
 Damn You are required to set a few permissions in order for this lib to work correctly :( Also please check [this](https://issuetracker.google.com/issues/37060483) issue
