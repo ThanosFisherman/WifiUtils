@@ -196,7 +196,7 @@ You can also choose to send the logs to your own custom logger.
 WifiUtils.forwardLog(new Logger() {
             @Override
             public void log(int priority, String tag, String message) {
-                
+                Timber.tag(tag).log(priority, message);
             }
         });
  ```
