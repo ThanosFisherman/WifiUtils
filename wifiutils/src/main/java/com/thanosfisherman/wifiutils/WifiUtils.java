@@ -4,7 +4,12 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
+import android.net.LinkProperties;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.NetworkInfo;
 import android.net.wifi.ScanResult;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.util.Log;
@@ -337,6 +342,24 @@ public final class WifiUtils implements WifiConnectorBuilder,
         unregisterReceiver(mContext, mWifiConnectionReceiver);
         of(mSingleScanResult).ifPresent(scanResult -> cleanPreviousConfiguration(mWifiManager, scanResult));
         reenableAllHotspots(mWifiManager);
+    }
+
+    @Override
+    public boolean isWifiConnected(@Nullable String ssid) {
+        ConnectivityManager connManager = (ConnectivityManager) mContext
+                .getSystemService(mContext.CONNECTIVITY_SERVICE);
+        NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        boolean result = mWifi.getState() == NetworkInfo.State.CONNECTED ? true : false;
+        if (result && ssid != null) {
+            WifiInfo wifiInfo = mWifiManager.getConnectionInfo();
+            String tempSSID = wifiInfo.getSSID();
+            if (tempSSID != null && ssid.contains(tempSSID)) {
+                result = true;
+            } else {
+                result = false;
+            }
+        }
+        return result;
     }
 
     @NonNull

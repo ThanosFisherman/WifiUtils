@@ -49,6 +49,9 @@ public class MainActivity extends AppCompatActivity {
         final Button buttonDisconnect = findViewById(R.id.button_disconnect);
         buttonDisconnect.setOnClickListener(v -> disconnect(v.getContext()));
 
+        final Button buttonCheck = findViewById(R.id.button_check);
+        buttonCheck.setOnClickListener(v -> checkWifi());
+
         WifiUtils.forwardLog((priority, tag, message) ->  {
             String customTag = tag + "_" + MainActivity.class.getSimpleName();
             Log.i(customTag, message);
@@ -87,6 +90,11 @@ public class MainActivity extends AppCompatActivity {
         WifiUtils.withContext(getApplicationContext()).enableWifi(this::checkResult);
         //or without the callback
         //WifiUtils.withContext(getApplicationContext()).enableWifi();
+    }
+
+    private void checkWifi() {
+        boolean result = WifiUtils.withContext(getApplicationContext()).isWifiConnected(null);
+        Toast.makeText(MainActivity.this, "Wifi Connect State: " + result, Toast.LENGTH_SHORT).show();
     }
 
     private void checkResult(boolean isSuccess) {
