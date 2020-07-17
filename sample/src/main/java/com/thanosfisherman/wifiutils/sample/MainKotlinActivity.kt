@@ -25,7 +25,7 @@ class MainKotlinActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 555)
-        WifiUtils.forwardLog{ _, tag, message ->
+        WifiUtils.forwardLog { _, tag, message ->
             val customTag = "${tag}.${this::class.simpleName}"
             Log.i(customTag, message)
         }
@@ -34,8 +34,8 @@ class MainKotlinActivity : AppCompatActivity() {
         textview_password.text = PASSWORD
         button_connect.setOnClickListener { connectWithWpa(applicationContext) }
         button_disconnect.setOnClickListener { disconnect(applicationContext) }
-        button_remove.setOnClickListener{ remove(applicationContext) }
-        button_check.setOnClickListener{ check(applicationContext) }
+        button_remove.setOnClickListener { remove(applicationContext) }
+        button_check.setOnClickListener { check(applicationContext) }
     }
 
     private fun connectWithWpa(context: Context) {
@@ -69,15 +69,15 @@ class MainKotlinActivity : AppCompatActivity() {
 
     private fun remove(context: Context) {
         WifiUtils.withContext(context)
-                .remove(SSID, object : RemoveSuccessListener {
-                    override fun success() {
-                        Toast.makeText(context, "Remove success!", Toast.LENGTH_SHORT).show()
-                    }
+            .remove(SSID, object : RemoveSuccessListener {
+                override fun success() {
+                    Toast.makeText(context, "Remove success!", Toast.LENGTH_SHORT).show()
+                }
 
-                    override fun failed(errorCode: RemoveErrorCode) {
-                        Toast.makeText(context, "Failed to disconnect and remove: $errorCode", Toast.LENGTH_SHORT).show()
-                    }
-                })
+                override fun failed(errorCode: RemoveErrorCode) {
+                    Toast.makeText(context, "Failed to disconnect and remove: $errorCode", Toast.LENGTH_SHORT).show()
+                }
+            })
     }
 
     private fun check(context: Context) {

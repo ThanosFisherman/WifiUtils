@@ -4,9 +4,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
-import android.net.LinkProperties;
-import android.net.Network;
-import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiInfo;
@@ -14,6 +11,11 @@ import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+
+import com.thanosfisherman.wifiutils.utils.SSIDUtils;
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionErrorCode;
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionScanResultsListener;
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionSuccessListener;
@@ -33,10 +35,6 @@ import com.thanosfisherman.wifiutils.wifiWps.ConnectionWpsListener;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 
 import static com.thanosfisherman.elvis.Elvis.of;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.cleanPreviousConfiguration;
@@ -151,9 +149,9 @@ public final class WifiUtils implements WifiConnectorBuilder,
             if (mSingleScanResult != null && mPassword != null) {
                 if (connectToWifi(mContext, mWifiManager, mSingleScanResult, mPassword)) {
                     registerReceiver(mContext, mWifiConnectionReceiver.activateTimeoutHandler(mSingleScanResult),
-                                     new IntentFilter(WifiManager.SUPPLICANT_STATE_CHANGED_ACTION));
+                            new IntentFilter(WifiManager.SUPPLICANT_STATE_CHANGED_ACTION));
                     registerReceiver(mContext, mWifiConnectionReceiver,
-                                     new IntentFilter(WifiManager.NETWORK_STATE_CHANGED_ACTION));
+                            new IntentFilter(WifiManager.NETWORK_STATE_CHANGED_ACTION));
                 } else {
                     mWifiConnectionCallback.errorConnect(ConnectionErrorCode.COULD_NOT_CONNECT);
                 }
@@ -280,7 +278,6 @@ public final class WifiUtils implements WifiConnectorBuilder,
     }
 
 
-
     @Override
     public void remove(@NonNull String ssid, @NonNull RemoveSuccessListener removeSuccessListener) {
         if (mConnectivityManager == null) {
@@ -293,7 +290,7 @@ public final class WifiUtils implements WifiConnectorBuilder,
             return;
         }
 
-        if(removeWifi(mConnectivityManager, mWifiManager, ssid)) {
+        if (removeWifi(mConnectivityManager, mWifiManager, ssid)) {
             removeSuccessListener.success();
         } else {
             removeSuccessListener.failed(RemoveErrorCode.COULD_NOT_REMOVE);
@@ -347,16 +344,18 @@ public final class WifiUtils implements WifiConnectorBuilder,
     @Override
     public boolean isWifiConnected(@Nullable String ssid) {
         ConnectivityManager connManager = (ConnectivityManager) mContext
-                .getSystemService(mContext.CONNECTIVITY_SERVICE);
+                .getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-        boolean result = mWifi.getState() == NetworkInfo.State.CONNECTED ? true : false;
-        if (result && ssid != null) {
-            WifiInfo wifiInfo = mWifiManager.getConnectionInfo();
-            String tempSSID = wifiInfo.getSSID();
-            if (tempSSID != null && ssid.contains(tempSSID)) {
+        boolean result = false;
+
+        if (mWifi.getState() == NetworkInfo.State.CONNECTED) {
+            if (ssid == null) {
                 result = true;
             } else {
-                result = false;
+                final String quotedSsid = SSIDUtils.convertToQuotedString(ssid);
+                final WifiInfo wifiInfo = mWifiManager.getConnectionInfo();
+                String tempSSID = wifiInfo.getSSID();
+                result = tempSSID != null && tempSSID.equals(quotedSsid);
             }
         }
         return result;
