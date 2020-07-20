@@ -342,23 +342,29 @@ public final class WifiUtils implements WifiConnectorBuilder,
     }
 
     @Override
-    public boolean isWifiConnected(@Nullable String ssid) {
+    public boolean isWifiConnected(@NonNull String ssid) {
         ConnectivityManager connManager = (ConnectivityManager) mContext
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        final NetworkInfo netInfo = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
         boolean result = false;
 
-        if (mWifi.getState() == NetworkInfo.State.CONNECTED) {
-            if (ssid == null) {
-                result = true;
-            } else {
-                final String quotedSsid = SSIDUtils.convertToQuotedString(ssid);
-                final WifiInfo wifiInfo = mWifiManager.getConnectionInfo();
-                String tempSSID = wifiInfo.getSSID();
-                result = tempSSID != null && tempSSID.equals(quotedSsid);
-            }
+        if (netInfo.getState() == NetworkInfo.State.CONNECTED) {
+
+            final String quotedSsid = SSIDUtils.convertToQuotedString(ssid);
+            final WifiInfo wifiInfo = mWifiManager.getConnectionInfo();
+            String tempSSID = wifiInfo.getSSID();
+            result = tempSSID != null && tempSSID.equals(quotedSsid);
         }
         return result;
+    }
+
+    @Override
+    public boolean isWifiConnected() {
+        ConnectivityManager connManager = (ConnectivityManager) mContext
+                .getSystemService(Context.CONNECTIVITY_SERVICE);
+        final NetworkInfo netInfo = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+
+        return netInfo.getState() == NetworkInfo.State.CONNECTED;
     }
 
     @NonNull

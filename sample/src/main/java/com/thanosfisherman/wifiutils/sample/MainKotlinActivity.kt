@@ -81,7 +81,7 @@ class MainKotlinActivity : AppCompatActivity() {
     }
 
     private fun check(context: Context) {
-        val result = WifiUtils.withContext(context).isWifiConnected(null)
+        val result = WifiUtils.withContext(context).isWifiConnected(SSID)
         Toast.makeText(context, "Wifi Connect State: $result", Toast.LENGTH_SHORT).show()
     }
 }

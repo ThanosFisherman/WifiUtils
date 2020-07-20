@@ -13,7 +13,6 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
-import com.thanosfisherman.wifiutils.Logger;
 import com.thanosfisherman.wifiutils.WifiUtils;
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionErrorCode;
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionSuccessListener;
@@ -52,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
         final Button buttonCheck = findViewById(R.id.button_check);
         buttonCheck.setOnClickListener(v -> checkWifi());
 
-        WifiUtils.forwardLog((priority, tag, message) ->  {
+        WifiUtils.forwardLog((priority, tag, message) -> {
             String customTag = tag + "_" + MainActivity.class.getSimpleName();
             Log.i(customTag, message);
         });
@@ -93,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void checkWifi() {
-        boolean result = WifiUtils.withContext(getApplicationContext()).isWifiConnected(null);
+        boolean result = WifiUtils.withContext(getApplicationContext()).isWifiConnected(SSID);
         Toast.makeText(MainActivity.this, "Wifi Connect State: " + result, Toast.LENGTH_SHORT).show();
     }
 

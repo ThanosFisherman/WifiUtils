@@ -49,7 +49,8 @@ public interface WifiConnectorBuilder {
 
         void cancelAutoConnect();
 
-        boolean isWifiConnected(@Nullable String ssid);
+        boolean isWifiConnected(@NonNull String ssid);
+        boolean isWifiConnected();
     }
 
     interface WifiSuccessListener {
