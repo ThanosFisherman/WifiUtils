@@ -3,4 +3,5 @@
     <string name="connect">Connect</string>
     <string name="disconnect">Disconnect</string>
     <string name="remove">Remove</string>
+    <string name="check">Check</string>
 </resources>
