@@ -3,6 +3,7 @@ package com.thanosfisherman.wifiutils.sample
 import android.Manifest
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -24,12 +25,17 @@ class MainKotlinActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 555)
+        WifiUtils.forwardLog { _, tag, message ->
+            val customTag = "${tag}.${this::class.simpleName}"
+            Log.i(customTag, message)
+        }
         WifiUtils.enableLog(true)
         textview_ssid.text = SSID
         textview_password.text = PASSWORD
         button_connect.setOnClickListener { connectWithWpa(applicationContext) }
         button_disconnect.setOnClickListener { disconnect(applicationContext) }
-        button_remove.setOnClickListener{ remove(applicationContext) }
+        button_remove.setOnClickListener { remove(applicationContext) }
+        button_check.setOnClickListener { check(applicationContext) }
     }
 
     private fun connectWithWpa(context: Context) {
@@ -63,14 +69,19 @@ class MainKotlinActivity : AppCompatActivity() {
 
     private fun remove(context: Context) {
         WifiUtils.withContext(context)
-                .remove(SSID, object : RemoveSuccessListener {
-                    override fun success() {
-                        Toast.makeText(context, "Remove success!", Toast.LENGTH_SHORT).show()
-                    }
+            .remove(SSID, object : RemoveSuccessListener {
+                override fun success() {
+                    Toast.makeText(context, "Remove success!", Toast.LENGTH_SHORT).show()
+                }
 
-                    override fun failed(errorCode: RemoveErrorCode) {
-                        Toast.makeText(context, "Failed to disconnect and remove: $errorCode", Toast.LENGTH_SHORT).show()
-                    }
-                })
+                override fun failed(errorCode: RemoveErrorCode) {
+                    Toast.makeText(context, "Failed to disconnect and remove: $errorCode", Toast.LENGTH_SHORT).show()
+                }
+            })
+    }
+
+    private fun check(context: Context) {
+        val result = WifiUtils.withContext(context).isWifiConnected(SSID)
+        Toast.makeText(context, "Wifi Connect State: $result", Toast.LENGTH_SHORT).show()
     }
 }
