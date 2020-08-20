@@ -30,7 +30,7 @@ import static com.thanosfisherman.wifiutils.WifiUtils.wifiLog;
 @RequiresApi(Build.VERSION_CODES.Q)
 public class Android10WifiConnectionReceiver extends BroadcastReceiver implements ConnectionHandler {
     @NonNull
-    private final DisconnectCallback mDisconnectCallback;
+    private final DisconnectCallbackHolder mDisconnectCallbackHolder;
     @NonNull
     private final WifiConnectionCallback mWifiConnectionCallback;
     @Nullable
@@ -51,8 +51,8 @@ public class Android10WifiConnectionReceiver extends BroadcastReceiver implement
         }
     };
 
-    public Android10WifiConnectionReceiver(@NonNull final DisconnectCallback disconnectCallback, @NonNull final WifiConnectionCallback callback, final long delayMillis) {
-        this.mDisconnectCallback = disconnectCallback;
+    public Android10WifiConnectionReceiver(@NonNull final DisconnectCallbackHolder disconnectCallbackHolder, @NonNull final WifiConnectionCallback callback, final long delayMillis) {
+        this.mDisconnectCallbackHolder = disconnectCallbackHolder;
         this.mWifiConnectionCallback = callback;
         this.mDelay = delayMillis;
         wifiLog(String.valueOf(delayMillis));
@@ -120,7 +120,7 @@ public class Android10WifiConnectionReceiver extends BroadcastReceiver implement
                 .build();
 
         // cleanup previous connections just in case
-        mDisconnectCallback.disconnect(connectivityManager);
+        mDisconnectCallbackHolder.disconnect(connectivityManager);
 
         mNetworkCallback = new ConnectivityManager.NetworkCallback() {
             @Override
@@ -161,7 +161,7 @@ public class Android10WifiConnectionReceiver extends BroadcastReceiver implement
             }
         };
 
-        mDisconnectCallback.addNetworkCallback(mNetworkCallback);
+        mDisconnectCallbackHolder.addNetworkCallback(mNetworkCallback);
         connectivityManager.requestNetwork(networkRequest, mNetworkCallback);
     }
 
@@ -171,6 +171,6 @@ public class Android10WifiConnectionReceiver extends BroadcastReceiver implement
             mNetworkCallback = null;
         }
 
-        mDisconnectCallback.addNetworkCallback(null);
+        mDisconnectCallbackHolder.addNetworkCallback(null);
     }
 }

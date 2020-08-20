@@ -16,7 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import com.thanosfisherman.wifiutils.android10.Android10WifiConnectionReceiver;
-import com.thanosfisherman.wifiutils.android10.DisconnectCallback;
+import com.thanosfisherman.wifiutils.android10.DisconnectCallbackHolder;
 import com.thanosfisherman.wifiutils.utils.SSIDUtils;
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionErrorCode;
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionHandler;
@@ -98,8 +98,6 @@ public final class WifiUtils implements WifiConnectorBuilder,
     private WifiStateListener mWifiStateListener;
     @Nullable
     private ConnectionWpsListener mConnectionWpsListener;
-    @Nullable
-    private static DisconnectCallback mDisconnectCallback;
 
     @NonNull
     private final WifiStateCallback mWifiStateCallback = new WifiStateCallback() {
@@ -202,12 +200,7 @@ public final class WifiUtils implements WifiConnectorBuilder,
         mWifiStateReceiver = new WifiStateReceiver(mWifiStateCallback);
         mWifiScanReceiver = new WifiScanReceiver(mWifiScanResultsCallback);
         if (isAndroidQOrLater()) {
-            // Until disconnect behavior is correctly moved out of the library, we'l store it simply static
-            // so you can disconnect after a while on Android 10.
-            if (mDisconnectCallback == null) {
-                mDisconnectCallback = new DisconnectCallback();
-            }
-            mWifiConnectionReceiver = new Android10WifiConnectionReceiver(mDisconnectCallback, mWifiConnectionCallback, mTimeoutMillis);
+            mWifiConnectionReceiver = new Android10WifiConnectionReceiver(DisconnectCallbackHolder.getInstance(), mWifiConnectionCallback, mTimeoutMillis);
         } else {
             mWifiConnectionReceiver = new WifiConnectionReceiver(mWifiConnectionCallback, mWifiManager, mTimeoutMillis);
         }
@@ -288,13 +281,7 @@ public final class WifiUtils implements WifiConnectorBuilder,
         }
 
         if (isAndroidQOrLater()) {
-            if (mDisconnectCallback == null) {
-                disconnectionSuccessListener.success();
-                return;
-            }
-
-            mDisconnectCallback.disconnect(mConnectivityManager);
-            mDisconnectCallback = null;
+            DisconnectCallbackHolder.getInstance().disconnect(mConnectivityManager);
             disconnectionSuccessListener.success();
         } else {
             if (disconnectFromWifi(mWifiManager)) {
@@ -319,12 +306,7 @@ public final class WifiUtils implements WifiConnectorBuilder,
         }
         
         if (isAndroidQOrLater()) {
-            if (mDisconnectCallback == null) {
-                removeSuccessListener.success();
-                return;
-            }
-
-            mDisconnectCallback.disconnect(mConnectivityManager);
+            DisconnectCallbackHolder.getInstance().disconnect(mConnectivityManager);
             removeSuccessListener.success();
         } else {
             if (removeWifi(mWifiManager, ssid)) {

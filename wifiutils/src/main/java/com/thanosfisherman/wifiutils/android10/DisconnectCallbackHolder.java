@@ -10,9 +10,20 @@ import androidx.annotation.RequiresApi;
 import static com.thanosfisherman.wifiutils.WifiUtils.wifiLog;
 
 @RequiresApi(Build.VERSION_CODES.Q)
-public class DisconnectCallback {
+public class DisconnectCallbackHolder {
+    @Nullable private static DisconnectCallbackHolder instance;
     @Nullable
     private ConnectivityManager.NetworkCallback mNetworkCallback;
+
+    private DisconnectCallbackHolder() {}
+
+    public static synchronized DisconnectCallbackHolder getInstance() {
+        if (instance == null) {
+            instance = new DisconnectCallbackHolder();
+        }
+
+        return instance;
+    }
 
     void addNetworkCallback(@Nullable ConnectivityManager.NetworkCallback networkCallback) {
         mNetworkCallback = networkCallback;
