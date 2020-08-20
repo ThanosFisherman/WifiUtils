@@ -6,21 +6,14 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
-import android.net.LinkProperties;
-import android.net.MacAddress;
-import android.net.Network;
-import android.net.NetworkCapabilities;
-import android.net.NetworkRequest;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
-import android.net.wifi.WifiNetworkSpecifier;
 import android.net.wifi.WpsInfo;
 import android.os.Build;
 import android.provider.Settings;
 
 import com.thanosfisherman.elvis.Objects;
-import com.thanosfisherman.wifiutils.wifiConnect.ConnectionErrorCode;
 import com.thanosfisherman.wifiutils.wifiConnect.WifiConnectionCallback;
 import com.thanosfisherman.wifiutils.wifiWps.ConnectionWpsListener;
 
@@ -36,6 +29,9 @@ import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static android.Manifest.permission.ACCESS_WIFI_STATE;
 import static com.thanosfisherman.wifiutils.WifiUtils.wifiLog;
 import static com.thanosfisherman.wifiutils.utils.SSIDUtils.convertToQuotedString;
+import static com.thanosfisherman.wifiutils.utils.VersionUtils.isAndroidQOrLater;
+import static com.thanosfisherman.wifiutils.utils.VersionUtils.isJellyBeanOrLater;
+import static com.thanosfisherman.wifiutils.utils.VersionUtils.isMarshmallowOrLater;
 
 @SuppressLint("MissingPermission")
 public final class ConnectorUtils {
@@ -64,7 +60,7 @@ public final class ConnectorUtils {
 
         boolean modified = false;
         int tempCount = 0;
-        final int numOpenNetworksKept = Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1
+        final int numOpenNetworksKept = isJellyBeanOrLater()
                 ? Settings.Secure.getInt(resolver, Settings.Global.WIFI_NUM_OPEN_NETWORKS_KEPT, 10)
                 : Settings.Secure.getInt(resolver, Settings.Secure.WIFI_NUM_OPEN_NETWORKS_KEPT, 10);
 
@@ -242,7 +238,7 @@ public final class ConnectorUtils {
             return false;
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        if (isMarshmallowOrLater()) {
             return disableAllButOne(wifiManager, config) && (reassociate ? wifiManager.reassociate() : wifiManager.reconnect());
         }
 
@@ -511,9 +507,5 @@ public final class ConnectorUtils {
             }
         }
         return null;
-    }
-
-    private static boolean isAndroidQOrLater() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q;
     }
 }

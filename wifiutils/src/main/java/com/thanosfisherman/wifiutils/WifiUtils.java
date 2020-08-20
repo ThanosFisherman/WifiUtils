@@ -15,14 +15,13 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
-
 import com.thanosfisherman.wifiutils.android10.Android10WifiConnectionReceiver;
 import com.thanosfisherman.wifiutils.android10.DisconnectCallback;
 import com.thanosfisherman.wifiutils.utils.SSIDUtils;
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionErrorCode;
+import com.thanosfisherman.wifiutils.wifiConnect.ConnectionHandler;
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionScanResultsListener;
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionSuccessListener;
-import com.thanosfisherman.wifiutils.wifiConnect.ConnectionHandler;
 import com.thanosfisherman.wifiutils.wifiConnect.WifiConnectionCallback;
 import com.thanosfisherman.wifiutils.wifiConnect.WifiConnectionReceiver;
 import com.thanosfisherman.wifiutils.wifiDisconnect.DisconnectionErrorCode;
@@ -40,6 +39,7 @@ import com.thanosfisherman.wifiutils.wifiWps.ConnectionWpsListener;
 import java.util.ArrayList;
 import java.util.List;
 
+
 import static com.thanosfisherman.elvis.Elvis.of;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.cleanPreviousConfiguration;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.connectToWifi;
@@ -52,6 +52,8 @@ import static com.thanosfisherman.wifiutils.ConnectorUtils.reenableAllHotspots;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.registerReceiver;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.removeWifi;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.unregisterReceiver;
+import static com.thanosfisherman.wifiutils.utils.VersionUtils.isAndroidQOrLater;
+import static com.thanosfisherman.wifiutils.utils.VersionUtils.isLollipopOrLater;
 
 @SuppressLint("MissingPermission")
 public final class WifiUtils implements WifiConnectorBuilder,
@@ -134,7 +136,7 @@ public final class WifiUtils implements WifiConnectorBuilder,
 
             if (mConnectionWpsListener != null && mBssid != null && mPassword != null) {
                 mSingleScanResult = matchScanResultBssid(mBssid, scanResultList);
-                if (mSingleScanResult != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                if (mSingleScanResult != null && isLollipopOrLater()) {
                     connectWps(mWifiManager, mSingleScanResult, mPassword, mWpsTimeoutMillis, mConnectionWpsListener);
                 } else {
                     if (mSingleScanResult == null) {
@@ -455,10 +457,5 @@ public final class WifiUtils implements WifiConnectorBuilder,
             unregisterReceiver(mContext, mWifiConnectionReceiver);
         }
         wifiLog("WiFi Disabled");
-    }
-
-    // TODO: move in utils?
-    private static boolean isAndroidQOrLater() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q;
     }
 }
