@@ -156,7 +156,6 @@ public final class WifiUtils implements WifiConnectorBuilder,
             }
             if (mSingleScanResult != null && mPassword != null) {
                 if (connectToWifi(mContext, mWifiManager, mConnectivityManager, mSingleScanResult, mPassword, mWifiConnectionCallback)) {
-                    // FIXME: get timeoutHandler out of this?
                     registerReceiver(mContext, ((ConnectionHandler)mWifiConnectionReceiver).connectWith(mSingleScanResult, mPassword, mConnectivityManager),
                                      new IntentFilter(WifiManager.SUPPLICANT_STATE_CHANGED_ACTION));
                     registerReceiver(mContext, mWifiConnectionReceiver,
@@ -410,7 +409,6 @@ public final class WifiUtils implements WifiConnectorBuilder,
     @Override
     public WifiSuccessListener setTimeout(final long timeOutMillis) {
         mTimeoutMillis = timeOutMillis;
-        // FIXME: wow ugly cast here
         if (mWifiConnectionReceiver instanceof ConnectionHandler) {
             ((ConnectionHandler) mWifiConnectionReceiver).setTimeout(timeOutMillis);
         }
