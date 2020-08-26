@@ -22,7 +22,7 @@ import static android.Manifest.permission.ACCESS_WIFI_STATE;
 import static com.thanosfisherman.wifiutils.WifiUtils.wifiLog;
 import static com.thanosfisherman.wifiutils.utils.SSIDUtils.convertToQuotedString;
 
-final public class ConfigSecurities {
+final class ConfigSecurities {
     static final String SECURITY_NONE = "OPEN";
     static final String SECURITY_WEP = "WEP";
     static final String SECURITY_PSK = "PSK";
@@ -111,7 +111,7 @@ final public class ConfigSecurities {
     }
 
     @TargetApi(Build.VERSION_CODES.Q)
-    public static void setupWifiNetworkSpecifierSecurities(@NonNull WifiNetworkSpecifier.Builder wifiNetworkSpecifierBuilder, String security, @NonNull final String password) {
+    static void setupWifiNetworkSpecifierSecurities(@NonNull WifiNetworkSpecifier.Builder wifiNetworkSpecifierBuilder, String security, @NonNull final String password) {
         wifiLog("Setting up WifiNetworkSpecifier.Builder " + security);
         switch (security) {
             case SECURITY_NONE:
@@ -232,7 +232,7 @@ final public class ConfigSecurities {
         return security;
     }
 
-    public static String getSecurity(@NonNull ScanResult result) {
+    static String getSecurity(@NonNull ScanResult result) {
         String security = SECURITY_NONE;
         if (result.capabilities.contains(SECURITY_WEP)) {
             security = SECURITY_WEP;
