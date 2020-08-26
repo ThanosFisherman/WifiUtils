@@ -1,4 +1,4 @@
-package com.thanosfisherman.wifiutils.android10;
+package com.thanosfisherman.wifiutils.wifiConnect;
 
 import android.net.ConnectivityManager;
 import android.os.Build;
@@ -9,6 +9,9 @@ import androidx.annotation.RequiresApi;
 
 import static com.thanosfisherman.wifiutils.WifiUtils.wifiLog;
 
+/**
+ * Class to keep an instance to the network callback so we can easily disconnect on Android 10+.
+ */
 @RequiresApi(Build.VERSION_CODES.Q)
 public class DisconnectCallbackHolder {
     @Nullable private static DisconnectCallbackHolder instance;
@@ -25,7 +28,7 @@ public class DisconnectCallbackHolder {
         return instance;
     }
 
-    void addNetworkCallback(@Nullable ConnectivityManager.NetworkCallback networkCallback) {
+    public void addNetworkCallback(@Nullable ConnectivityManager.NetworkCallback networkCallback) {
         mNetworkCallback = networkCallback;
     }
 

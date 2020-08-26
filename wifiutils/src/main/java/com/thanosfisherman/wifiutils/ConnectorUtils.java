@@ -6,14 +6,21 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
+import android.net.MacAddress;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.NetworkRequest;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
+import android.net.wifi.WifiNetworkSpecifier;
 import android.net.wifi.WpsInfo;
 import android.os.Build;
 import android.provider.Settings;
 
 import com.thanosfisherman.elvis.Objects;
+import com.thanosfisherman.wifiutils.wifiConnect.DisconnectCallbackHolder;
+import com.thanosfisherman.wifiutils.wifiConnect.ConnectionErrorCode;
 import com.thanosfisherman.wifiutils.wifiConnect.WifiConnectionCallback;
 import com.thanosfisherman.wifiutils.wifiWps.ConnectionWpsListener;
 
@@ -27,6 +34,7 @@ import androidx.annotation.RequiresPermission;
 
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static android.Manifest.permission.ACCESS_WIFI_STATE;
+import static com.thanosfisherman.elvis.Elvis.of;
 import static com.thanosfisherman.wifiutils.WifiUtils.wifiLog;
 import static com.thanosfisherman.wifiutils.utils.SSIDUtils.convertToQuotedString;
 import static com.thanosfisherman.wifiutils.utils.VersionUtils.isAndroidQOrLater;
@@ -170,15 +178,13 @@ public final class ConnectorUtils {
     }
 
     @RequiresPermission(allOf = {ACCESS_FINE_LOCATION, ACCESS_WIFI_STATE})
-    static boolean connectToWifi(@NonNull final Context context, @Nullable final WifiManager wifiManager, @Nullable final ConnectivityManager connectivityManager, @NonNull final ScanResult scanResult, @NonNull final String password, WifiConnectionCallback mWifiConnectionCallback) {
-        if (isAndroidQOrLater()) {
-            // Only validate if connectivityManager is not null
-            // connecting is part of AppWifiConnectionReceiver
-            return connectivityManager != null;
+    static boolean connectToWifi(@NonNull final Context context, @Nullable final WifiManager wifiManager, @Nullable final ConnectivityManager connectivityManager, @NonNull WeakHandler handler, @NonNull final ScanResult scanResult, @NonNull final String password, @NonNull WifiConnectionCallback wifiConnectionCallback) {
+        if (wifiManager == null || connectivityManager == null) {
+            return false;
         }
 
-        if (wifiManager == null) {
-            return false;
+        if (isAndroidQOrLater()) {
+            return connectAndroidQ(wifiManager, connectivityManager, handler, wifiConnectionCallback, scanResult, password);
         }
 
         return connectPreAndroidQ(context, wifiManager, scanResult, password);
@@ -273,6 +279,86 @@ public final class ConnectorUtils {
         return config != null && disableAllButOne(wifiManager, config) && (reassociate ? wifiManager.reassociate() : wifiManager.reconnect());
     }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private static boolean connectAndroidQ(@Nullable WifiManager wifiManager, @Nullable ConnectivityManager connectivityManager, @NonNull WeakHandler handler, @NonNull WifiConnectionCallback wifiConnectionCallback, @NonNull ScanResult scanResult, @NonNull String password) {
+        if (connectivityManager == null) {
+            return false;
+        }
+
+        WifiNetworkSpecifier.Builder wifiNetworkSpecifierBuilder = new WifiNetworkSpecifier.Builder()
+                .setSsid(scanResult.SSID)
+                .setBssid(MacAddress.fromString(scanResult.BSSID));
+
+        final String security = ConfigSecurities.getSecurity(scanResult);
+
+        ConfigSecurities.setupWifiNetworkSpecifierSecurities(wifiNetworkSpecifierBuilder, security, password);
+
+        final NetworkRequest networkRequest = new NetworkRequest.Builder()
+                .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                .setNetworkSpecifier(wifiNetworkSpecifierBuilder.build())
+                .build();
+
+        // cleanup previous connections just in case
+        DisconnectCallbackHolder.getInstance().disconnect(connectivityManager);
+
+        final ConnectivityManager.NetworkCallback networkCallback = new ConnectivityManager.NetworkCallback() {
+            @Override
+            public void onAvailable(@NonNull Network network) {
+                super.onAvailable(network);
+
+                wifiLog("AndroidQ+ connected to wifi ");
+
+                // TODO: should this actually be in the success listener on WifiUtils?
+                // We could pass the networkrequest maybe?
+
+                // bind so all api calls are performed over this new network
+                // if we don't bind, connection with the wifi network is immediately dropped
+                connectivityManager.bindProcessToNetwork(network);
+
+                // On some Android 10 devices, connection is made and than immediately lost due to a firmware bug,
+                // read more here: https://github.com/ThanosFisherman/WifiUtils/issues/63.
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (isAlreadyConnected(wifiManager, of(scanResult).next(scanResult -> scanResult.BSSID).get())) {
+                            wifiConnectionCallback.successfulConnect();
+                        } else {
+                            wifiConnectionCallback.errorConnect(ConnectionErrorCode.ANDROID_10_COULD_NOT_CONNECT_FIRMWARE_BUG);
+                        }
+                    }
+                }, 500);
+            }
+
+            @Override
+            public void onUnavailable() {
+                super.onUnavailable();
+
+                wifiLog("AndroidQ+ could not connect to wifi");
+
+                wifiConnectionCallback.errorConnect(ConnectionErrorCode.USER_CANCELLED);
+            }
+
+            @Override
+            public void onLost(@NonNull Network network) {
+                super.onLost(network);
+
+                wifiLog("onLost");
+
+                // cancel connecting if needed, this prevents 'request loops' on some oneplus/redmi phones
+                DisconnectCallbackHolder.getInstance().disconnect(connectivityManager);
+                // TODO: test, should this get moved to the disconnectCallbackHolder?
+                connectivityManager.bindProcessToNetwork(null);
+            }
+        };
+
+        DisconnectCallbackHolder.getInstance().addNetworkCallback(networkCallback);
+
+        wifiLog("connect with android 10");
+        connectivityManager.requestNetwork(networkRequest, networkCallback);
+
+        return true;
+    }
+
     private static boolean disableAllButOne(@Nullable final WifiManager wifiManager, @Nullable final WifiConfiguration config) {
         if (wifiManager == null) {
             return false;
@@ -344,13 +430,13 @@ public final class ConnectorUtils {
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @RequiresPermission(allOf = {ACCESS_FINE_LOCATION, ACCESS_WIFI_STATE})
-    static void connectWps(@Nullable final WifiManager wifiManager, @NonNull final ScanResult scanResult, @NonNull String pin, long timeOutMillis,
+    static void connectWps(@Nullable final WifiManager wifiManager, @NonNull WeakHandler handler, @NonNull final ScanResult scanResult, @NonNull String pin, long timeOutMillis,
                            @NonNull final ConnectionWpsListener connectionWpsListener) {
         if (wifiManager == null) {
             connectionWpsListener.isSuccessful(false);
             return;
         }
-        final WeakHandler handler = new WeakHandler();
+
         final WpsInfo wpsInfo = new WpsInfo();
         final Runnable handlerTimeoutRunnable = new Runnable() {
             @Override

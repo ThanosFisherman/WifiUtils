@@ -1,7 +1,6 @@
 package com.thanosfisherman.wifiutils;
 
 import android.annotation.SuppressLint;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
@@ -15,13 +14,13 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
-import com.thanosfisherman.wifiutils.android10.Android10WifiConnectionReceiver;
-import com.thanosfisherman.wifiutils.android10.DisconnectCallbackHolder;
+
+import com.thanosfisherman.wifiutils.wifiConnect.DisconnectCallbackHolder;
 import com.thanosfisherman.wifiutils.utils.SSIDUtils;
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionErrorCode;
-import com.thanosfisherman.wifiutils.wifiConnect.ConnectionHandler;
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionScanResultsListener;
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionSuccessListener;
+import com.thanosfisherman.wifiutils.wifiConnect.TimeoutHandler;
 import com.thanosfisherman.wifiutils.wifiConnect.WifiConnectionCallback;
 import com.thanosfisherman.wifiutils.wifiConnect.WifiConnectionReceiver;
 import com.thanosfisherman.wifiutils.wifiDisconnect.DisconnectionErrorCode;
@@ -60,6 +59,8 @@ public final class WifiUtils implements WifiConnectorBuilder,
         WifiConnectorBuilder.WifiUtilsBuilder,
         WifiConnectorBuilder.WifiSuccessListener,
         WifiConnectorBuilder.WifiWpsSuccessListener {
+    private static final String TAG = WifiUtils.class.getSimpleName();
+
     @Nullable
     private final WifiManager mWifiManager;
     @Nullable
@@ -72,12 +73,13 @@ public final class WifiUtils implements WifiConnectorBuilder,
     private long mWpsTimeoutMillis = 30000;
     private long mTimeoutMillis = 30000;
     @NonNull
-    private static final String TAG = WifiUtils.class.getSimpleName();
-    //@NonNull private static final WifiUtils INSTANCE = new WifiUtils();
+    private WeakHandler mHandler;
     @NonNull
     private final WifiStateReceiver mWifiStateReceiver;
     @NonNull
-    private final BroadcastReceiver mWifiConnectionReceiver;
+    private final WifiConnectionReceiver mWifiConnectionReceiver;
+    @NonNull
+    private final TimeoutHandler mTimeoutHandler;
     @NonNull
     private final WifiScanReceiver mWifiScanReceiver;
     @Nullable
@@ -135,7 +137,7 @@ public final class WifiUtils implements WifiConnectorBuilder,
             if (mConnectionWpsListener != null && mBssid != null && mPassword != null) {
                 mSingleScanResult = matchScanResultBssid(mBssid, scanResultList);
                 if (mSingleScanResult != null && isLollipopOrLater()) {
-                    connectWps(mWifiManager, mSingleScanResult, mPassword, mWpsTimeoutMillis, mConnectionWpsListener);
+                    connectWps(mWifiManager, mHandler, mSingleScanResult, mPassword, mWpsTimeoutMillis, mConnectionWpsListener);
                 } else {
                     if (mSingleScanResult == null) {
                         wifiLog("Couldn't find network. Possibly out of range");
@@ -153,11 +155,12 @@ public final class WifiUtils implements WifiConnectorBuilder,
                 }
             }
             if (mSingleScanResult != null && mPassword != null) {
-                if (connectToWifi(mContext, mWifiManager, mConnectivityManager, mSingleScanResult, mPassword, mWifiConnectionCallback)) {
-                    registerReceiver(mContext, ((ConnectionHandler)mWifiConnectionReceiver).connectWith(mSingleScanResult, mPassword, mConnectivityManager),
+                if (connectToWifi(mContext, mWifiManager, mConnectivityManager, mHandler, mSingleScanResult, mPassword, mWifiConnectionCallback)) {
+                    registerReceiver(mContext, (mWifiConnectionReceiver).connectWith(mSingleScanResult, mPassword, mConnectivityManager),
                                      new IntentFilter(WifiManager.SUPPLICANT_STATE_CHANGED_ACTION));
                     registerReceiver(mContext, mWifiConnectionReceiver,
                             new IntentFilter(WifiManager.NETWORK_STATE_CHANGED_ACTION));
+                    mTimeoutHandler.startTimeout(mSingleScanResult, mTimeoutMillis);
                 } else {
                     mWifiConnectionCallback.errorConnect(ConnectionErrorCode.COULD_NOT_CONNECT);
                 }
@@ -173,6 +176,8 @@ public final class WifiUtils implements WifiConnectorBuilder,
         public void successfulConnect() {
             wifiLog("CONNECTED SUCCESSFULLY");
             unregisterReceiver(mContext, mWifiConnectionReceiver);
+            mTimeoutHandler.stopTimeout();
+
             //reenableAllHotspots(mWifiManager);
             of(mConnectionSuccessListener).ifPresent(ConnectionSuccessListener::success);
         }
@@ -180,6 +185,10 @@ public final class WifiUtils implements WifiConnectorBuilder,
         @Override
         public void errorConnect(@NonNull ConnectionErrorCode connectionErrorCode) {
             unregisterReceiver(mContext, mWifiConnectionReceiver);
+            mTimeoutHandler.stopTimeout();
+            if (isAndroidQOrLater()) {
+                DisconnectCallbackHolder.getInstance().disconnect(mConnectivityManager);
+            }
             reenableAllHotspots(mWifiManager);
             //if (mSingleScanResult != null)
             //cleanPreviousConfiguration(mWifiManager, mSingleScanResult);
@@ -199,11 +208,9 @@ public final class WifiUtils implements WifiConnectorBuilder,
         mConnectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         mWifiStateReceiver = new WifiStateReceiver(mWifiStateCallback);
         mWifiScanReceiver = new WifiScanReceiver(mWifiScanResultsCallback);
-        if (isAndroidQOrLater()) {
-            mWifiConnectionReceiver = new Android10WifiConnectionReceiver(DisconnectCallbackHolder.getInstance(), mWifiConnectionCallback, mTimeoutMillis);
-        } else {
-            mWifiConnectionReceiver = new WifiConnectionReceiver(mWifiConnectionCallback, mWifiManager, mTimeoutMillis);
-        }
+        mHandler = new WeakHandler();
+        mWifiConnectionReceiver = new WifiConnectionReceiver(mWifiConnectionCallback, mWifiManager);
+        mTimeoutHandler = new TimeoutHandler(mWifiManager, mHandler, mWifiConnectionCallback);
     }
 
     public static WifiUtilsBuilder withContext(@NonNull final Context context) {
@@ -391,9 +398,6 @@ public final class WifiUtils implements WifiConnectorBuilder,
     @Override
     public WifiSuccessListener setTimeout(final long timeOutMillis) {
         mTimeoutMillis = timeOutMillis;
-        if (mWifiConnectionReceiver instanceof ConnectionHandler) {
-            ((ConnectionHandler) mWifiConnectionReceiver).setTimeout(timeOutMillis);
-        }
         return this;
     }
 
