@@ -168,7 +168,7 @@ public final class ConnectorUtils {
         }
     }
 
-    public static void unregisterReceiver(@NonNull final Context context, @Nullable final BroadcastReceiver receiver) {
+    static void unregisterReceiver(@NonNull final Context context, @Nullable final BroadcastReceiver receiver) {
         if (receiver != null) {
             try {
                 context.unregisterReceiver(receiver);
