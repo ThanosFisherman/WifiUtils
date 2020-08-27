@@ -323,7 +323,7 @@ public final class ConnectorUtils {
                         if (isAlreadyConnected(wifiManager, of(scanResult).next(scanResult -> scanResult.BSSID).get())) {
                             wifiConnectionCallback.successfulConnect();
                         } else {
-                            wifiConnectionCallback.errorConnect(ConnectionErrorCode.ANDROID_10_COULD_NOT_CONNECT_FIRMWARE_BUG);
+                            wifiConnectionCallback.errorConnect(ConnectionErrorCode.ANDROID_10_IMMEDIATELY_DROPPED_CONNECTION);
                         }
                     }
                 }, 500);
