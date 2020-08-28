@@ -16,7 +16,7 @@ import com.thanosfisherman.wifiutils.wifiRemove.RemoveErrorCode
 import com.thanosfisherman.wifiutils.wifiRemove.RemoveSuccessListener
 import kotlinx.android.synthetic.main.activity_main.*
 
-class MainKotlinActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity() {
 
     private val SSID = "lelelelelel"
     private val PASSWORD = "psaridis"
