@@ -29,5 +29,14 @@ public enum ConnectionErrorCode {
      * Could not connect in the timeout window.
      */
     TIMEOUT_OCCURRED,
+    /**
+     * Firmware bugs on OnePlus prevent it from connecting on some firmware versions.
+     * More info: https://github.com/ThanosFisherman/WifiUtils/issues/63
+     */
+    ANDROID_10_IMMEDIATELY_DROPPED_CONNECTION,
+    /**
+     * Starting Android 10, the user has to confirm connecting, but can also cancel.
+     */
+    USER_CANCELLED,
     COULD_NOT_CONNECT,
 }
