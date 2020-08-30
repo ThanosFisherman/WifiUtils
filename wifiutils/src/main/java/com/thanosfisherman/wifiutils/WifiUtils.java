@@ -187,7 +187,7 @@ public final class WifiUtils implements WifiConnectorBuilder,
             unregisterReceiver(mContext, mWifiConnectionReceiver);
             mTimeoutHandler.stopTimeout();
             if (isAndroidQOrLater()) {
-                DisconnectCallbackHolder.getInstance().disconnect(mConnectivityManager);
+                DisconnectCallbackHolder.getInstance().disconnect();
             }
             reenableAllHotspots(mWifiManager);
             //if (mSingleScanResult != null)
@@ -288,7 +288,7 @@ public final class WifiUtils implements WifiConnectorBuilder,
         }
 
         if (isAndroidQOrLater()) {
-            DisconnectCallbackHolder.getInstance().disconnect(mConnectivityManager);
+            DisconnectCallbackHolder.getInstance().disconnect();
             disconnectionSuccessListener.success();
         } else {
             if (disconnectFromWifi(mWifiManager)) {
@@ -313,7 +313,7 @@ public final class WifiUtils implements WifiConnectorBuilder,
         }
         
         if (isAndroidQOrLater()) {
-            DisconnectCallbackHolder.getInstance().disconnect(mConnectivityManager);
+            DisconnectCallbackHolder.getInstance().disconnect();
             removeSuccessListener.success();
         } else {
             if (removeWifi(mWifiManager, ssid)) {

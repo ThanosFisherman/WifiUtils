@@ -18,19 +18,19 @@ import android.net.wifi.WpsInfo;
 import android.os.Build;
 import android.provider.Settings;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+import androidx.annotation.RequiresPermission;
+
 import com.thanosfisherman.elvis.Objects;
-import com.thanosfisherman.wifiutils.wifiConnect.DisconnectCallbackHolder;
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionErrorCode;
+import com.thanosfisherman.wifiutils.wifiConnect.DisconnectCallbackHolder;
 import com.thanosfisherman.wifiutils.wifiConnect.WifiConnectionCallback;
 import com.thanosfisherman.wifiutils.wifiWps.ConnectionWpsListener;
 
 import java.util.Collections;
 import java.util.List;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
-import androidx.annotation.RequiresPermission;
 
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static android.Manifest.permission.ACCESS_WIFI_STATE;
@@ -45,9 +45,6 @@ import static com.thanosfisherman.wifiutils.utils.VersionUtils.isMarshmallowOrLa
 public final class ConnectorUtils {
     private static final int MAX_PRIORITY = 99999;
 
-    @Nullable
-    private static ConnectivityManager.NetworkCallback networkCallback;
-
     public static boolean isAlreadyConnected(@Nullable WifiManager wifiManager, @Nullable String bssid) {
         if (bssid != null && wifiManager != null) {
             if (wifiManager.getConnectionInfo() != null && wifiManager.getConnectionInfo().getBSSID() != null &&
@@ -59,7 +56,6 @@ public final class ConnectorUtils {
         }
         return false;
     }
-
 
     @SuppressWarnings("UnusedReturnValue")
     private static boolean checkForExcessOpenNetworkAndSave(@NonNull final ContentResolver resolver, @NonNull final WifiManager wifiMgr) {
@@ -163,7 +159,7 @@ public final class ConnectorUtils {
         if (receiver != null) {
             try {
                 context.registerReceiver(receiver, filter);
-            } catch (Exception e) {
+            } catch (Exception ignored) {
             }
         }
     }
@@ -172,7 +168,7 @@ public final class ConnectorUtils {
         if (receiver != null) {
             try {
                 context.unregisterReceiver(receiver);
-            } catch (IllegalArgumentException e) {
+            } catch (IllegalArgumentException ignored) {
             }
         }
     }
@@ -299,7 +295,7 @@ public final class ConnectorUtils {
                 .build();
 
         // cleanup previous connections just in case
-        DisconnectCallbackHolder.getInstance().disconnect(connectivityManager);
+        DisconnectCallbackHolder.getInstance().disconnect();
 
         final ConnectivityManager.NetworkCallback networkCallback = new ConnectivityManager.NetworkCallback() {
             @Override
@@ -313,18 +309,15 @@ public final class ConnectorUtils {
 
                 // bind so all api calls are performed over this new network
                 // if we don't bind, connection with the wifi network is immediately dropped
-                connectivityManager.bindProcessToNetwork(network);
+                DisconnectCallbackHolder.getInstance().bindProcessToNetwork(network);
 
                 // On some Android 10 devices, connection is made and than immediately lost due to a firmware bug,
                 // read more here: https://github.com/ThanosFisherman/WifiUtils/issues/63.
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (isAlreadyConnected(wifiManager, of(scanResult).next(scanResult -> scanResult.BSSID).get())) {
-                            wifiConnectionCallback.successfulConnect();
-                        } else {
-                            wifiConnectionCallback.errorConnect(ConnectionErrorCode.ANDROID_10_IMMEDIATELY_DROPPED_CONNECTION);
-                        }
+                handler.postDelayed(() -> {
+                    if (isAlreadyConnected(wifiManager, of(scanResult).next(scanResult1 -> scanResult1.BSSID).get())) {
+                        wifiConnectionCallback.successfulConnect();
+                    } else {
+                        wifiConnectionCallback.errorConnect(ConnectionErrorCode.ANDROID_10_IMMEDIATELY_DROPPED_CONNECTION);
                     }
                 }, 500);
             }
@@ -345,16 +338,16 @@ public final class ConnectorUtils {
                 wifiLog("onLost");
 
                 // cancel connecting if needed, this prevents 'request loops' on some oneplus/redmi phones
-                DisconnectCallbackHolder.getInstance().disconnect(connectivityManager);
-                // TODO: test, should this get moved to the disconnectCallbackHolder?
-                connectivityManager.bindProcessToNetwork(null);
+                DisconnectCallbackHolder.getInstance().unbindProcessFromNetwork();
+                DisconnectCallbackHolder.getInstance().disconnect();
+
             }
         };
 
-        DisconnectCallbackHolder.getInstance().addNetworkCallback(networkCallback);
+        DisconnectCallbackHolder.getInstance().addNetworkCallback(networkCallback, connectivityManager);
 
-        wifiLog("connect with android 10");
-        connectivityManager.requestNetwork(networkRequest, networkCallback);
+        wifiLog("connecting with Android 10");
+        DisconnectCallbackHolder.getInstance().requestNetwork(networkRequest);
 
         return true;
     }
@@ -363,8 +356,7 @@ public final class ConnectorUtils {
         if (wifiManager == null) {
             return false;
         }
-        @Nullable
-        final List<WifiConfiguration> configurations = wifiManager.getConfiguredNetworks();
+        @Nullable final List<WifiConfiguration> configurations = wifiManager.getConfiguredNetworks();
         if (configurations == null || config == null || configurations.isEmpty()) {
             return false;
         }
@@ -390,8 +382,7 @@ public final class ConnectorUtils {
         if (wifiManager == null) {
             return false;
         }
-        @Nullable
-        final List<WifiConfiguration> configurations = wifiManager.getConfiguredNetworks();
+        @Nullable final List<WifiConfiguration> configurations = wifiManager.getConfiguredNetworks();
         if (configurations == null || scanResult == null || configurations.isEmpty()) {
             return false;
         }
@@ -413,8 +404,7 @@ public final class ConnectorUtils {
         if (wifiManager == null) {
             return false;
         }
-        @Nullable
-        final List<WifiConfiguration> configurations = wifiManager.getConfiguredNetworks();
+        @Nullable final List<WifiConfiguration> configurations = wifiManager.getConfiguredNetworks();
         if (configurations == null || scanResult == null || configurations.isEmpty()) {
             return false;
         }
