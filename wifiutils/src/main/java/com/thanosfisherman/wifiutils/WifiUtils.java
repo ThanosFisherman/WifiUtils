@@ -4,9 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.wifi.ScanResult;
-import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.util.Log;
@@ -15,11 +13,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
-import com.thanosfisherman.wifiutils.wifiConnect.DisconnectCallbackHolder;
-import com.thanosfisherman.wifiutils.utils.SSIDUtils;
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionErrorCode;
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionScanResultsListener;
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionSuccessListener;
+import com.thanosfisherman.wifiutils.wifiConnect.DisconnectCallbackHolder;
 import com.thanosfisherman.wifiutils.wifiConnect.TimeoutHandler;
 import com.thanosfisherman.wifiutils.wifiConnect.WifiConnectionCallback;
 import com.thanosfisherman.wifiutils.wifiConnect.WifiConnectionReceiver;
@@ -37,7 +34,6 @@ import com.thanosfisherman.wifiutils.wifiWps.ConnectionWpsListener;
 
 import java.util.ArrayList;
 import java.util.List;
-
 
 import static com.thanosfisherman.elvis.Elvis.of;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.cleanPreviousConfiguration;
@@ -157,7 +153,7 @@ public final class WifiUtils implements WifiConnectorBuilder,
             if (mSingleScanResult != null && mPassword != null) {
                 if (connectToWifi(mContext, mWifiManager, mConnectivityManager, mHandler, mSingleScanResult, mPassword, mWifiConnectionCallback)) {
                     registerReceiver(mContext, (mWifiConnectionReceiver).connectWith(mSingleScanResult, mPassword, mConnectivityManager),
-                                     new IntentFilter(WifiManager.SUPPLICANT_STATE_CHANGED_ACTION));
+                            new IntentFilter(WifiManager.SUPPLICANT_STATE_CHANGED_ACTION));
                     registerReceiver(mContext, mWifiConnectionReceiver,
                             new IntentFilter(WifiManager.NETWORK_STATE_CHANGED_ACTION));
                     mTimeoutHandler.startTimeout(mSingleScanResult, mTimeoutMillis);
@@ -311,7 +307,7 @@ public final class WifiUtils implements WifiConnectorBuilder,
             removeSuccessListener.failed(RemoveErrorCode.COULD_NOT_GET_WIFI_MANAGER);
             return;
         }
-        
+
         if (isAndroidQOrLater()) {
             DisconnectCallbackHolder.getInstance().disconnect();
             removeSuccessListener.success();
@@ -370,28 +366,12 @@ public final class WifiUtils implements WifiConnectorBuilder,
 
     @Override
     public boolean isWifiConnected(@NonNull String ssid) {
-        ConnectivityManager connManager = (ConnectivityManager) mContext
-                .getSystemService(Context.CONNECTIVITY_SERVICE);
-        final NetworkInfo netInfo = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-        boolean result = false;
-
-        if (netInfo.getState() == NetworkInfo.State.CONNECTED) {
-
-            final String quotedSsid = SSIDUtils.convertToQuotedString(ssid);
-            final WifiInfo wifiInfo = mWifiManager.getConnectionInfo();
-            String tempSSID = wifiInfo.getSSID();
-            result = tempSSID != null && tempSSID.equals(quotedSsid);
-        }
-        return result;
+        return ConnectorUtils.isAlreadyConnected(mWifiManager, mConnectivityManager, ssid);
     }
 
     @Override
     public boolean isWifiConnected() {
-        ConnectivityManager connManager = (ConnectivityManager) mContext
-                .getSystemService(Context.CONNECTIVITY_SERVICE);
-        final NetworkInfo netInfo = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-
-        return netInfo.getState() == NetworkInfo.State.CONNECTED;
+        return ConnectorUtils.isAlreadyConnected(mConnectivityManager);
     }
 
     @NonNull

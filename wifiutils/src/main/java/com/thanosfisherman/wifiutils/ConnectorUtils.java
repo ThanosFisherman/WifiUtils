@@ -9,9 +9,11 @@ import android.net.ConnectivityManager;
 import android.net.MacAddress;
 import android.net.Network;
 import android.net.NetworkCapabilities;
+import android.net.NetworkInfo;
 import android.net.NetworkRequest;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiNetworkSpecifier;
 import android.net.wifi.WpsInfo;
@@ -24,6 +26,8 @@ import androidx.annotation.RequiresApi;
 import androidx.annotation.RequiresPermission;
 
 import com.thanosfisherman.elvis.Objects;
+import com.thanosfisherman.wifiutils.utils.SSIDUtils;
+import com.thanosfisherman.wifiutils.utils.VersionUtils;
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionErrorCode;
 import com.thanosfisherman.wifiutils.wifiConnect.DisconnectCallbackHolder;
 import com.thanosfisherman.wifiutils.wifiConnect.WifiConnectionCallback;
@@ -55,6 +59,29 @@ public final class ConnectorUtils {
             }
         }
         return false;
+    }
+
+    public static boolean isAlreadyConnected(@Nullable ConnectivityManager connectivityManager) {
+
+        return of(connectivityManager).next(manager -> manager.getNetworkInfo(ConnectivityManager.TYPE_WIFI)).next(NetworkInfo::getState).next(state -> state == NetworkInfo.State.CONNECTED).getBoolean();
+    }
+
+    public static boolean isAlreadyConnected(@Nullable WifiManager wifiManager, @Nullable ConnectivityManager connectivityManager, @Nullable String ssid) {
+
+        boolean result = isAlreadyConnected(connectivityManager);
+
+        if (result) {
+            if (ssid != null && wifiManager != null) {
+                String quotedSsid = ssid;
+                if (VersionUtils.isJellyBeanOrLater()) {
+                    quotedSsid = SSIDUtils.convertToQuotedString(ssid);
+                }
+                final WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+                String tempSSID = wifiInfo.getSSID();
+                result = tempSSID != null && tempSSID.equals(quotedSsid);
+            }
+        }
+        return result;
     }
 
     @SuppressWarnings("UnusedReturnValue")
