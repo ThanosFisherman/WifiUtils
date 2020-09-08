@@ -2,8 +2,8 @@ object Artifact {
 
     val ARTIFACT_NAME = "wifiutils"
     val ARTIFACT_GROUP = "com.thanosfisherman.wifiutils"
-    val VERSION_NAME = "1.6.2"
-    val VERSION_CODE = 19
+    val VERSION_NAME = "1.6.3"
+    val VERSION_CODE = 20
     val POM_URL = "https://github.com/ThanosFisherman/WifiUtils"
     val POM_SCM_URL = "https://github.com/ThanosFisherman/WifiUtils"
     val POM_ISSUE_URL = "https://github.com/ThanosFisherman/WifiUtils/issues"

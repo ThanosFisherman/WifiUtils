@@ -71,6 +71,8 @@ val sourcesJar by tasks.creating(Jar::class) {
     from(android.sourceSets.getByName("main").java.srcDirs)
 }
 
+val artifactDir = "$buildDir/outputs/aar/${project.name}-debug.aar"
+
 publishing {
     publications {
         create<MavenPublication>(Artifact.ARTIFACT_NAME) {
@@ -79,7 +81,7 @@ publishing {
             version = Artifact.VERSION_NAME
             //from(components["java"])
             artifacts {
-                artifact("$buildDir/outputs/aar/${project.name}-debug.aar")
+                artifact(artifactDir)
                 artifact(sourcesJar)
                 artifact(dokkaJar)
             }

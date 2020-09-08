@@ -9,6 +9,8 @@ private object LibraryVersion {
     const val ktxCore = "1.3.1"
     const val multiDexVersion = "1.0.3"
 
+    const val wifiUtilsVersion = "1.6.3"
+
     const val androidxVersion = "1.2.0"
     const val lifecycleVersionX = "2.2.0"
     const val constraintLayoutVersion = "2.0.0-rc1"
@@ -42,6 +44,7 @@ object LibDependency {
 
 object AppDependency {
 
+    //const val wifiUtilsOnline = "com.thanosfisherman.wifiutils:wifiutils:${LibraryVersion.wifiUtilsVersion}"
     const val multiDex = "com.android.support:multidex:${LibraryVersion.multiDexVersion}"
     const val androidX = "androidx.appcompat:appcompat:${LibraryVersion.androidxVersion}"
     const val constraintLayout = "androidx.constraintlayout:constraintlayout:${LibraryVersion.constraintLayoutVersion}"
