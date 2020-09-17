@@ -48,7 +48,13 @@ android {
 
 dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
-    addLibModuleDependencies()
+    getLibModuleDependencies().forEach {
+        if (it.contains("elvis", true)) {
+            implementation(it) { isTransitive = true }
+        } else {
+            implementation(it)
+        }
+    }
     addTestDependencies()
 }
 
