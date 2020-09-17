@@ -16,7 +16,7 @@ interface BuildType {
 
     val isMinifyEnabled: Boolean
     val isShrinkResources: Boolean
-    val manifestPlaceholders : Map<String,String>
+    val manifestPlaceholders: Map<String, String>
     val isDebuggable: Boolean
 }
 
@@ -28,8 +28,8 @@ object BuildTypeDebug : BuildType {
 }
 
 object BuildTypeRelease : BuildType {
-    override val isMinifyEnabled = true
-    override val isShrinkResources = true
+    override val isMinifyEnabled = false
+    override val isShrinkResources = false
     override val isDebuggable = false
     override val manifestPlaceholders = mapOf("crashlyticsEnabled" to "true", "performanceEnabled" to "true")
 }

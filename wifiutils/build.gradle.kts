@@ -77,19 +77,19 @@ val sourcesJar by tasks.creating(Jar::class) {
     from(android.sourceSets.getByName("main").java.srcDirs)
 }
 
-val artifactDir = "$buildDir/outputs/aar/${project.name}-debug.aar"
+val artifactDir = "$buildDir/outputs/aar/${project.name}-release.aar"
 
 publishing {
     publications {
         create<MavenPublication>(Artifact.ARTIFACT_NAME) {
+            //from(components["java"]) kinda broken on android
             groupId = Artifact.ARTIFACT_GROUP
             artifactId = Artifact.ARTIFACT_NAME
             version = Artifact.VERSION_NAME
-            //from(components["java"])
             artifacts {
-                artifact(artifactDir)
                 artifact(sourcesJar)
                 artifact(dokkaJar)
+                artifact(artifactDir)
             }
 
             pom.withXml {
@@ -108,6 +108,19 @@ publishing {
                     }
                     appendNode("scm").apply {
                         appendNode("url", Artifact.POM_SCM_URL)
+                    }
+                }
+                val dependenciesNode = asNode().appendNode("dependencies")
+                val configurationNames = arrayOf("implementation")
+                configurationNames.forEach { configurationName ->
+                    configurations[configurationName].allDependencies.distinct().forEach {
+                        if (it.group != null && it.name != null) {
+                            val dependencyNode = dependenciesNode.appendNode("dependency")
+                            dependencyNode.appendNode("groupId", it.group)
+                            dependencyNode.appendNode("artifactId", it.name)
+                            dependencyNode.appendNode("version", it.version)
+                            dependencyNode.appendNode("scope", "runtime")
+                        }
                     }
                 }
             }
