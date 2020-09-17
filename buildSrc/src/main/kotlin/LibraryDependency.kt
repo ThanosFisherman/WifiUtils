@@ -34,7 +34,7 @@ object LibDependency {
     const val kotlin = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${CoreVersion.KOTLIN}"
     const val kotlinReflect = "org.jetbrains.kotlin:kotlin-reflect:${CoreVersion.KOTLIN}"
     const val ktxCore = "androidx.core:core-ktx:${LibraryVersion.ktxCore}"
-    const val elvis = "com.thanosfisherman.elvis:elvis:2.0"
+    const val elvis = "com.thanosfisherman.elvis:elvis:3.0"
 
     fun getAll() = LibDependency::class.memberProperties
         .filter { it.isConst }
