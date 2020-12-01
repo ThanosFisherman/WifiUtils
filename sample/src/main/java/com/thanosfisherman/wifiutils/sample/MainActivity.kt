@@ -7,6 +7,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import com.thanosfisherman.wifiutils.TypeEnum
 import com.thanosfisherman.wifiutils.WifiUtils
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionErrorCode
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionSuccessListener
@@ -33,6 +34,7 @@ class MainActivity : AppCompatActivity() {
         textview_ssid.text = SSID
         textview_password.text = PASSWORD
         button_connect.setOnClickListener { connectWithWpa(applicationContext) }
+        button_connect_hidden.setOnClickListener { connectHidden(applicationContext) }
         button_disconnect.setOnClickListener { disconnect(applicationContext) }
         button_remove.setOnClickListener { remove(applicationContext) }
         button_check.setOnClickListener { check(applicationContext) }
@@ -52,6 +54,21 @@ class MainActivity : AppCompatActivity() {
                 }
             })
             .start()
+    }
+
+    private fun connectHidden(context: Context) {
+        WifiUtils.withContext(context)
+                .connectWith("FreeSurfing_5G_001", "Agree-R100",TypeEnum.PSK)
+                .onConnectionResult(object : ConnectionSuccessListener {
+                    override fun success() {
+                        Toast.makeText(context, "SUCCESS!", Toast.LENGTH_SHORT).show()
+                    }
+
+                    override fun failed(errorCode: ConnectionErrorCode) {
+                        Toast.makeText(context, "EPIC FAIL!$errorCode", Toast.LENGTH_SHORT).show()
+                    }
+                })
+                .start()
     }
 
     private fun disconnect(context: Context) {

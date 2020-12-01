@@ -110,6 +110,13 @@ final class ConfigSecurities {
         }
     }
 
+    @RequiresPermission(allOf = {ACCESS_FINE_LOCATION, ACCESS_WIFI_STATE})
+    static void setupSecurityHidden(@NonNull WifiConfiguration config, String security, @NonNull final String password) {
+        config.hiddenSSID = true;
+        setupSecurity(config, security, password);
+    }
+
+
     @TargetApi(Build.VERSION_CODES.Q)
     static void setupWifiNetworkSpecifierSecurities(@NonNull WifiNetworkSpecifier.Builder wifiNetworkSpecifierBuilder, String security, @NonNull final String password) {
         wifiLog("Setting up WifiNetworkSpecifier.Builder " + security);
@@ -246,6 +253,21 @@ final class ConfigSecurities {
 
         wifiLog("ScanResult capabilities " + result.capabilities);
         wifiLog("Got security via ScanResult " + security);
+        return security;
+    }
+
+    static String getSecurity(@NonNull String result) {
+        String security = SECURITY_NONE;
+        if (result.contains(SECURITY_WEP)) {
+            security = SECURITY_WEP;
+        }
+        if (result.contains(SECURITY_PSK)) {
+            security = SECURITY_PSK;
+        }
+        if (result.contains(SECURITY_EAP)) {
+            security = SECURITY_EAP;
+        }
+
         return security;
     }
 

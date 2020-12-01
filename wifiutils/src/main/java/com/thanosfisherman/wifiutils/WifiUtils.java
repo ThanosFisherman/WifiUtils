@@ -38,6 +38,7 @@ import java.util.List;
 import static com.thanosfisherman.elvis.Elvis.of;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.cleanPreviousConfiguration;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.connectToWifi;
+import static com.thanosfisherman.wifiutils.ConnectorUtils.connectToWifiDirect;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.connectWps;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.disconnectFromWifi;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.matchScanResult;
@@ -63,7 +64,7 @@ public final class WifiUtils implements WifiConnectorBuilder,
     private final ConnectivityManager mConnectivityManager;
     @NonNull
     private final Context mContext;
-    private static boolean mEnableLog;
+    private static boolean mEnableLog=true;
     @Nullable
     private static Logger customLogger;
     private long mWpsTimeoutMillis = 30000;
@@ -80,6 +81,8 @@ public final class WifiUtils implements WifiConnectorBuilder,
     private final WifiScanReceiver mWifiScanReceiver;
     @Nullable
     private String mSsid;
+    @Nullable
+    private String type;
     @Nullable
     private String mBssid;
     @Nullable
@@ -160,8 +163,16 @@ public final class WifiUtils implements WifiConnectorBuilder,
                 } else {
                     mWifiConnectionCallback.errorConnect(ConnectionErrorCode.COULD_NOT_CONNECT);
                 }
-            } else {
-                mWifiConnectionCallback.errorConnect(ConnectionErrorCode.DID_NOT_FIND_NETWORK_BY_SCANNING);
+            } else {// 尝试直连
+                if (connectToWifiDirect(mContext, mWifiManager, mConnectivityManager, mHandler, mSsid, type, mPassword, mWifiConnectionCallback)) {
+                    registerReceiver(mContext, (mWifiConnectionReceiver).connectWith(mSsid, mPassword, mConnectivityManager),
+                            new IntentFilter(WifiManager.SUPPLICANT_STATE_CHANGED_ACTION));
+                    registerReceiver(mContext, mWifiConnectionReceiver,
+                            new IntentFilter(WifiManager.NETWORK_STATE_CHANGED_ACTION));
+                    mTimeoutHandler.startTimeout(mSingleScanResult, mTimeoutMillis);
+                } else {
+                    mWifiConnectionCallback.errorConnect(ConnectionErrorCode.COULD_NOT_CONNECT);
+                }
             }
         }
     };
@@ -325,6 +336,15 @@ public final class WifiUtils implements WifiConnectorBuilder,
     public WifiSuccessListener connectWith(@NonNull final String ssid, @NonNull final String password) {
         mSsid = ssid;
         mPassword = password;
+        return this;
+    }
+
+    @NonNull
+    @Override
+    public WifiSuccessListener connectWith(@NonNull final String ssid, @NonNull final String password, @NonNull final TypeEnum type) {
+        mSsid = ssid;
+        mPassword = password;
+        this.type = type.name();
         return this;
     }
 

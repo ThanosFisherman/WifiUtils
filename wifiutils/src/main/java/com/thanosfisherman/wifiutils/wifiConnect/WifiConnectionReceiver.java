@@ -8,14 +8,14 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.SupplicantState;
 import android.net.wifi.WifiManager;
 
-import com.thanosfisherman.elvis.Objects;
-import com.thanosfisherman.wifiutils.WeakHandler;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.thanosfisherman.elvis.Objects;
+
 import static com.thanosfisherman.elvis.Elvis.of;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.isAlreadyConnected;
+import static com.thanosfisherman.wifiutils.ConnectorUtils.isAlreadyConnected2;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.reEnableNetworkIfPossible;
 import static com.thanosfisherman.wifiutils.WifiUtils.wifiLog;
 import static com.thanosfisherman.wifiutils.utils.VersionUtils.isAndroidQOrLater;
@@ -28,6 +28,7 @@ public final class WifiConnectionReceiver extends BroadcastReceiver {
     private ScanResult mScanResult;
     @NonNull
     private final WifiManager mWifiManager;
+    private String ssid;
 
 
     public WifiConnectionReceiver(@NonNull final WifiConnectionCallback callback, @NonNull final WifiManager wifiManager) {
@@ -45,7 +46,9 @@ public final class WifiConnectionReceiver extends BroadcastReceiver {
                 final int suppl_error = intent.getIntExtra(WifiManager.EXTRA_SUPPLICANT_ERROR, -1);
                 wifiLog("Connection Broadcast state: " + state);
                 wifiLog("suppl_error: " + suppl_error);
-
+                if (mScanResult == null && isAlreadyConnected2(mWifiManager, ssid)) {
+                    mWifiConnectionCallback.successfulConnect();
+                }
                 if (state == SupplicantState.DISCONNECTED && suppl_error == WifiManager.ERROR_AUTHENTICATING) {
                     mWifiConnectionCallback.errorConnect(ConnectionErrorCode.AUTHENTICATION_ERROR_OCCURRED);
                 }
@@ -74,7 +77,9 @@ public final class WifiConnectionReceiver extends BroadcastReceiver {
                 switch (state) {
                     case COMPLETED:
                     case FOUR_WAY_HANDSHAKE:
-                        if (isAlreadyConnected(mWifiManager, of(mScanResult).next(scanResult -> scanResult.BSSID).get())) {
+                        if (mScanResult == null && isAlreadyConnected2(mWifiManager, ssid)) {
+                            mWifiConnectionCallback.successfulConnect();
+                        } else if (isAlreadyConnected(mWifiManager, of(mScanResult).next(scanResult -> scanResult.BSSID).get())) {
                             mWifiConnectionCallback.successfulConnect();
                         }
                         break;
@@ -91,9 +96,28 @@ public final class WifiConnectionReceiver extends BroadcastReceiver {
         }
     }
 
+    public static boolean isAlreadyConnected2(@Nullable WifiManager wifiManager, @Nullable String ssid) {
+        if (ssid != null && wifiManager != null) {
+            if (wifiManager.getConnectionInfo() != null && wifiManager.getConnectionInfo().getSSID() != null &&
+                    wifiManager.getConnectionInfo().getIpAddress() != 0 &&
+                    Objects.equals(ssid, wifiManager.getConnectionInfo().getSSID())) {
+                wifiLog("Already connected to: " + wifiManager.getConnectionInfo().getSSID() + "  BSSID: " + wifiManager.getConnectionInfo().getBSSID());
+                return true;
+            }
+        }
+        return false;
+    }
+
     @NonNull
     public WifiConnectionReceiver connectWith(@NonNull ScanResult result, @NonNull String password, @NonNull ConnectivityManager connectivityManager) {
         mScanResult = result;
+
+        return this;
+    }
+
+    @NonNull
+    public WifiConnectionReceiver connectWith(@NonNull String ssid, @NonNull String password, @NonNull ConnectivityManager connectivityManager) {
+        this.ssid = ssid;
 
         return this;
     }

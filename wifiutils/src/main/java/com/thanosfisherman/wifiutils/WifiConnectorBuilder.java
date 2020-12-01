@@ -2,6 +2,10 @@ package com.thanosfisherman.wifiutils;
 
 import android.os.Build;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionScanResultsListener;
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionSuccessListener;
 import com.thanosfisherman.wifiutils.wifiDisconnect.DisconnectionSuccessListener;
@@ -9,10 +13,6 @@ import com.thanosfisherman.wifiutils.wifiRemove.RemoveSuccessListener;
 import com.thanosfisherman.wifiutils.wifiScan.ScanResultsListener;
 import com.thanosfisherman.wifiutils.wifiState.WifiStateListener;
 import com.thanosfisherman.wifiutils.wifiWps.ConnectionWpsListener;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 
 public interface WifiConnectorBuilder {
     void start();
@@ -32,6 +32,8 @@ public interface WifiConnectorBuilder {
 
         @NonNull
         WifiSuccessListener connectWith(@NonNull String ssid, @NonNull String bssid, @NonNull String password);
+
+        WifiSuccessListener connectWith(@NonNull String ssid, @NonNull String password, @NonNull TypeEnum type);
 
         @Deprecated
         void disconnectFrom(@NonNull String ssid, @NonNull DisconnectionSuccessListener disconnectionSuccessListener);
