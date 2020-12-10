@@ -44,8 +44,18 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/disconnect"
+        app:layout_constraintBottom_toTopOf="@id/button_check_internet_connection"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/button_connect" />
+
+    <Button
+        android:id="@+id/button_check_internet_connection"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/check_internet_connection"
         app:layout_constraintBottom_toTopOf="@id/button_remove"
-        app:layout_constraintTop_toBottomOf="@+id/button_connect"
+        app:layout_constraintTop_toBottomOf="@+id/button_disconnect"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent" />
 
@@ -54,7 +64,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/remove"
-        app:layout_constraintTop_toBottomOf="@id/button_disconnect"
+        app:layout_constraintTop_toBottomOf="@id/button_check_internet_connection"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintBottom_toBottomOf="parent" />

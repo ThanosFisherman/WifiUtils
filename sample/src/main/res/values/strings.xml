@@ -4,4 +4,5 @@
     <string name="disconnect">Disconnect</string>
     <string name="remove">Remove</string>
     <string name="check">Check</string>
+    <string name="check_internet_connection">Check Internet Connection</string>
 </resources>
