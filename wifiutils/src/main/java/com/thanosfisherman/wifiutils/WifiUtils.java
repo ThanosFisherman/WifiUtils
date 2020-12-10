@@ -284,6 +284,7 @@ public final class WifiUtils implements WifiConnectorBuilder,
         }
 
         if (isAndroidQOrLater()) {
+            DisconnectCallbackHolder.getInstance().unbindProcessFromNetwork();
             DisconnectCallbackHolder.getInstance().disconnect();
             disconnectionSuccessListener.success();
         } else {
