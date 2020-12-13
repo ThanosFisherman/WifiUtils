@@ -17,7 +17,6 @@ import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiNetworkSpecifier;
-import android.net.wifi.WifiNetworkSuggestion;
 import android.net.wifi.WpsInfo;
 import android.os.Build;
 import android.provider.Settings;
@@ -45,6 +44,7 @@ import static com.thanosfisherman.wifiutils.WifiUtils.wifiLog;
 import static com.thanosfisherman.wifiutils.utils.SSIDUtils.convertToQuotedString;
 import static com.thanosfisherman.wifiutils.utils.VersionUtils.isAndroidQOrLater;
 import static com.thanosfisherman.wifiutils.utils.VersionUtils.isJellyBeanOrLater;
+import static com.thanosfisherman.wifiutils.utils.VersionUtils.isLollipopOrLater;
 import static com.thanosfisherman.wifiutils.utils.VersionUtils.isMarshmallowOrLater;
 
 @SuppressLint("MissingPermission")
@@ -75,9 +75,27 @@ public final class ConnectorUtils {
         return false;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    private static boolean isConnectedToNetworkLollipop(@Nullable ConnectivityManager connectivityManager) {
+
+//        final ConnectivityManager connMgr =
+//                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (connectivityManager == null)
+            return false;
+        boolean isWifiConn = false;
+        for (Network network : connectivityManager.getAllNetworks()) {
+            final NetworkInfo networkInfo = connectivityManager.getNetworkInfo(network);
+            if (networkInfo != null && ConnectivityManager.TYPE_WIFI == networkInfo.getType()) {
+                isWifiConn |= networkInfo.isConnected();
+            }
+        }
+        return isWifiConn;
+    }
 
     public static boolean isAlreadyConnected(@Nullable ConnectivityManager connectivityManager) {
-
+        if (isLollipopOrLater()) {
+            return isConnectedToNetworkLollipop(connectivityManager);
+        }
         return of(connectivityManager).next(manager -> manager.getNetworkInfo(ConnectivityManager.TYPE_WIFI)).next(NetworkInfo::getState).next(state -> state == NetworkInfo.State.CONNECTED).getBoolean();
     }
 
@@ -230,24 +248,24 @@ public final class ConnectorUtils {
     }
 
     @RequiresPermission(allOf = {ACCESS_FINE_LOCATION, ACCESS_WIFI_STATE})
-    static boolean connectToWifiDirect(@NonNull final Context context,
+    static boolean connectToWifiHidden(@NonNull final Context context,
                                        @Nullable final WifiManager wifiManager,
                                        @Nullable final ConnectivityManager connectivityManager,
                                        @NonNull WeakHandler handler,
 //                                       @NonNull final ScanResult scanResult,
                                        @NonNull final String ssid,
-                                       @NonNull final String type,
+                                       @Nullable final String type,
                                        @NonNull final String password,
                                        @NonNull WifiConnectionCallback wifiConnectionCallback) {
-        if (wifiManager == null || connectivityManager == null) {
+        if (wifiManager == null || connectivityManager == null || type == null) {
             return false;
         }
 
         if (isAndroidQOrLater()) {
-            return connectAndroidQDirect(wifiManager, connectivityManager, handler, wifiConnectionCallback, ssid, type, password);
+            return connectAndroidQHidden(wifiManager, connectivityManager, handler, wifiConnectionCallback, ssid, type, password);
         }
 
-        return connectPreAndroidQDirect(context, wifiManager, ssid, type, password);
+        return connectPreAndroidQHidden(context, wifiManager, ssid, type, password);
     }
 
     @RequiresPermission(allOf = {ACCESS_FINE_LOCATION, ACCESS_WIFI_STATE})
@@ -300,7 +318,7 @@ public final class ConnectorUtils {
 
 
     @RequiresPermission(allOf = {ACCESS_FINE_LOCATION, ACCESS_WIFI_STATE})
-    private static boolean connectPreAndroidQDirect(@NonNull final Context context, @Nullable final WifiManager wifiManager, @NonNull final String ssid, @NonNull final String type, @NonNull final String password) {
+    private static boolean connectPreAndroidQHidden(@NonNull final Context context, @Nullable final WifiManager wifiManager, @NonNull final String ssid, @NonNull final String type, @NonNull final String password) {
         if (wifiManager == null) {
             return false;
         }
@@ -462,7 +480,7 @@ public final class ConnectorUtils {
 
     // FIXME: we should use WifiNetworkSuggestion api to connect WLAN on Android 10, I`ll fix it soon.
     @RequiresApi(Build.VERSION_CODES.Q)
-    private static boolean connectAndroidQDirect(@Nullable WifiManager wifiManager, @Nullable ConnectivityManager connectivityManager, @NonNull WeakHandler handler, @NonNull WifiConnectionCallback wifiConnectionCallback, @NonNull String ssid, @NonNull String type, String password) {
+    private static boolean connectAndroidQHidden(@Nullable WifiManager wifiManager, @Nullable ConnectivityManager connectivityManager, @NonNull WeakHandler handler, @NonNull WifiConnectionCallback wifiConnectionCallback, @NonNull String ssid, @NonNull String type, String password) {
         if (connectivityManager == null) {
             return false;
         }

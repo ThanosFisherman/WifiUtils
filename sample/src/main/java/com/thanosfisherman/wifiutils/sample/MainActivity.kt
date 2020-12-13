@@ -64,7 +64,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun connectHidden(context: Context) {
         WifiUtils.withContext(context)
-                .connectWith("FreeSurfing_5G_001", "Agree-R100",TypeEnum.PSK)
+                .connectWith(SSID, PASSWORD,TypeEnum.EAP)
                 .onConnectionResult(object : ConnectionSuccessListener {
                     override fun success() {
                         Toast.makeText(context, "SUCCESS!", Toast.LENGTH_SHORT).show()

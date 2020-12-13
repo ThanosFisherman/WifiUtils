@@ -38,7 +38,7 @@ import java.util.List;
 import static com.thanosfisherman.elvis.Elvis.of;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.cleanPreviousConfiguration;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.connectToWifi;
-import static com.thanosfisherman.wifiutils.ConnectorUtils.connectToWifiDirect;
+import static com.thanosfisherman.wifiutils.ConnectorUtils.connectToWifiHidden;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.connectWps;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.disconnectFromWifi;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.matchScanResult;
@@ -163,8 +163,8 @@ public final class WifiUtils implements WifiConnectorBuilder,
                 } else {
                     mWifiConnectionCallback.errorConnect(ConnectionErrorCode.COULD_NOT_CONNECT);
                 }
-            } else {// 尝试直连
-                if (connectToWifiDirect(mContext, mWifiManager, mConnectivityManager, mHandler, mSsid, type, mPassword, mWifiConnectionCallback)) {
+            } else {
+                if (connectToWifiHidden(mContext, mWifiManager, mConnectivityManager, mHandler, mSsid, type, mPassword, mWifiConnectionCallback)) {
                     registerReceiver(mContext, (mWifiConnectionReceiver).connectWith(mSsid, mPassword, mConnectivityManager),
                             new IntentFilter(WifiManager.SUPPLICANT_STATE_CHANGED_ACTION));
                     registerReceiver(mContext, mWifiConnectionReceiver,
