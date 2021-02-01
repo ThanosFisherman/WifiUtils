@@ -50,7 +50,7 @@ dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
     getLibModuleDependencies().forEach {
         if (it.contains("elvis", true)) {
-            implementation(it) { isTransitive = true }
+            api(it) { isTransitive = true }
         } else {
             implementation(it)
         }

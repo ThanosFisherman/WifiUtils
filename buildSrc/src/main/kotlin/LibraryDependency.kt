@@ -9,7 +9,7 @@ private object LibraryVersion {
     const val ktxCore = "1.3.1"
     const val multiDexVersion = "1.0.3"
 
-    const val wifiUtilsVersion = "1.6.3"
+    const val wifiUtilsVersion = "1.6.5"
 
     const val androidxVersion = "1.2.0"
     const val lifecycleVersionX = "2.2.0"
