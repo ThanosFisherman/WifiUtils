@@ -7,22 +7,26 @@
     android:layout_height="match_parent"
     tools:context="com.thanosfisherman.wifiutils.sample.MainActivity">
 
-    <TextView
+    <EditText
         android:id="@+id/textview_ssid"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="parent"
+        android:hint="Enter SSID"
+        android:minWidth="200dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintBottom_toTopOf="@id/textview_password"
         tools:text="SSID"
         />
 
-    <TextView
+    <EditText
         android:id="@+id/textview_password"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/textview_ssid"
+        android:hint="Enter Password"
+        android:minWidth="200dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintBottom_toTopOf="@id/button_connect"

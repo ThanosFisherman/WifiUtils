@@ -24,9 +24,6 @@ import java.util.concurrent.Executors
 
 class MainActivity : AppCompatActivity() {
 
-    private val SSID = "lelelelelel"
-    private val PASSWORD = "psaridis"
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -36,8 +33,6 @@ class MainActivity : AppCompatActivity() {
             Log.i(customTag, message)
         }
         WifiUtils.enableLog(true)
-        textview_ssid.text = SSID
-        textview_password.text = PASSWORD
         button_connect.setOnClickListener { connectWithWpa(applicationContext) }
         button_connect_hidden.setOnClickListener { connectHidden(applicationContext) }
         button_disconnect.setOnClickListener { disconnect(applicationContext) }
@@ -48,7 +43,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun connectWithWpa(context: Context) {
         WifiUtils.withContext(context)
-                .connectWith(SSID, PASSWORD)
+                .connectWith(textview_ssid.text.toString(), textview_password.text.toString())
                 .setTimeout(15000)
                 .onConnectionResult(object : ConnectionSuccessListener {
                     override fun success() {
@@ -64,7 +59,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun connectHidden(context: Context) {
         WifiUtils.withContext(context)
-                .connectWith(SSID, PASSWORD,TypeEnum.EAP)
+                .connectWith(textview_ssid.text.toString(), textview_password.text.toString(),TypeEnum.EAP)
                 .onConnectionResult(object : ConnectionSuccessListener {
                     override fun success() {
                         Toast.makeText(context, "SUCCESS!", Toast.LENGTH_SHORT).show()
@@ -92,7 +87,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun remove(context: Context) {
         WifiUtils.withContext(context)
-                .remove(SSID, object : RemoveSuccessListener {
+                .remove(textview_ssid.text.toString(), object : RemoveSuccessListener {
                     override fun success() {
                         Toast.makeText(context, "Remove success!", Toast.LENGTH_SHORT).show()
                     }
@@ -104,7 +99,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun check(context: Context) {
-        val result = WifiUtils.withContext(context).isWifiConnected(SSID)
+        val result = WifiUtils.withContext(context).isWifiConnected(textview_ssid.text.toString())
         Toast.makeText(context, "Wifi Connect State: $result", Toast.LENGTH_SHORT).show()
     }
 
