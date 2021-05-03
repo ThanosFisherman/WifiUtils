@@ -5,7 +5,7 @@ WifiUtils
 
 #### *For Android versions 10 and newer:* WiFiUtils is currently using the *Network request API* (IoT API) for connecting to wifi networks which scopes the internet connectivity only to the app that requested it. There are plans to support WiFI Suggestion API in the future which overcomes this issue. For further info read the official docs [here](https://developer.android.com/guide/topics/connectivity/wifi-infrastructure) and take a look at the discussion thread [here](https://github.com/ThanosFisherman/WifiUtils/issues/47) ####
 
-**WiFi Utils** is a library that provides a set of convenience methods for managing WiFi State, WiFi Scan, And
+**WiFiUtils** is a library that provides a set of convenience methods for managing WiFi State, WiFi Scan, And
 WiFi Connection to Hotspots. If you have ever worked with `WifiManager` you should know how painful it is to make a simple wifi network scan or even worse
 to connect to a hotspot programmatically. So that's what my new library is all about. To make it easier for me and hopefully for other developers as well
 to do those kind of tasks from Java code. So lets jump right in some code examples.
