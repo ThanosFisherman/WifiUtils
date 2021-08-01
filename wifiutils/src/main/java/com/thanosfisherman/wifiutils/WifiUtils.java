@@ -99,6 +99,8 @@ public final class WifiUtils implements WifiConnectorBuilder,
     private WifiStateListener mWifiStateListener;
     @Nullable
     private ConnectionWpsListener mConnectionWpsListener;
+    @Nullable
+    private boolean mPatternMatch;
 
     @NonNull
     private final WifiStateCallback mWifiStateCallback = new WifiStateCallback() {
@@ -154,7 +156,7 @@ public final class WifiUtils implements WifiConnectorBuilder,
                 }
             }
             if (mSingleScanResult != null && mPassword != null) {
-                if (connectToWifi(mContext, mWifiManager, mConnectivityManager, mHandler, mSingleScanResult, mPassword, mWifiConnectionCallback)) {
+                if (connectToWifi(mContext, mWifiManager, mConnectivityManager, mHandler, mSingleScanResult, mPassword, mWifiConnectionCallback, mPatternMatch)) {
                     registerReceiver(mContext, (mWifiConnectionReceiver).connectWith(mSingleScanResult, mPassword, mConnectivityManager),
                             new IntentFilter(WifiManager.SUPPLICANT_STATE_CHANGED_ACTION));
                     registerReceiver(mContext, mWifiConnectionReceiver,
@@ -330,6 +332,14 @@ public final class WifiUtils implements WifiConnectorBuilder,
                 removeSuccessListener.failed(RemoveErrorCode.COULD_NOT_REMOVE);
             }
         }
+    }
+
+    @NonNull
+    @Override
+    public WifiUtilsBuilder patternMatch() {
+        mPatternMatch = true;
+
+        return this;
     }
 
     @NonNull

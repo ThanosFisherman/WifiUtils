@@ -35,6 +35,9 @@ public interface WifiConnectorBuilder {
 
         WifiSuccessListener connectWith(@NonNull String ssid, @NonNull String password, @NonNull TypeEnum type);
 
+        @NonNull
+        WifiUtilsBuilder patternMatch();
+
         @Deprecated
         void disconnectFrom(@NonNull String ssid, @NonNull DisconnectionSuccessListener disconnectionSuccessListener);
 
