@@ -152,7 +152,7 @@ public final class WifiUtils implements WifiConnectorBuilder,
                 if (mBssid != null) {
                     mSingleScanResult = matchScanResult(mSsid, mBssid, scanResultList);
                 } else {
-                    mSingleScanResult = matchScanResultSsid(mSsid, scanResultList);
+                    mSingleScanResult = matchScanResultSsid(mSsid, scanResultList, mPatternMatch);
                 }
             }
             if (mSingleScanResult != null && mPassword != null) {
@@ -338,6 +338,16 @@ public final class WifiUtils implements WifiConnectorBuilder,
     @Override
     public WifiUtilsBuilder patternMatch() {
         mPatternMatch = true;
+
+        return this;
+    }
+
+
+    @NonNull
+    @Override
+    public WifiSuccessListener connectWith(@NonNull final String ssid) {
+        mSsid = ssid;
+        mPassword = "doesnt matter"; // FIXME: Cover no password case
 
         return this;
     }

@@ -776,9 +776,9 @@ public final class ConnectorUtils {
     }
 
     @Nullable
-    static ScanResult matchScanResultSsid(@NonNull String ssid, @NonNull Iterable<ScanResult> results) {
+    static ScanResult matchScanResultSsid(@NonNull String ssid, @NonNull Iterable<ScanResult> results, boolean mPatternMatch) {
         for (ScanResult result : results) {
-            if (Objects.equals(result.SSID, ssid)) {
+            if (mPatternMatch == true ? result.SSID.indexOf(ssid)> -1 : Objects.equals(result.SSID, ssid)) {
                 return result;
             }
         }

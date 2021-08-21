@@ -28,6 +28,9 @@ public interface WifiConnectorBuilder {
         WifiConnectorBuilder scanWifi(@Nullable ScanResultsListener scanResultsListener);
 
         @NonNull
+        WifiSuccessListener connectWith(@NonNull String ssid);
+
+        @NonNull
         WifiSuccessListener connectWith(@NonNull String ssid, @NonNull String password);
 
         @NonNull
