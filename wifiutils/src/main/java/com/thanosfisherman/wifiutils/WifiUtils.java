@@ -156,7 +156,7 @@ public final class WifiUtils implements WifiConnectorBuilder,
                 }
             }
             if (mSingleScanResult != null && mPassword != null) {
-                if (connectToWifi(mContext, mWifiManager, mConnectivityManager, mHandler, mSingleScanResult, mPassword, mWifiConnectionCallback, mPatternMatch)) {
+                if (connectToWifi(mContext, mWifiManager, mConnectivityManager, mHandler, mSingleScanResult, mPassword, mWifiConnectionCallback, mPatternMatch, mSsid)) {
                     registerReceiver(mContext, (mWifiConnectionReceiver).connectWith(mSingleScanResult, mPassword, mConnectivityManager),
                             new IntentFilter(WifiManager.SUPPLICANT_STATE_CHANGED_ACTION));
                     registerReceiver(mContext, mWifiConnectionReceiver,
