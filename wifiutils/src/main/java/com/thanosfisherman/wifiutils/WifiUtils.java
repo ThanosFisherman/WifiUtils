@@ -347,7 +347,7 @@ public final class WifiUtils implements WifiConnectorBuilder,
     @Override
     public WifiSuccessListener connectWith(@NonNull final String ssid) {
         mSsid = ssid;
-        mPassword = "doesnt matter"; // FIXME: Cover no password case
+        mPassword = ""; // FIXME: Cover no password case
 
         return this;
     }
