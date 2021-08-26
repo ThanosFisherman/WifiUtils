@@ -28,12 +28,18 @@ public interface WifiConnectorBuilder {
         WifiConnectorBuilder scanWifi(@Nullable ScanResultsListener scanResultsListener);
 
         @NonNull
+        WifiSuccessListener connectWith(@NonNull String ssid);
+
+        @NonNull
         WifiSuccessListener connectWith(@NonNull String ssid, @NonNull String password);
 
         @NonNull
         WifiSuccessListener connectWith(@NonNull String ssid, @NonNull String bssid, @NonNull String password);
 
         WifiSuccessListener connectWith(@NonNull String ssid, @NonNull String password, @NonNull TypeEnum type);
+
+        @NonNull
+        WifiUtilsBuilder patternMatch();
 
         @Deprecated
         void disconnectFrom(@NonNull String ssid, @NonNull DisconnectionSuccessListener disconnectionSuccessListener);

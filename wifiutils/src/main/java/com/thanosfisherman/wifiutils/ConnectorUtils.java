@@ -19,6 +19,7 @@ import android.net.wifi.WifiManager;
 import android.net.wifi.WifiNetworkSpecifier;
 import android.net.wifi.WpsInfo;
 import android.os.Build;
+import android.os.PatternMatcher;
 import android.provider.Settings;
 
 import androidx.annotation.NonNull;
@@ -235,13 +236,13 @@ public final class ConnectorUtils {
     }
 
     @RequiresPermission(allOf = {ACCESS_FINE_LOCATION, ACCESS_WIFI_STATE})
-    static boolean connectToWifi(@NonNull final Context context, @Nullable final WifiManager wifiManager, @Nullable final ConnectivityManager connectivityManager, @NonNull WeakHandler handler, @NonNull final ScanResult scanResult, @NonNull final String password, @NonNull WifiConnectionCallback wifiConnectionCallback) {
+    static boolean connectToWifi(@NonNull final Context context, @Nullable final WifiManager wifiManager, @Nullable final ConnectivityManager connectivityManager, @NonNull WeakHandler handler, @NonNull final ScanResult scanResult, @NonNull final String password, @NonNull WifiConnectionCallback wifiConnectionCallback, boolean patternMatch) {
         if (wifiManager == null || connectivityManager == null) {
             return false;
         }
 
         if (isAndroidQOrLater()) {
-            return connectAndroidQ(wifiManager, connectivityManager, handler, wifiConnectionCallback, scanResult, password);
+            return connectAndroidQ(wifiManager, connectivityManager, handler, wifiConnectionCallback, scanResult, password, patternMatch);
         }
 
         return connectPreAndroidQ(context, wifiManager, scanResult, password);
@@ -397,14 +398,20 @@ public final class ConnectorUtils {
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
-    private static boolean connectAndroidQ(@Nullable WifiManager wifiManager, @Nullable ConnectivityManager connectivityManager, @NonNull WeakHandler handler, @NonNull WifiConnectionCallback wifiConnectionCallback, @NonNull ScanResult scanResult, @NonNull String password) {
+    private static boolean connectAndroidQ(@Nullable WifiManager wifiManager, @Nullable ConnectivityManager connectivityManager, @NonNull WeakHandler handler, @NonNull WifiConnectionCallback wifiConnectionCallback, @NonNull ScanResult scanResult, @NonNull String password, boolean patternMatch) {
         if (connectivityManager == null) {
             return false;
         }
 
-        WifiNetworkSpecifier.Builder wifiNetworkSpecifierBuilder = new WifiNetworkSpecifier.Builder()
-                .setSsid(scanResult.SSID)
-                .setBssid(MacAddress.fromString(scanResult.BSSID));
+        WifiNetworkSpecifier.Builder wifiNetworkSpecifierBuilder = new WifiNetworkSpecifier.Builder();
+
+        if (patternMatch) {
+            wifiNetworkSpecifierBuilder.setSsidPattern(new PatternMatcher(scanResult.SSID, PatternMatcher.PATTERN_PREFIX));
+        } else {
+            wifiNetworkSpecifierBuilder
+                    .setSsid(scanResult.SSID)
+                    .setBssid(MacAddress.fromString(scanResult.BSSID));
+        }
 
         final String security = ConfigSecurities.getSecurity(scanResult);
 
@@ -769,9 +776,9 @@ public final class ConnectorUtils {
     }
 
     @Nullable
-    static ScanResult matchScanResultSsid(@NonNull String ssid, @NonNull Iterable<ScanResult> results) {
+    static ScanResult matchScanResultSsid(@NonNull String ssid, @NonNull Iterable<ScanResult> results, boolean mPatternMatch) {
         for (ScanResult result : results) {
-            if (Objects.equals(result.SSID, ssid)) {
+            if (mPatternMatch == true ? result.SSID.startsWith(ssid) : Objects.equals(result.SSID, ssid)) {
                 return result;
             }
         }

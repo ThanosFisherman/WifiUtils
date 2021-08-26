@@ -2,6 +2,7 @@
     <string name="app_name">WifiUtils</string>
     <string name="connect">Connect</string>
     <string name="connect_hidden">ConnectHidden</string>
+    <string name="connect_prefix">ConnectPrefix</string>
     <string name="disconnect">Disconnect</string>
     <string name="remove">Remove</string>
     <string name="check">Check</string>

@@ -34,11 +34,29 @@ class MainActivity : AppCompatActivity() {
         }
         WifiUtils.enableLog(true)
         button_connect.setOnClickListener { connectWithWpa(applicationContext) }
+        button_prefix.setOnClickListener { connectWithPrefix(applicationContext) }
         button_connect_hidden.setOnClickListener { connectHidden(applicationContext) }
         button_disconnect.setOnClickListener { disconnect(applicationContext) }
         button_remove.setOnClickListener { remove(applicationContext) }
         button_check.setOnClickListener { check(applicationContext) }
         button_check_internet_connection.setOnClickListener { checkInternetConnection(applicationContext) }
+    }
+
+    private fun connectWithPrefix(context: Context) {
+        WifiUtils.withContext(context)
+                .patternMatch()
+                .connectWith(textview_ssid.text.toString())
+                .setTimeout(15000)
+                .onConnectionResult(object : ConnectionSuccessListener {
+                    override fun success() {
+                        Toast.makeText(context, "SUCCESS!", Toast.LENGTH_SHORT).show()
+                    }
+
+                    override fun failed(errorCode: ConnectionErrorCode) {
+                        Toast.makeText(context, "EPIC FAIL!$errorCode", Toast.LENGTH_SHORT).show()
+                    }
+                })
+                .start()
     }
 
     private fun connectWithWpa(context: Context) {
