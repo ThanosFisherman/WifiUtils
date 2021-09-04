@@ -7,7 +7,7 @@ import android.os.Build;
 import androidx.annotation.NonNull;
 import android.util.Log;
 
-import static com.thanosfisherman.elvis.Elvis.of;
+import static com.thanosfisherman.wifiutils.utils.Elvis.of;
 
 public class LocationUtils {
     private static final String TAG = LocationUtils.class.getSimpleName();

@@ -1,33 +1,36 @@
 plugins {
     id(GradlePluginId.ANDROID_APPLICATION)
-    id(GradlePluginId.KOTLIN_ANDROID)
-    id(GradlePluginId.KOTLIN_ANDROID_EXTENSIONS)
+    kotlin("android")
 }
 
 android {
-    compileSdkVersion(AndroidConfig.COMPILE_SDK_VERSION)
+    compileSdk = AndroidConfig.COMPILE_SDK_VERSION
+    //buildToolsVersion("30.0.3")
     defaultConfig {
         applicationId = Artifact.ARTIFACT_GROUP + ".sample"
-        minSdkVersion(AndroidConfig.MIN_SDK_VERSION)
-        targetSdkVersion(AndroidConfig.TARGET_SDK_VERSION)
+        minSdk = AndroidConfig.MIN_SDK_VERSION
+        targetSdk = AndroidConfig.TARGET_SDK_VERSION
         versionCode = Artifact.VERSION_CODE
         versionName = Artifact.VERSION_NAME
-        multiDexEnabled = true
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
 
-        getByName(BuildType.DEBUG) {
+        debug {
+            isDefault = true
             isMinifyEnabled = BuildTypeDebug.isMinifyEnabled
             isShrinkResources = BuildTypeDebug.isShrinkResources
             isDebuggable = BuildTypeDebug.isDebuggable
         }
-
-        getByName(BuildType.RELEASE) {
+        release {
             isMinifyEnabled = BuildTypeRelease.isMinifyEnabled
             isShrinkResources = BuildTypeRelease.isShrinkResources
             isDebuggable = BuildTypeRelease.isDebuggable
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
 
@@ -35,11 +38,15 @@ android {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8.toString()
+    }
 }
 
 
 dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
     addAppModuleDependencies()
-    addTestDependencies()
+    //addTestDependencies()
 }

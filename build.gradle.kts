@@ -1,8 +1,13 @@
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 
+plugins {
+    id(GradlePluginId.DEPENDENCY_UPDATE) version GradlePluginVersion.DEPENDENCY_UPDATE_VERSION
+}
+
 buildscript {
     repositories {
-        jcenter()
+        gradlePluginPortal()
+        mavenCentral()
         google()
     }
     dependencies {
@@ -12,14 +17,11 @@ buildscript {
     }
 }
 
-plugins {
-    id(GradlePluginId.DEPENDENCY_UPDATE) version GradlePluginVersion.GRADLE_VERSION_PLUGIN
-}
-
 allprojects {
 
     repositories {
-        jcenter()
+        gradlePluginPortal()
+        mavenCentral()
         google()
     }
 }

@@ -7,7 +7,9 @@ fun DependencyHandler.addAppModuleDependencies() {
     AppDependency.getAll().forEach { implementation(it) }
 }
 
-fun DependencyHandler.getLibModuleDependencies() = LibDependency.getAll()
+fun DependencyHandler.addLibModuleDependencies() {
+    LibDependency.getAll().forEach { implementation(it) }
+}
 
 
 fun DependencyHandler.addTestDependencies() {

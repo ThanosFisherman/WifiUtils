@@ -1,5 +1,15 @@
 package com.thanosfisherman.wifiutils;
 
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+import static android.Manifest.permission.ACCESS_WIFI_STATE;
+import static com.thanosfisherman.wifiutils.WifiUtils.wifiLog;
+import static com.thanosfisherman.wifiutils.utils.Elvis.of;
+import static com.thanosfisherman.wifiutils.utils.SSIDUtils.convertToQuotedString;
+import static com.thanosfisherman.wifiutils.utils.VersionUtils.isAndroidQOrLater;
+import static com.thanosfisherman.wifiutils.utils.VersionUtils.isJellyBeanOrLater;
+import static com.thanosfisherman.wifiutils.utils.VersionUtils.isLollipopOrLater;
+import static com.thanosfisherman.wifiutils.utils.VersionUtils.isMarshmallowOrLater;
+
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
@@ -27,7 +37,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.annotation.RequiresPermission;
 
-import com.thanosfisherman.elvis.Objects;
 import com.thanosfisherman.wifiutils.utils.SSIDUtils;
 import com.thanosfisherman.wifiutils.utils.VersionUtils;
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionErrorCode;
@@ -37,16 +46,7 @@ import com.thanosfisherman.wifiutils.wifiWps.ConnectionWpsListener;
 
 import java.util.Collections;
 import java.util.List;
-
-import static android.Manifest.permission.ACCESS_FINE_LOCATION;
-import static android.Manifest.permission.ACCESS_WIFI_STATE;
-import static com.thanosfisherman.elvis.Elvis.of;
-import static com.thanosfisherman.wifiutils.WifiUtils.wifiLog;
-import static com.thanosfisherman.wifiutils.utils.SSIDUtils.convertToQuotedString;
-import static com.thanosfisherman.wifiutils.utils.VersionUtils.isAndroidQOrLater;
-import static com.thanosfisherman.wifiutils.utils.VersionUtils.isJellyBeanOrLater;
-import static com.thanosfisherman.wifiutils.utils.VersionUtils.isLollipopOrLater;
-import static com.thanosfisherman.wifiutils.utils.VersionUtils.isMarshmallowOrLater;
+import java.util.Objects;
 
 @SuppressLint("MissingPermission")
 public final class ConnectorUtils {

@@ -5,6 +5,7 @@ plugins {
 
 allprojects {
     repositories {
-        jcenter()
+        mavenCentral()
+        gradlePluginPortal()
     }
 }

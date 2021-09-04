@@ -7,7 +7,7 @@ import androidx.annotation.NonNull;
 
 import com.thanosfisherman.wifiutils.WeakHandler;
 
-import static com.thanosfisherman.elvis.Elvis.of;
+import static com.thanosfisherman.wifiutils.utils.Elvis.of;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.isAlreadyConnected;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.reEnableNetworkIfPossible;
 import static com.thanosfisherman.wifiutils.WifiUtils.wifiLog;

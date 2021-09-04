@@ -35,7 +35,7 @@ import com.thanosfisherman.wifiutils.wifiWps.ConnectionWpsListener;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.thanosfisherman.elvis.Elvis.of;
+import static com.thanosfisherman.wifiutils.utils.Elvis.of;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.cleanPreviousConfiguration;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.connectToWifi;
 import static com.thanosfisherman.wifiutils.ConnectorUtils.connectToWifiHidden;
