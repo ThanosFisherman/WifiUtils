@@ -1,7 +1,7 @@
 object GradlePluginVersion {
     const val ANDROID_GRADLE = "7.0.2"
     const val KOTLIN = CoreVersion.KOTLIN
-    const val DOKKA_VERSION = "1.5.0"
+    const val DOKKA_VERSION = "1.5.30"
     const val DEPENDENCY_UPDATE_VERSION = "0.39.0"
 }
 
