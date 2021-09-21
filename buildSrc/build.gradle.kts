@@ -1,4 +1,5 @@
 plugins {
+    java
     `java-gradle-plugin`
     `kotlin-dsl`
 }
@@ -15,6 +16,7 @@ repositories {
 }
 
 dependencies {
+    implementation(gradleApi())
     testImplementation(gradleTestKit())
     testImplementation("junit:junit:4.13.2")
 
@@ -23,3 +25,12 @@ dependencies {
 tasks.withType<Test>().configureEach {
     testLogging { showStandardStreams = true }
 }
+/*
+gradlePlugin {
+    plugins {
+        create("maven-publisher") {
+            id = "maven-publishero"
+            implementationClass = "MavenPublisherPlugin"
+        }
+    }
+}*/
