@@ -5,9 +5,9 @@ import kotlin.collections.LinkedHashMap
 object Artifact {
 
     val ARTIFACT_NAME = "wifiutils"
-    val ARTIFACT_GROUP = "com.thanosfisherman.wifiutils"
-    val VERSION_NAME = "1.6.5"
-    val VERSION_CODE = 22
+    val ARTIFACT_GROUP = "io.github.thanosfisherman.wifiutils"
+    val VERSION_NAME = "1.6.6"
+    val VERSION_CODE = 23
     val POM_URL = "https://github.com/ThanosFisherman/WifiUtils"
     val POM_SCM_URL = "https://github.com/ThanosFisherman/WifiUtils"
     val POM_SCM_CONNECTION = "scm:git:github.com/ThanosFisherman/WifiUtils.git"
