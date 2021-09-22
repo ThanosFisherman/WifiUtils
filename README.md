@@ -1,4 +1,10 @@
-WifiUtils
+# WifiUtils
+
+#### [View Releases and Changelogs](https://github.com/ThanosFisherman/WifiUtils/releases)
+
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.thanosfisherman.wifiutils/wifiutils?style=for-the-badge)](https://repo1.maven.org/maven2/io/github/thanosfisherman/wifiutils/wifiutils/)
+[![Hex.pm](https://img.shields.io/hexpm/l/plug?style=for-the-badge)]((https://opensource.org/licenses/Apache-2.0))
+
 ---
 
 ### :rotating_light:Attention::rotating_light:
@@ -214,8 +220,6 @@ Damn You are required to set a few permissions in order for this lib to work cor
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/> <!-- for Android 6 and above -->
 ```
 ### Add it to your project
-
-[![Download](https://api.bintray.com/packages/thanosfisherman/maven/wifiutils/images/download.svg)](https://bintray.com/thanosfisherman/maven/wifiutils/_latestVersion)
 
 Add the following to your **app module** `build.gradle` file
     
