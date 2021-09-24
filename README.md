@@ -223,9 +223,9 @@ Damn You are required to set a few permissions in order for this lib to work cor
 
 Add the following to your **app module** `build.gradle` file
     
-```groovy
+```kotlin
     dependencies {
-       implementation 'com.thanosfisherman.wifiutils:wifiutils:<latest version here>'
+       implementation("io.github.thanosfisherman.wifiutils:wifiutils:1.6.6")
     }
 ```
     
