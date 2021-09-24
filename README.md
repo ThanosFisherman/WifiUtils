@@ -13,7 +13,7 @@
 
 **WiFiUtils** is a library that provides a set of convenience methods for managing WiFi State, WiFi Scan, And
 WiFi Connection to Hotspots. If you have ever worked with `WifiManager` you should know how painful it is to make a simple wifi network scan or even worse
-to connect to a hotspot programmatically. So that's what my new library is all about. To make it easier for me and hopefully for other developers as well
+to connect to a hotspot programmatically. So that's what this library is all about. To make it easier for me and hopefully for other developers as well
 to do those kind of tasks from Java code. So lets jump right in some code examples.
 
 ### Enabling/Disabling WiFi
