@@ -14,6 +14,7 @@ import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.LinkProperties;
@@ -38,6 +39,7 @@ import androidx.annotation.RequiresApi;
 import androidx.annotation.RequiresPermission;
 
 import com.thanosfisherman.wifiutils.utils.SSIDUtils;
+import com.thanosfisherman.wifiutils.utils.VersionUtil;
 import com.thanosfisherman.wifiutils.utils.VersionUtils;
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionErrorCode;
 import com.thanosfisherman.wifiutils.wifiConnect.DisconnectCallbackHolder;
@@ -804,4 +806,13 @@ public final class ConnectorUtils {
         }
         return null;
     }
+
+    static Intent checkVersionAndGetIntent()  {
+        if(VersionUtil.INSTANCE.is29AndAbove()){
+            return VersionUtil.INSTANCE.getPanelIntent();
+        }else{
+            return null;
+        }
+    }
+
 }
