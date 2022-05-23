@@ -2,6 +2,10 @@ package com.thanosfisherman.wifiutils.sample
 
 import android.Manifest
 import android.content.Context
+import android.net.MacAddress
+import android.net.wifi.WifiManager
+import android.net.wifi.WifiNetworkSuggestion
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -27,75 +31,115 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 555)
+        ActivityCompat.requestPermissions(
+            this,
+            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+            555
+        )
         WifiUtils.forwardLog { _, tag, message ->
             val customTag = "${tag}.${this::class.simpleName}"
             Log.i(customTag, message)
         }
         WifiUtils.enableLog(true)
-        button_connect.setOnClickListener { connectWithWpa(applicationContext) }
+        button_connect.setOnClickListener { connectWithSuggestion(applicationContext) }
         button_connect_hidden.setOnClickListener { connectHidden(applicationContext) }
         button_disconnect.setOnClickListener { disconnect(applicationContext) }
         button_remove.setOnClickListener { remove(applicationContext) }
         button_check.setOnClickListener { check(applicationContext) }
-        button_check_internet_connection.setOnClickListener { checkInternetConnection(applicationContext) }
+        button_check_internet_connection.setOnClickListener {
+            checkInternetConnection(
+                applicationContext
+            )
+        }
+    }
+
+    private fun connectWithSuggestion(context: Context) {
+
+        Toast.makeText(context, "USING SUGGESTION API", Toast.LENGTH_LONG).show()
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            Toast.makeText(context, "NOT SUPPOTED", Toast.LENGTH_LONG).show()
+            return
+        }
+        val suggestion = WifiNetworkSuggestion.Builder()
+            .setSsid("Thanos-home-5GHz")
+            .setWpa2Passphrase("testpass")
+            .setIsAppInteractionRequired(true) // Optional (Needs location permission)
+            .setBssid(MacAddress.fromString("b8:be:f4:a7:de:b6"))
+            .build()
+
+        val suggestionsList = listOf(suggestion)
+        val wifiManager = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
+        val status = wifiManager.addNetworkSuggestions(suggestionsList)
+        Toast.makeText(context, "STATUS $status", Toast.LENGTH_LONG).show()
+        if (status != WifiManager.STATUS_NETWORK_SUGGESTIONS_SUCCESS) {
+            Toast.makeText(context, "ERROR", Toast.LENGTH_LONG).show()
+        }
     }
 
     private fun connectWithWpa(context: Context) {
         WifiUtils.withContext(context)
-                .connectWith(textview_ssid.text.toString(), textview_password.text.toString())
-                .setTimeout(15000)
-                .onConnectionResult(object : ConnectionSuccessListener {
-                    override fun success() {
-                        Toast.makeText(context, "SUCCESS!", Toast.LENGTH_SHORT).show()
-                    }
+            .connectWith(textview_ssid.text.toString(), textview_password.text.toString())
+            .setTimeout(15000)
+            .onConnectionResult(object : ConnectionSuccessListener {
+                override fun success() {
+                    Toast.makeText(context, "SUCCESS!", Toast.LENGTH_SHORT).show()
+                }
 
-                    override fun failed(errorCode: ConnectionErrorCode) {
-                        Toast.makeText(context, "EPIC FAIL!$errorCode", Toast.LENGTH_SHORT).show()
-                    }
-                })
-                .start()
+                override fun failed(errorCode: ConnectionErrorCode) {
+                    Toast.makeText(context, "EPIC FAIL!$errorCode", Toast.LENGTH_SHORT).show()
+                }
+            })
+            .start()
     }
 
     private fun connectHidden(context: Context) {
         WifiUtils.withContext(context)
-                .connectWith(textview_ssid.text.toString(), textview_password.text.toString(),TypeEnum.EAP)
-                .onConnectionResult(object : ConnectionSuccessListener {
-                    override fun success() {
-                        Toast.makeText(context, "SUCCESS!", Toast.LENGTH_SHORT).show()
-                    }
+            .connectWith(
+                textview_ssid.text.toString(),
+                textview_password.text.toString(),
+                TypeEnum.EAP
+            )
+            .onConnectionResult(object : ConnectionSuccessListener {
+                override fun success() {
+                    Toast.makeText(context, "SUCCESS!", Toast.LENGTH_SHORT).show()
+                }
 
-                    override fun failed(errorCode: ConnectionErrorCode) {
-                        Toast.makeText(context, "EPIC FAIL!$errorCode", Toast.LENGTH_SHORT).show()
-                    }
-                })
-                .start()
+                override fun failed(errorCode: ConnectionErrorCode) {
+                    Toast.makeText(context, "EPIC FAIL!$errorCode", Toast.LENGTH_SHORT).show()
+                }
+            })
+            .start()
     }
 
     private fun disconnect(context: Context) {
         WifiUtils.withContext(context)
-                .disconnect(object : DisconnectionSuccessListener {
-                    override fun success() {
-                        Toast.makeText(context, "Disconnect success!", Toast.LENGTH_SHORT).show()
-                    }
+            .disconnect(object : DisconnectionSuccessListener {
+                override fun success() {
+                    Toast.makeText(context, "Disconnect success!", Toast.LENGTH_SHORT).show()
+                }
 
-                    override fun failed(errorCode: DisconnectionErrorCode) {
-                        Toast.makeText(context, "Failed to disconnect: $errorCode", Toast.LENGTH_SHORT).show()
-                    }
-                })
+                override fun failed(errorCode: DisconnectionErrorCode) {
+                    Toast.makeText(context, "Failed to disconnect: $errorCode", Toast.LENGTH_SHORT)
+                        .show()
+                }
+            })
     }
 
     private fun remove(context: Context) {
         WifiUtils.withContext(context)
-                .remove(textview_ssid.text.toString(), object : RemoveSuccessListener {
-                    override fun success() {
-                        Toast.makeText(context, "Remove success!", Toast.LENGTH_SHORT).show()
-                    }
+            .remove(textview_ssid.text.toString(), object : RemoveSuccessListener {
+                override fun success() {
+                    Toast.makeText(context, "Remove success!", Toast.LENGTH_SHORT).show()
+                }
 
-                    override fun failed(errorCode: RemoveErrorCode) {
-                        Toast.makeText(context, "Failed to disconnect and remove: $errorCode", Toast.LENGTH_SHORT).show()
-                    }
-                })
+                override fun failed(errorCode: RemoveErrorCode) {
+                    Toast.makeText(
+                        context,
+                        "Failed to disconnect and remove: $errorCode",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            })
     }
 
     private fun check(context: Context) {
@@ -114,7 +158,11 @@ class MainActivity : AppCompatActivity() {
                 sock.connect(sockaddr, timeoutMs)
                 sock.close()
                 runOnUiThread {
-                    Toast.makeText(context, "Connecting to internet successfully", Toast.LENGTH_LONG).show()
+                    Toast.makeText(
+                        context,
+                        "Connecting to internet successfully",
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
             } catch (e: Exception) {
                 runOnUiThread {
