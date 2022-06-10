@@ -1,13 +1,34 @@
 package com.thanosfisherman.wifiutils;
 
+import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
+import static com.thanosfisherman.wifiutils.ConnectorUtils.checkVersionAndGetIntent;
+import static com.thanosfisherman.wifiutils.ConnectorUtils.cleanPreviousConfiguration;
+import static com.thanosfisherman.wifiutils.ConnectorUtils.connectToWifi;
+import static com.thanosfisherman.wifiutils.ConnectorUtils.connectToWifiHidden;
+import static com.thanosfisherman.wifiutils.ConnectorUtils.connectWps;
+import static com.thanosfisherman.wifiutils.ConnectorUtils.disconnectFromWifi;
+import static com.thanosfisherman.wifiutils.ConnectorUtils.matchScanResult;
+import static com.thanosfisherman.wifiutils.ConnectorUtils.matchScanResultBssid;
+import static com.thanosfisherman.wifiutils.ConnectorUtils.matchScanResultSsid;
+import static com.thanosfisherman.wifiutils.ConnectorUtils.reenableAllHotspots;
+import static com.thanosfisherman.wifiutils.ConnectorUtils.registerReceiver;
+import static com.thanosfisherman.wifiutils.ConnectorUtils.removeWifi;
+import static com.thanosfisherman.wifiutils.ConnectorUtils.unregisterReceiver;
+import static com.thanosfisherman.wifiutils.utils.Elvis.of;
+import static com.thanosfisherman.wifiutils.utils.VersionUtils.isAndroidQOrLater;
+import static com.thanosfisherman.wifiutils.utils.VersionUtils.isLollipopOrLater;
+
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -32,24 +53,10 @@ import com.thanosfisherman.wifiutils.wifiState.WifiStateListener;
 import com.thanosfisherman.wifiutils.wifiState.WifiStateReceiver;
 import com.thanosfisherman.wifiutils.wifiWps.ConnectionWpsListener;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.thanosfisherman.wifiutils.utils.Elvis.of;
-import static com.thanosfisherman.wifiutils.ConnectorUtils.cleanPreviousConfiguration;
-import static com.thanosfisherman.wifiutils.ConnectorUtils.connectToWifi;
-import static com.thanosfisherman.wifiutils.ConnectorUtils.connectToWifiHidden;
-import static com.thanosfisherman.wifiutils.ConnectorUtils.connectWps;
-import static com.thanosfisherman.wifiutils.ConnectorUtils.disconnectFromWifi;
-import static com.thanosfisherman.wifiutils.ConnectorUtils.matchScanResult;
-import static com.thanosfisherman.wifiutils.ConnectorUtils.matchScanResultBssid;
-import static com.thanosfisherman.wifiutils.ConnectorUtils.matchScanResultSsid;
-import static com.thanosfisherman.wifiutils.ConnectorUtils.reenableAllHotspots;
-import static com.thanosfisherman.wifiutils.ConnectorUtils.registerReceiver;
-import static com.thanosfisherman.wifiutils.ConnectorUtils.removeWifi;
-import static com.thanosfisherman.wifiutils.ConnectorUtils.unregisterReceiver;
-import static com.thanosfisherman.wifiutils.utils.VersionUtils.isAndroidQOrLater;
-import static com.thanosfisherman.wifiutils.utils.VersionUtils.isLollipopOrLater;
 
 @SuppressLint("MissingPermission")
 public final class WifiUtils implements WifiConnectorBuilder,
@@ -64,7 +71,7 @@ public final class WifiUtils implements WifiConnectorBuilder,
     private final ConnectivityManager mConnectivityManager;
     @NonNull
     private final Context mContext;
-    private static boolean mEnableLog=true;
+    private static boolean mEnableLog = true;
     @Nullable
     private static Logger customLogger;
     private long mWpsTimeoutMillis = 30000;
@@ -222,8 +229,27 @@ public final class WifiUtils implements WifiConnectorBuilder,
         mTimeoutHandler = new TimeoutHandler(mWifiManager, mHandler, mWifiConnectionCallback);
     }
 
+    private WifiUtils(@NonNull Context context, Activity activityContext) {
+        mContext = context;
+        mWifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        if (mWifiManager == null) {
+            throw new RuntimeException("WifiManager is not supposed to be null");
+        }
+        mConnectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        mWifiStateReceiver = new WifiStateReceiver(mWifiStateCallback);
+        mWifiScanReceiver = new WifiScanReceiver(mWifiScanResultsCallback);
+        mHandler = new WeakHandler();
+        mWifiConnectionReceiver = new WifiConnectionReceiver(mWifiConnectionCallback, mWifiManager);
+        mTimeoutHandler = new TimeoutHandler(mWifiManager, mHandler, mWifiConnectionCallback);
+    }
+
     public static WifiUtilsBuilder withContext(@NonNull final Context context) {
         return new WifiUtils(context);
+    }
+
+    @NotNull
+    public static WifiUtilsBuilder withActivityContext(@NonNull final Context context, Activity activity) {
+        return new WifiUtils(context, activity);
     }
 
     public static void wifiLog(final String text) {
@@ -254,16 +280,29 @@ public final class WifiUtils implements WifiConnectorBuilder,
         if (mWifiManager.isWifiEnabled()) {
             mWifiStateCallback.onWifiEnabled();
         } else {
-            if (mWifiManager.setWifiEnabled(true)) {
-                registerReceiver(mContext, mWifiStateReceiver, new IntentFilter(WifiManager.WIFI_STATE_CHANGED_ACTION));
+            Intent intent = checkVersionAndGetIntent();
+            if (intent == null) {
+                if (mWifiManager.setWifiEnabled(true)) {
+                    registerReceiver(mContext, mWifiStateReceiver, new IntentFilter(WifiManager.WIFI_STATE_CHANGED_ACTION));
+                } else {
+                    of(wifiStateListener).ifPresent(stateListener -> stateListener.isSuccess(false));
+                    of(mScanResultsListener).ifPresent(resultsListener -> resultsListener.onScanResults(new ArrayList<>()));
+                    of(mConnectionWpsListener).ifPresent(wpsListener -> wpsListener.isSuccessful(false));
+                    mWifiConnectionCallback.errorConnect(ConnectionErrorCode.COULD_NOT_ENABLE_WIFI);
+                    wifiLog("COULDN'T ENABLE WIFI");
+                }
             } else {
-                of(wifiStateListener).ifPresent(stateListener -> stateListener.isSuccess(false));
-                of(mScanResultsListener).ifPresent(resultsListener -> resultsListener.onScanResults(new ArrayList<>()));
-                of(mConnectionWpsListener).ifPresent(wpsListener -> wpsListener.isSuccessful(false));
-                mWifiConnectionCallback.errorConnect(ConnectionErrorCode.COULD_NOT_ENABLE_WIFI);
-                wifiLog("COULDN'T ENABLE WIFI");
+                startWifiSettingsIntent(intent, false);
             }
         }
+    }
+
+    private void startWifiSettingsIntent(@NonNull Intent intent, Boolean isSwitchingOff) {
+        Context context = mContext.getApplicationContext();
+        intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(intent);
+        if(!isSwitchingOff)
+            Toast.makeText(context, "Enable Wifi to proceed", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -457,10 +496,15 @@ public final class WifiUtils implements WifiConnectorBuilder,
     @Override
     public void disableWifi() {
         if (mWifiManager.isWifiEnabled()) {
-            mWifiManager.setWifiEnabled(false);
-            unregisterReceiver(mContext, mWifiStateReceiver);
-            unregisterReceiver(mContext, mWifiScanReceiver);
-            unregisterReceiver(mContext, mWifiConnectionReceiver);
+            Intent intent = checkVersionAndGetIntent();
+            if(intent==null){
+                mWifiManager.setWifiEnabled(false);
+                unregisterReceiver(mContext, mWifiStateReceiver);
+                unregisterReceiver(mContext, mWifiScanReceiver);
+                unregisterReceiver(mContext, mWifiConnectionReceiver);
+            }else{
+                startWifiSettingsIntent(intent, true);
+            }
         }
         wifiLog("WiFi Disabled");
     }
