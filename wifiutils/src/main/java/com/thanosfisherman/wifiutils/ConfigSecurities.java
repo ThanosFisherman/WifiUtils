@@ -176,7 +176,7 @@ final class ConfigSecurities {
         final String findSSID = ('"' + ssid + '"');
 
         for (final WifiConfiguration wifiConfiguration : configuredNetworks) {
-            if (wifiConfiguration.SSID.equals(findSSID)) {
+            if (wifiConfiguration.SSID != null && wifiConfiguration.SSID.equals(findSSID)) {
                 return wifiConfiguration;
             }
         }
