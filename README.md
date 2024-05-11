@@ -228,10 +228,14 @@ Add the following to your **app module** `build.gradle` file
        implementation("io.github.thanosfisherman.wifiutils:wifiutils:1.6.6")
     }
 ```
-    
+
+---
+
 ### Apps using this library
 
-My app of course [GWPA Finder](https://play.google.com/store/apps/details?id=com.Fisherman.Greekwpa) Duh :P
+* My app of course [GWPA Finder](https://play.google.com/store/apps/details?id=com.Fisherman.Greekwpa) Duh :P
+* [react-native-wifi-reborn](https://github.com/JuanSeBestia/react-native-wifi-reborn)
+* rabbit r1 by [https://www.rabbit.tech](https://www.rabbit.tech/)
 
 ---
 
