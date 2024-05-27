@@ -14,7 +14,27 @@
 **WiFiUtils** is a library that provides a set of convenience methods for managing WiFi State, WiFi Scan, And
 WiFi Connection to Hotspots. If you have ever worked with `WifiManager` you should know how painful it is to make a simple wifi network scan or even worse
 to connect to a hotspot programmatically. So that's what this library is all about. To make it easier for me and hopefully for other developers as well
-to do those kind of tasks from Java code. So lets jump right in some code examples.
+to do those kind of tasks programmatically via a friendlier API. 
+
+### Add it to your project
+
+Add the following to your **app module** `build.gradle` file
+    
+```kotlin
+    dependencies {
+       implementation("io.github.thanosfisherman.wifiutils:wifiutils:1.6.6")
+    }
+```
+
+---
+
+### Apps using this library
+
+* My app of course [GWPA Finder](https://play.google.com/store/apps/details?id=com.Fisherman.Greekwpa) Duh :P
+* [react-native-wifi-reborn](https://github.com/JuanSeBestia/react-native-wifi-reborn)
+* rabbit r1 by [https://www.rabbit.tech](https://www.rabbit.tech/)
+
+---
 
 ### Enabling/Disabling WiFi
 turn on device's wifi using the following:
@@ -219,25 +239,6 @@ Damn You are required to set a few permissions in order for this lib to work cor
 <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/> <!-- for Android 6 and above -->
 ```
-### Add it to your project
-
-Add the following to your **app module** `build.gradle` file
-    
-```kotlin
-    dependencies {
-       implementation("io.github.thanosfisherman.wifiutils:wifiutils:1.6.6")
-    }
-```
-
----
-
-### Apps using this library
-
-* My app of course [GWPA Finder](https://play.google.com/store/apps/details?id=com.Fisherman.Greekwpa) Duh :P
-* [react-native-wifi-reborn](https://github.com/JuanSeBestia/react-native-wifi-reborn)
-* rabbit r1 by [https://www.rabbit.tech](https://www.rabbit.tech/)
-
----
 
 ### Contributing?
 There are a few more things left to be covered in this tutorial. Hopefully I will improve upon this in the future.
