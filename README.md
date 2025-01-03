@@ -1,4 +1,8 @@
-# WifiUtils
+# WifiUtils Retirement
+
+WifiUtils is no longer being actively developed or supported and is being archived. I'm tired of fighting the Android OS to make this lib work consistently and reliably across all fragmented devices and vendors.
+
+---
 
 #### [View Releases and Changelogs](https://github.com/ThanosFisherman/WifiUtils/releases)
 
